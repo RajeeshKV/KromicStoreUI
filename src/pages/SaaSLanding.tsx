@@ -91,34 +91,33 @@ const SaaSLanding: React.FC = () => {
   };
 
   return (
-    <div className="hero-section" style={{ flexDirection: 'column', gap: '3rem', padding: '2rem 0' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem', width: '100%', alignItems: 'center' }}>
-        {/* Left Hand: Hero Info */}
-        <div className="hero-content" style={{ flex: '1.2', minWidth: '320px' }}>
-          <div className="hero-badge">
-            <Sparkles size={14} style={{ marginRight: 6 }} />
-            Next-Gen Multi-Tenant Storefront
-          </div>
-          <h1 className="hero-title">
-            Power Your Brand With <span>KromicStore</span>
-          </h1>
-          <p className="hero-subtitle">
-            Spin up high-performance, responsive e-commerce storefronts instantly. Isolated database queries, built-in global configurations, webhooks execution pipelines, and integrated payment checkout routing out of the box.
-          </p>
+    <div className="hero-section">
+      {/* Left Hand: Hero Info */}
+      <div className="hero-content">
+        <div className="hero-badge">
+          <Sparkles size={14} style={{ marginRight: 6 }} />
+          Next-Gen Multi-Tenant Storefront
+        </div>
+        <h1 className="hero-title">
+          Power Your Brand With <span>KromicStore</span>
+        </h1>
+        <p className="hero-subtitle">
+          Spin up high-performance, responsive e-commerce storefronts instantly. Isolated database queries, built-in global configurations, webhooks execution pipelines, and integrated payment checkout routing out of the box.
+        </p>
 
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
-            <button className="btn btn-primary" onClick={() => setActiveTab('register')}>
-              Start Free Trial <ArrowRight size={16} />
-            </button>
-            <button className="btn btn-secondary" onClick={() => setActiveTab('login')}>
-              Console Login
-            </button>
-            <button className="btn btn-outline" onClick={() => setActiveTab('portal')}>
-              Explore Shop Portal
-            </button>
-          </div>
+        <div className="hero-cta">
+          <button className="btn btn-primary" onClick={() => setActiveTab('register')}>
+            Start Free Trial <ArrowRight size={16} />
+          </button>
+          <button className="btn btn-secondary" onClick={() => setActiveTab('login')}>
+            Console Login
+          </button>
+          <button className="btn btn-outline" onClick={() => setActiveTab('portal')}>
+            Explore Shop Portal
+          </button>
+        </div>
 
-          <div className="grid-3" style={{ gap: '1.5rem' }}>
+        <div className="grid-3">
             <div className="card" style={{ padding: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
                 <Shield size={20} className="text-primary" style={{ color: 'var(--accent-primary)' }} />
@@ -141,7 +140,7 @@ const SaaSLanding: React.FC = () => {
         </div>
 
         {/* Right Hand: Interactive Panel Card */}
-        <div style={{ flex: '1', minWidth: '320px', maxWidth: '500px' }}>
+        <div className="hero-card-wrapper">
           <div className="card" style={{ padding: '2.5rem' }}>
             <div className="tabs-container">
               <button
@@ -402,7 +401,6 @@ const SaaSLanding: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 
