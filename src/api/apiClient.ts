@@ -61,7 +61,9 @@ apiClient.interceptors.response.use(
       if (
         originalRequest.url?.includes('/auth/login') ||
         originalRequest.url?.includes('/auth/refresh') ||
-        originalRequest.url?.includes('/auth/register')
+        originalRequest.url?.includes('/auth/register') ||
+        originalRequest.url?.includes('/superuser/auth/login') ||
+        originalRequest.url?.includes('/superuser/auth/refresh')
       ) {
         return Promise.reject(error);
       }
@@ -92,8 +94,20 @@ apiClient.interceptors.response.use(
       }
 
       try {
+        // Check if the current user is a SuperUser to determine the refresh URL
+        let isSuperUser = false;
+        try {
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            isSuperUser = parsedUser.roles?.includes('SuperUser') || parsedUser.tenantId === null;
+          }
+        } catch {}
+
+        const refreshPath = isSuperUser ? '/api/v1/superuser/auth/refresh' : '/api/v1/auth/refresh';
+
         // Request token refresh
-        const response = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh`, {
+        const response = await axios.post(`${API_BASE_URL}${refreshPath}`, {
           refreshToken,
         });
 

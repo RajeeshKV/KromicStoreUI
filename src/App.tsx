@@ -52,46 +52,63 @@ const HeaderNavbar: React.FC = () => {
   const location = useLocation();
 
   // Hide the standard SaaS navbar when viewing dashboards (Admin / SuperAdmin)
-  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/super-admin')) {
+  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/business')) {
     return null;
   }
 
+  const scrollToSection = (selector: string) => {
+    const el = document.querySelector(selector);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <nav className="main-navbar">
-      <Link to="/" className="brand-logo">
-        <img src="/logo.png" alt="KromicStore" onError={(e) => {
-          // Fallback if logo fails to load
-          e.currentTarget.style.display = 'none';
-        }} />
-        <span>KromicStore</span>
-      </Link>
+      <div className="nav-container">
+        <Link to="/" className="brand-logo">
+          <img src="/logo.png" alt="KromicStore" onError={(e) => {
+            // Fallback if logo fails to load
+            e.currentTarget.style.display = 'none';
+          }} />
+          <span>Kromic Store</span>
+        </Link>
 
-      <div className="nav-actions">
-        <ThemeToggle />
+        {/* Middle Navigation Menu */}
+        <ul className="nav-links">
+          <li className="nav-link" onClick={() => scrollToSection('.hero-section')}>Features</li>
+          <li className="nav-link" onClick={() => scrollToSection('.pricing-section')}>Pricing</li>
+          <li className="nav-link" onClick={() => scrollToSection('.about-section')}>About Us</li>
+          <li className="nav-link" onClick={() => scrollToSection('.contact-section')}>Contact Us</li>
+        </ul>
 
-        {user ? (
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Hello, <strong>{user.firstName || user.email.split('@')[0]}</strong>
-            </span>
-            {user.roles.includes('SuperUser') ? (
-              <Link to="/super-admin" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}>
-                <Shield size={14} /> Operations
-              </Link>
-            ) : user.roles.includes('TenantAdmin') ? (
-              <Link to="/admin" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}>
-                Console
-              </Link>
-            ) : null}
-            <button className="btn btn-secondary" onClick={logout} style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}>
-              Sign Out
-            </button>
-          </div>
-        ) : (
-          <Link to="/" className="btn btn-primary" style={{ fontSize: '0.85rem' }}>
-            Login Console
-          </Link>
-        )}
+        <div className="nav-actions">
+          <ThemeToggle />
+
+          {user ? (
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                Hello, <strong>{user.firstName || user.email.split('@')[0]}</strong>
+              </span>
+              {user.roles.includes('SuperUser') ? (
+                <Link to="/admin" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}>
+                  <Shield size={14} /> Operations
+                </Link>
+              ) : user.roles.includes('TenantAdmin') ? (
+                <Link to="/business" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}>
+                  Console
+                </Link>
+              ) : null}
+              <button className="btn btn-secondary" onClick={logout} style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}>
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link to="/" className="btn btn-primary" style={{ fontSize: '0.85rem' }}>
+              Login Console
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   );
@@ -129,9 +146,9 @@ const App: React.FC = () => {
               }
             />
 
-            {/* Tenant Admin Routes */}
+            {/* Business Admin Routes */}
             <Route
-              path="/admin"
+              path="/business"
               element={
                 <ProtectedRoute allowedRoles={['TenantAdmin']}>
                   <Dashboard />
@@ -139,7 +156,7 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/admin/config"
+              path="/business/config"
               element={
                 <ProtectedRoute allowedRoles={['TenantAdmin']}>
                   <Config />
@@ -147,7 +164,7 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/admin/categories"
+              path="/business/categories"
               element={
                 <ProtectedRoute allowedRoles={['TenantAdmin']}>
                   <Categories />
@@ -155,7 +172,7 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/admin/products"
+              path="/business/products"
               element={
                 <ProtectedRoute allowedRoles={['TenantAdmin']}>
                   <Products />
@@ -163,7 +180,7 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/admin/webhooks"
+              path="/business/webhooks"
               element={
                 <ProtectedRoute allowedRoles={['TenantAdmin']}>
                   <Webhooks />
@@ -173,7 +190,7 @@ const App: React.FC = () => {
 
             {/* Platform SuperUser Dashboard */}
             <Route
-              path="/super-admin"
+              path="/admin"
               element={
                 <ProtectedRoute allowedRoles={['SuperUser']}>
                   <SuperAdminDashboard />

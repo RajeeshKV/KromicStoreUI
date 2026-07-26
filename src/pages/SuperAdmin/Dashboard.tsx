@@ -21,8 +21,86 @@ interface SuperAuditLog {
 }
 
 const SuperAdminDashboard: React.FC = () => {
-  const { logout, user } = useAuth();
+  const { logout, user, login } = useAuth();
   const navigate = useNavigate();
+
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  const handleSuperLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoginLoading(true);
+    try {
+      await login(loginEmail, loginPassword);
+    } catch (err: any) {
+      setLoginError(err.response?.data?.message || err.response?.data?.error?.message || 'Invalid SuperUser credentials.');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  // If user is not authenticated or does not have SuperUser role, show the secure Operations login screen
+  if (!user || !user.roles.includes('SuperUser')) {
+    return (
+      <div className="app-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-primary)' }}>
+        <div className="card" style={{ maxWidth: '400px', width: '100%', padding: '2.5rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <div style={{ background: 'var(--accent-glow)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--accent-primary)' }}>
+              <ShieldCheck size={32} />
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.75rem' }}>Platform Operations</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+              Sign in to platform configuration services.
+            </p>
+          </div>
+
+          <form onSubmit={handleSuperLogin}>
+            {loginError && (
+              <div className="status-pill danger" style={{ padding: '0.75rem', marginBottom: '1.25rem', borderRadius: 'var(--radius-sm)' }}>
+                {loginError}
+              </div>
+            )}
+
+            <div className="form-group">
+              <label className="form-label">SuperUser Email</label>
+              <input
+                type="email"
+                className="form-input"
+                placeholder="admin@kromicstore.com"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <label className="form-label">Password</label>
+              <input
+                type="password"
+                className="form-input"
+                placeholder="••••••••"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loginLoading}>
+              {loginLoading ? 'Authenticating...' : 'Enter Operations'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   const [configs, setConfigs] = useState<ConfigSection | null>(null);
   const [auditLogs, setAuditLogs] = useState<SuperAuditLog[]>([]);
@@ -94,10 +172,7 @@ const SuperAdminDashboard: React.FC = () => {
     loadSuperData();
   }, []);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
+
 
   const startEdit = (key: string, value: any) => {
     setEditingKey(key);

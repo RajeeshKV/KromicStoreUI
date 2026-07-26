@@ -36,33 +36,33 @@ export const AdminSidebar: React.FC<{ active: string }> = ({ active }) => {
   return (
     <aside className="dashboard-sidebar">
       <div style={{ marginBottom: '2.5rem', paddingLeft: '1rem' }}>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.25rem' }}>Merchant Admin</h2>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.25rem' }}>Business Admin</h2>
         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Email: {user?.email}</span>
       </div>
 
       <ul className="dashboard-menu">
         <li>
-          <Link to="/admin" className={`dashboard-menu-link ${active === 'overview' ? 'active' : ''}`}>
+          <Link to="/business" className={`dashboard-menu-link ${active === 'overview' ? 'active' : ''}`}>
             <LayoutDashboard size={18} /> Overview
           </Link>
         </li>
         <li>
-          <Link to="/admin/config" className={`dashboard-menu-link ${active === 'config' ? 'active' : ''}`}>
+          <Link to="/business/config" className={`dashboard-menu-link ${active === 'config' ? 'active' : ''}`}>
             <Settings size={18} /> Settings & Setup
           </Link>
         </li>
         <li>
-          <Link to="/admin/categories" className={`dashboard-menu-link ${active === 'categories' ? 'active' : ''}`}>
+          <Link to="/business/categories" className={`dashboard-menu-link ${active === 'categories' ? 'active' : ''}`}>
             <Layers size={18} /> Categories
           </Link>
         </li>
         <li>
-          <Link to="/admin/products" className={`dashboard-menu-link ${active === 'products' ? 'active' : ''}`}>
+          <Link to="/business/products" className={`dashboard-menu-link ${active === 'products' ? 'active' : ''}`}>
             <Package size={18} /> Products Catalog
           </Link>
         </li>
         <li>
-          <Link to="/admin/webhooks" className={`dashboard-menu-link ${active === 'webhooks' ? 'active' : ''}`}>
+          <Link to="/business/webhooks" className={`dashboard-menu-link ${active === 'webhooks' ? 'active' : ''}`}>
             <Webhook size={18} /> Webhooks Integration
           </Link>
         </li>

@@ -16,7 +16,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  registerTenant: (companyName: string, email: string, password: string, country: string) => Promise<any>;
+  registerTenant: (companyName: string, subdomain: string, email: string, password: string, country: string) => Promise<any>;
   logout: () => Promise<void>;
   setTenantId: (tenantId: string | null) => void;
 }
@@ -80,7 +80,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<User> => {
     setIsLoading(true);
     try {
-      const response = await apiClient.post('/api/v1/auth/login', { email, password });
+      const isSuper = email === 'admin@kromicstore.com' || email === 'admin@kromic-store.com';
+      const url = isSuper ? '/api/v1/superuser/auth/login' : '/api/v1/auth/login';
+      const response = await apiClient.post(url, { email, password });
       const { accessToken, refreshToken, user: userData } = response.data.data;
 
       localStorage.setItem('accessToken', accessToken);
@@ -104,6 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const registerTenant = async (
     companyName: string,
+    subdomain: string,
     email: string,
     password: string,
     country: string
@@ -112,6 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await apiClient.post('/api/v1/auth/register', {
         companyName,
+        subdomain,
         email,
         password,
         country,
