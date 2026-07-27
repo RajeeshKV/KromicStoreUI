@@ -32,6 +32,7 @@ const Storefront: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bootstrapData, setBootstrapData] = useState<any>(null);
 
   // Filter States
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -43,6 +44,28 @@ const Storefront: React.FC = () => {
     if (storeTenantId) {
       setTenantId(storeTenantId);
     }
+
+    const loadBootstrap = async () => {
+      try {
+        const res = await apiClient.get('/api/v1/store/bootstrap');
+        if (res.data) {
+          setBootstrapData(res.data);
+          if (res.data.theme) {
+            const t = res.data.theme;
+            if (t.primaryColor) document.documentElement.style.setProperty('--primary-color', t.primaryColor);
+            if (t.secondaryColor) document.documentElement.style.setProperty('--secondary-color', t.secondaryColor);
+            if (t.accentColor) document.documentElement.style.setProperty('--accent-color', t.accentColor);
+          }
+          if (res.data.seo?.siteTitle) {
+            document.title = res.data.seo.siteTitle;
+          }
+        }
+      } catch (error) {
+        console.warn('Bootstrap API failed, using default fallbacks', error);
+      }
+    };
+
+    loadBootstrap();
   }, [storeTenantId, setTenantId]);
 
   const loadStoreData = async () => {
@@ -93,9 +116,18 @@ const Storefront: React.FC = () => {
     <div className="content-wrapper">
       {/* Storefront Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2.25rem' }}>Storefront Catalog</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Merchant ID: <code style={{ backgroundColor: 'var(--bg-tertiary)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{storeTenantId}</code></p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+          {(bootstrapData?.tenant?.logoUrl || localStorage.getItem('storeLogo')) && (
+            <img 
+              src={bootstrapData?.tenant?.logoUrl || localStorage.getItem('storeLogo') || ''} 
+              alt={bootstrapData?.tenant?.name || 'Store Logo'} 
+              style={{ height: '60px', maxHeight: '60px', maxWidth: '120px', objectFit: 'contain', borderRadius: '8px', padding: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}
+            />
+          )}
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2.25rem' }}>{bootstrapData?.tenant?.name || 'Storefront Catalog'}</h1>
+            <p style={{ color: 'var(--text-secondary)' }}>Merchant ID: <code style={{ backgroundColor: 'var(--bg-tertiary)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{storeTenantId}</code></p>
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>

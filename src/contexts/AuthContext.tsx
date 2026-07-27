@@ -150,7 +150,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const token = localStorage.getItem('accessToken');
       if (token) {
-        await apiClient.post('/api/v1/auth/logout').catch(() => {});
+        const isSuper = user?.roles?.includes('SuperUser') || user?.tenantId === null;
+        const logoutUrl = isSuper ? '/api/v1/superuser/auth/logout' : '/api/v1/auth/logout';
+        await apiClient.post(logoutUrl).catch(() => {});
       }
     } catch (error) {
       console.warn('Backend logout failed', error);

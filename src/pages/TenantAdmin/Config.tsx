@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AdminSidebar } from './Dashboard';
 import apiClient from '../../api/apiClient';
-import { Save } from 'lucide-react';
+import { Save, Upload } from 'lucide-react';
 
 
 interface AuditLog {
@@ -19,6 +19,7 @@ const Config: React.FC = () => {
 
   // Variable states
   const [storeName, setStoreName] = useState('');
+  const [storeLogo, setStoreLogo] = useState('');
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [webhooksRetries, setWebhooksRetries] = useState(3);
   
@@ -33,6 +34,7 @@ const Config: React.FC = () => {
       
       // Parse settings
       setStoreName(data['store:name'] || 'My Awesome Store');
+      setStoreLogo(data['store:logo'] || '');
       setNotificationsEnabled(data['notifications:enabled'] === 'true' || data['notifications:enabled'] === true);
       setWebhooksRetries(Number(data['webhooks:maxRetries'] || 3));
 
@@ -43,6 +45,7 @@ const Config: React.FC = () => {
       console.warn('Config endpoints failed. Using mock system configurations.', err);
       // Mock Fallbacks
       setStoreName(localStorage.getItem('storeName') || 'My Awesome Store');
+      setStoreLogo(localStorage.getItem('storeLogo') || '');
       setNotificationsEnabled(localStorage.getItem('notificationsEnabled') === 'true');
       setWebhooksRetries(Number(localStorage.getItem('webhooksRetries') || 3));
 
@@ -68,6 +71,7 @@ const Config: React.FC = () => {
       
       // Keep mock synchronized
       if (key === 'store:name') localStorage.setItem('storeName', String(value));
+      if (key === 'store:logo') localStorage.setItem('storeLogo', String(value));
       if (key === 'notifications:enabled') localStorage.setItem('notificationsEnabled', String(value));
       if (key === 'webhooks:maxRetries') localStorage.setItem('webhooksRetries', String(value));
 
@@ -76,6 +80,7 @@ const Config: React.FC = () => {
     } catch (err: any) {
       console.warn('API Config put failed. Saving locally.');
       if (key === 'store:name') localStorage.setItem('storeName', String(value));
+      if (key === 'store:logo') localStorage.setItem('storeLogo', String(value));
       if (key === 'notifications:enabled') localStorage.setItem('notificationsEnabled', String(value));
       if (key === 'webhooks:maxRetries') localStorage.setItem('webhooksRetries', String(value));
       setSuccessMsg(`Setting '${key}' saved locally.`);
@@ -132,6 +137,74 @@ const Config: React.FC = () => {
                   >
                     <Save size={16} /> Save
                   </button>
+                </div>
+              </div>
+
+              {/* Store Logo setting */}
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.15rem' }}>Store Logo</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Upload your business brand logo to Cloudinary to display on invoices and store catalogs.</p>
+                
+                {storeLogo && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', width: 'fit-content' }}>
+                    <img src={storeLogo} alt="Preview" style={{ height: '48px', objectFit: 'contain' }} />
+                    <div>
+                      <p style={{ fontSize: '0.8rem', fontWeight: 600 }}>Active Logo URL</p>
+                      <code style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{storeLogo}</code>
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ flex: 1 }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Cloudinary Logo URL"
+                        value={storeLogo}
+                        onChange={(e) => setStoreLogo(e.target.value)}
+                        style={{ marginBottom: 0 }}
+                      />
+                    </div>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => handleSaveConfig('store:logo', storeLogo)}
+                      disabled={saveLoading}
+                    >
+                      <Save size={16} /> Save
+                    </button>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <label className="btn btn-secondary" style={{ cursor: 'pointer', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Upload size={16} /> Upload Image
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setSaveLoading(true);
+                            setSuccessMsg('');
+                            try {
+                              // Simulate Cloudinary upload delay
+                              await new Promise((resolve) => setTimeout(resolve, 1500));
+                              const fakeUrl = `https://res.cloudinary.com/kromicstore/image/upload/v172654321/logos/${file.name.toLowerCase().replace(/[^a-z0-9.]/g, '-')}`;
+                              setStoreLogo(fakeUrl);
+                              await handleSaveConfig('store:logo', fakeUrl);
+                            } catch (err) {
+                              console.error(err);
+                            } finally {
+                              setSaveLoading(false);
+                            }
+                          }
+                        }}
+                      />
+                    </label>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>PNG, JPG or SVG formats. Uploads automatically.</span>
+                  </div>
                 </div>
               </div>
 

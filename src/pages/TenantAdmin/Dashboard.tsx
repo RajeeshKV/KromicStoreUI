@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/apiClient';
-import { LayoutDashboard, Settings, Layers, Package, Webhook, LogOut, ArrowLeftRight, CheckCircle } from 'lucide-react';
+import { LayoutDashboard, Settings, Layers, Package, Webhook, LogOut, ArrowLeftRight, CheckCircle, Globe, Key, ToggleLeft } from 'lucide-react';
 
 interface Subscription {
   plan: string;
@@ -64,6 +64,21 @@ export const AdminSidebar: React.FC<{ active: string }> = ({ active }) => {
         <li>
           <Link to="/business/webhooks" className={`dashboard-menu-link ${active === 'webhooks' ? 'active' : ''}`}>
             <Webhook size={18} /> Webhooks Integration
+          </Link>
+        </li>
+        <li>
+          <Link to="/business/domains" className={`dashboard-menu-link ${active === 'domains' ? 'active' : ''}`}>
+            <Globe size={18} /> Custom Domains
+          </Link>
+        </li>
+        <li>
+          <Link to="/business/api-keys" className={`dashboard-menu-link ${active === 'api-keys' ? 'active' : ''}`}>
+            <Key size={18} /> API Integrations
+          </Link>
+        </li>
+        <li>
+          <Link to="/business/feature-flags" className={`dashboard-menu-link ${active === 'feature-flags' ? 'active' : ''}`}>
+            <ToggleLeft size={18} /> Feature Flags
           </Link>
         </li>
       </ul>

@@ -17,6 +17,9 @@ import Config from './pages/TenantAdmin/Config';
 import Categories from './pages/TenantAdmin/Categories';
 import Products from './pages/TenantAdmin/Products';
 import Webhooks from './pages/TenantAdmin/Webhooks';
+import Domains from './pages/TenantAdmin/Domains';
+import ApiKeys from './pages/TenantAdmin/ApiKeys';
+import FeatureFlags from './pages/TenantAdmin/FeatureFlags';
 
 // Super Admin
 import SuperAdminDashboard from './pages/SuperAdmin/Dashboard';
@@ -184,6 +187,30 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute allowedRoles={['TenantAdmin']}>
                   <Webhooks />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/business/domains"
+              element={
+                <ProtectedRoute allowedRoles={['TenantAdmin']}>
+                  <Domains />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/business/api-keys"
+              element={
+                <ProtectedRoute allowedRoles={['TenantAdmin']}>
+                  <ApiKeys />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/business/feature-flags"
+              element={
+                <ProtectedRoute allowedRoles={['TenantAdmin']}>
+                  <FeatureFlags />
                 </ProtectedRoute>
               }
             />

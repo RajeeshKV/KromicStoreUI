@@ -367,6 +367,258 @@
         }
       }
     },
+    "/api/v1/api-keys": {
+      "post": {
+        "tags": [
+          "ApiKey"
+        ],
+        "summary": "Creates a new API key for the tenant.",
+        "requestBody": {
+          "description": "The API key creation request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.ApiKeys.CreateApiKeyRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.ApiKeys.CreateApiKeyRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.ApiKeys.CreateApiKeyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "API key created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.ApiKeys.CreateApiKeyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "ApiKey"
+        ],
+        "summary": "Gets all API keys for the current tenant.",
+        "responses": {
+          "200": {
+            "description": "API keys retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KromicStore.Contracts.V1.ApiKeys.ApiKeyResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/api-keys/{id}": {
+      "get": {
+        "tags": [
+          "ApiKey"
+        ],
+        "summary": "Gets a specific API key by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The API key ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API key retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.ApiKeys.ApiKeyResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "API key not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ApiKey"
+        ],
+        "summary": "Revokes an API key.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The API key ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "API key revoked successfully."
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "API key not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "tags": [
@@ -646,6 +898,44 @@
           },
           "500": {
             "description": "Server error during OAuth login.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Logs out the current user by invalidating their tokens.",
+        "responses": {
+          "200": {
+            "description": "Logout successful.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error during logout.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1912,6 +2202,871 @@
         }
       }
     },
+    "/api/v1/domains": {
+      "get": {
+        "tags": [
+          "DomainManagement"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "DomainManagement"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.AddDomainRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.AddDomainRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.AddDomainRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/domains/{domainId}/verify": {
+      "post": {
+        "tags": [
+          "DomainManagement"
+        ],
+        "parameters": [
+          {
+            "name": "domainId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.VerifyDomainRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.VerifyDomainRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.VerifyDomainRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/domains/{domainId}/rotate-token": {
+      "post": {
+        "tags": [
+          "DomainManagement"
+        ],
+        "parameters": [
+          {
+            "name": "domainId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.DomainReasonRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.DomainReasonRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.DomainReasonRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/domains/{domainId}": {
+      "delete": {
+        "tags": [
+          "DomainManagement"
+        ],
+        "parameters": [
+          {
+            "name": "domainId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/domains/{domainId}/verify-dns": {
+      "post": {
+        "tags": [
+          "DomainVerification"
+        ],
+        "summary": "Verifies domain ownership via DNS TXT record.",
+        "parameters": [
+          {
+            "name": "domainId",
+            "in": "path",
+            "description": "The domain ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification completed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.Domains.DomainVerificationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Domain not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/domains/{domainId}/check-dns": {
+      "post": {
+        "tags": [
+          "DomainVerification"
+        ],
+        "summary": "Checks DNS configuration for a domain.",
+        "parameters": [
+          {
+            "name": "domainId",
+            "in": "path",
+            "description": "The domain ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DNS check completed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.Domains.DnsCheckResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Domain not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/domains/{domainId}/provision-ssl": {
+      "post": {
+        "tags": [
+          "DomainVerification"
+        ],
+        "summary": "Initiates SSL certificate provisioning for a domain.",
+        "parameters": [
+          {
+            "name": "domainId",
+            "in": "path",
+            "description": "The domain ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSL provisioning initiated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.Domains.SslProvisioningResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Domain not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/domains/{domainId}/ssl-status": {
+      "get": {
+        "tags": [
+          "DomainVerification"
+        ],
+        "summary": "Checks SSL certificate status for a domain.",
+        "parameters": [
+          {
+            "name": "domainId",
+            "in": "path",
+            "description": "The domain ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSL status retrieved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.Domains.SslStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Domain not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/feature-flags": {
+      "get": {
+        "tags": [
+          "FeatureFlag"
+        ],
+        "summary": "Gets all feature flags for the current tenant.",
+        "responses": {
+          "200": {
+            "description": "Feature flags retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KromicStore.Contracts.V1.FeatureFlags.FeatureFlagResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "FeatureFlag"
+        ],
+        "summary": "Creates a new feature flag.",
+        "requestBody": {
+          "description": "The feature flag creation request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.FeatureFlags.CreateFeatureFlagRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.FeatureFlags.CreateFeatureFlagRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.FeatureFlags.CreateFeatureFlagRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Feature flag created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.FeatureFlags.FeatureFlagResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Feature flag already exists.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/feature-flags/check/{key}": {
+      "get": {
+        "tags": [
+          "FeatureFlag"
+        ],
+        "summary": "Checks if a specific feature is enabled.",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "The feature key.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Feature status retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.FeatureFlags.FeatureCheckResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/feature-flags/{id}": {
+      "get": {
+        "tags": [
+          "FeatureFlag"
+        ],
+        "summary": "Gets a specific feature flag by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The feature flag ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Feature flag retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.FeatureFlags.FeatureFlagResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Feature flag not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "FeatureFlag"
+        ],
+        "summary": "Updates a feature flag.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The feature flag ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The update request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.FeatureFlags.UpdateFeatureFlagRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.FeatureFlags.UpdateFeatureFlagRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.FeatureFlags.UpdateFeatureFlagRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Feature flag updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.FeatureFlags.FeatureFlagResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Feature flag not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "FeatureFlag"
+        ],
+        "summary": "Deletes a feature flag.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The feature flag ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Feature flag deleted successfully."
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Feature flag not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -1962,6 +3117,174 @@
           },
           "503": {
             "description": "Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/operations/settings": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/operations/feature-flags/{flagKey}": {
+      "put": {
+        "tags": [
+          "Operations"
+        ],
+        "parameters": [
+          {
+            "name": "flagKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.ToggleSettingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.ToggleSettingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.ToggleSettingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/operations/maintenance": {
+      "put": {
+        "tags": [
+          "Operations"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.MaintenanceModeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.MaintenanceModeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.MaintenanceModeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/operations/quotas/{quotaKey}": {
+      "put": {
+        "tags": [
+          "Operations"
+        ],
+        "parameters": [
+          {
+            "name": "quotaKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.QuotaSettingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.QuotaSettingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.QuotaSettingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/operations/retention": {
+      "put": {
+        "tags": [
+          "Operations"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.RetentionPolicyRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.RetentionPolicyRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.RetentionPolicyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/operations/usage": {
+      "get": {
+        "tags": [
+          "Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
           }
         }
       }
@@ -3496,6 +4819,216 @@
         }
       }
     },
+    "/api/v1/public/plans": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Get available subscription plans.",
+        "responses": {
+          "200": {
+            "description": "Subscription plans retrieved successfully.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error retrieving plans.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/config": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Get SuperUser configuration (contact details, etc).",
+        "responses": {
+          "200": {
+            "description": "Configuration retrieved successfully.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error retrieving configuration.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/subdomain/check": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Check if a subdomain is available for registration.",
+        "parameters": [
+          {
+            "name": "subdomain",
+            "in": "query",
+            "description": "The subdomain to check availability for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subdomain availability check completed.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "400": {
+            "description": "Subdomain parameter missing.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error checking availability.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/contactus": {
+      "post": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Submit contact us form - sends email to superuser.",
+        "requestBody": {
+          "description": "Contact form data including name, email, and message.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.ContactUsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.ContactUsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.ContactUsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contact form submitted successfully.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "400": {
+            "description": "Required fields missing (name, email, message).",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error processing form or sending email.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/webhooks/razorpay/subscriptions": {
       "post": {
         "tags": [
@@ -3596,6 +5129,252 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/store/bootstrap": {
+      "get": {
+        "tags": [
+          "Store"
+        ],
+        "summary": "Gets the complete bootstrap data for the storefront.\r\nThis endpoint is used by the frontend to initialize the storefront with all required data.\r\nSupports ETag for conditional requests and caching.",
+        "responses": {
+          "200": {
+            "description": "Bootstrap data retrieved successfully.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Application.Interfaces.StoreBootstrapResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Application.Interfaces.StoreBootstrapResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Application.Interfaces.StoreBootstrapResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not modified - client has cached version (ETag match)."
+          },
+          "404": {
+            "description": "Tenant not found or not resolved.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error during bootstrap data retrieval.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/store/export": {
+      "get": {
+        "tags": [
+          "StoreExport"
+        ],
+        "summary": "Exports store data to JSON format.",
+        "responses": {
+          "200": {
+            "description": "Store exported successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.Store.StoreExportResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/store/export/backup": {
+      "post": {
+        "tags": [
+          "StoreExport"
+        ],
+        "summary": "Creates a backup snapshot of the store.",
+        "requestBody": {
+          "description": "The backup request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Store.CreateBackupRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Store.CreateBackupRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Store.CreateBackupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Backup created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.Store.CreateBackupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/store/export/restore/{backupId}": {
+      "post": {
+        "tags": [
+          "StoreExport"
+        ],
+        "summary": "Restores a store from a backup.",
+        "parameters": [
+          {
+            "name": "backupId",
+            "in": "path",
+            "description": "The backup ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Restore completed successfully."
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Backup not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
               }
             }
           }
@@ -4692,6 +6471,1369 @@
         }
       }
     },
+    "/api/v1/superuser/analytics/platform": {
+      "get": {
+        "tags": [
+          "SuperUserAnalytics"
+        ],
+        "summary": "Gets platform-wide analytics dashboard data.",
+        "responses": {
+          "200": {
+            "description": "Analytics data retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Application.Interfaces.PlatformAnalytics"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not a SuperUser.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/analytics/tenant-health": {
+      "get": {
+        "tags": [
+          "SuperUserAnalytics"
+        ],
+        "summary": "Gets tenant health metrics.",
+        "responses": {
+          "200": {
+            "description": "Tenant health metrics retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KromicStore.Application.Interfaces.TenantHealthMetrics"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not a SuperUser.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/analytics/system-performance": {
+      "get": {
+        "tags": [
+          "SuperUserAnalytics"
+        ],
+        "summary": "Gets system performance metrics.",
+        "responses": {
+          "200": {
+            "description": "System performance metrics retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Application.Interfaces.SystemPerformanceMetrics"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not a SuperUser.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/analytics/security-alerts": {
+      "get": {
+        "tags": [
+          "SuperUserAnalytics"
+        ],
+        "summary": "Gets security alerts and incidents.",
+        "responses": {
+          "200": {
+            "description": "Security alerts retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KromicStore.Application.Interfaces.SecurityAlert"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not a SuperUser.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/auth/register": {
+      "post": {
+        "tags": [
+          "SuperUserAuth"
+        ],
+        "summary": "Register a new SuperUser (platform admin).",
+        "requestBody": {
+          "description": "Registration request containing email and password.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.SuperUserRegisterRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.SuperUserRegisterRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.SuperUserRegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SuperUser registered successfully.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or email already registered.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error during registration.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/auth/login": {
+      "post": {
+        "tags": [
+          "SuperUserAuth"
+        ],
+        "summary": "Login as SuperUser (platform admin).",
+        "requestBody": {
+          "description": "Login request containing email and password.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Auth.LoginRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Auth.LoginRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Auth.LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid email or password.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error during login.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/auth/refresh": {
+      "post": {
+        "tags": [
+          "SuperUserAuth"
+        ],
+        "summary": "Refresh SuperUser authentication token.",
+        "requestBody": {
+          "description": "Refresh token request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Auth.RefreshTokenRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Auth.RefreshTokenRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Auth.RefreshTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token refreshed successfully.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired refresh token.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error during token refresh.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/auth/logout": {
+      "post": {
+        "tags": [
+          "SuperUserAuth"
+        ],
+        "summary": "Logout SuperUser by invalidating their tokens.",
+        "responses": {
+          "200": {
+            "description": "Logout successful.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid authentication token or SuperUser not found.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error during logout.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/platform/tenants": {
+      "get": {
+        "tags": [
+          "SuperUserPlatform"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/platform/tenants/{tenantId}/suspend": {
+      "post": {
+        "tags": [
+          "SuperUserPlatform"
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.LifecycleRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.LifecycleRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.LifecycleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/platform/tenants/{tenantId}/archive": {
+      "post": {
+        "tags": [
+          "SuperUserPlatform"
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.LifecycleRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.LifecycleRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.LifecycleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/platform/tenants/{tenantId}/delete": {
+      "post": {
+        "tags": [
+          "SuperUserPlatform"
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.LifecycleRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.LifecycleRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.LifecycleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/platform/tenants/{tenantId}/restore": {
+      "post": {
+        "tags": [
+          "SuperUserPlatform"
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.LifecycleRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.LifecycleRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.LifecycleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/platform/analytics": {
+      "get": {
+        "tags": [
+          "SuperUserPlatform"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/platform/search": {
+      "get": {
+        "tags": [
+          "SuperUserPlatform"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/platform/audit-logs": {
+      "get": {
+        "tags": [
+          "SuperUserPlatform"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/superuser/platform/jobs": {
+      "get": {
+        "tags": [
+          "SuperUserPlatform"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/tenants/{tenantId}/suspend": {
+      "post": {
+        "tags": [
+          "SuperUserTenant"
+        ],
+        "summary": "Suspends a tenant, making it inaccessible without deleting data.",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "The tenant ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The suspension request with reason.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tenant suspended successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not a SuperUser.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/tenants/{tenantId}/archive": {
+      "post": {
+        "tags": [
+          "SuperUserTenant"
+        ],
+        "summary": "Archives a tenant for long-term retention.",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "The tenant ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The archive request with reason.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tenant archived successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not a SuperUser.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/tenants/{tenantId}/soft-delete": {
+      "post": {
+        "tags": [
+          "SuperUserTenant"
+        ],
+        "summary": "Soft deletes a tenant while preserving records for restore/retention.",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "The tenant ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The soft delete request with reason.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tenant soft deleted successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not a SuperUser.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/tenants/{tenantId}/restore": {
+      "post": {
+        "tags": [
+          "SuperUserTenant"
+        ],
+        "summary": "Restores a suspended, archived, or soft-deleted tenant.",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "The tenant ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The restore request with reason.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tenant restored successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.Tenants.TenantLifecycleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not a SuperUser.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/team/invitations": {
+      "post": {
+        "tags": [
+          "TeamInvitation"
+        ],
+        "summary": "Creates and sends a team invitation.",
+        "requestBody": {
+          "description": "The invitation request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Team.CreateTeamInvitationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Team.CreateTeamInvitationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.Contracts.V1.Team.CreateTeamInvitationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invitation created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.Team.TeamInvitationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Invitation already exists for this email.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "TeamInvitation"
+        ],
+        "summary": "Gets all invitations for the current tenant.",
+        "responses": {
+          "200": {
+            "description": "Invitations retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KromicStore.Contracts.V1.Team.TeamInvitationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/team/invitations/{id}": {
+      "get": {
+        "tags": [
+          "TeamInvitation"
+        ],
+        "summary": "Gets a specific invitation by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The invitation ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invitation retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.V1.Team.TeamInvitationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invitation not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TeamInvitation"
+        ],
+        "summary": "Cancels a team invitation.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The invitation ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Invitation cancelled successfully."
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invitation not found.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/themes": {
       "get": {
         "tags": [
@@ -4783,6 +7925,192 @@
         }
       }
     },
+    "/api/v1/usage/summary": {
+      "get": {
+        "tags": [
+          "UsageReporting"
+        ],
+        "summary": "Gets current usage summary for the tenant.",
+        "responses": {
+          "200": {
+            "description": "Usage summary retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Application.Interfaces.UsageSummary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/usage/history": {
+      "get": {
+        "tags": [
+          "UsageReporting"
+        ],
+        "summary": "Gets usage history for a specific type within a date range.",
+        "parameters": [
+          {
+            "name": "usageType",
+            "in": "query",
+            "description": "The usage type (Storage, ApiCalls, Bandwidth, Users).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Start date.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "End date.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage history retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KromicStore.Domain.Entities.TenantUsage"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/usage/check-quota/{usageType}": {
+      "get": {
+        "tags": [
+          "UsageReporting"
+        ],
+        "summary": "Checks if a specific quota has been exceeded.",
+        "parameters": [
+          {
+            "name": "usageType",
+            "in": "path",
+            "description": "The usage type to check.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quota check completed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.API.Controllers.QuotaCheckResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/webhooks": {
       "post": {
         "tags": [
@@ -4790,7 +8118,7 @@
         ],
         "summary": "Registers a new webhook configuration.",
         "requestBody": {
-          "description": "The webhook configuration request.",
+          "description": "The webhook configuration request with endpoint URL and event types.",
           "content": {
             "application/json": {
               "schema": {
@@ -4811,7 +8139,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success",
+            "description": "Webhook successfully registered.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4821,7 +8149,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "Invalid request or endpoint URL.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4831,7 +8159,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized",
+            "description": "User is not authenticated.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4841,7 +8169,17 @@
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "User is not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error during registration.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4881,11 +8219,31 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Webhooks successfully retrieved.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/KromicStore.API.Controllers.PagedResponse`1[[KromicStore.Contracts.V1.Webhooks.WebhookConfigurationResponse, KromicStore.Contracts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error listing webhooks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
                 }
               }
             }
@@ -4913,7 +8271,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Webhook configuration successfully retrieved.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4922,8 +8280,28 @@
               }
             }
           },
+          "400": {
+            "description": "Invalid webhook ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
           "404": {
-            "description": "Not Found",
+            "description": "Webhook not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error retrieving webhook.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4973,7 +8351,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Webhook successfully updated.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4982,8 +8360,28 @@
               }
             }
           },
+          "400": {
+            "description": "Invalid webhook ID or request data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
           "404": {
-            "description": "Not Found",
+            "description": "Webhook not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error updating webhook.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5013,10 +8411,30 @@
         ],
         "responses": {
           "204": {
-            "description": "Success"
+            "description": "Webhook successfully deleted."
+          },
+          "400": {
+            "description": "Invalid webhook ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Not Found",
+            "description": "Webhook not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error deleting webhook.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5048,7 +8466,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Test event sent successfully.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5057,8 +8475,28 @@
               }
             }
           },
+          "400": {
+            "description": "Invalid webhook ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
           "404": {
-            "description": "Not Found",
+            "description": "Webhook not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error sending test event.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5090,10 +8528,30 @@
         ],
         "responses": {
           "202": {
-            "description": "Success"
+            "description": "Event replay accepted for processing."
+          },
+          "400": {
+            "description": "Invalid event ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Not Found",
+            "description": "Event not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error replaying event.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5145,7 +8603,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Delivery logs successfully retrieved.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5154,8 +8612,28 @@
               }
             }
           },
+          "400": {
+            "description": "Invalid webhook ID or pagination parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
           "404": {
-            "description": "Not Found",
+            "description": "Webhook not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error retrieving delivery logs.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5170,6 +8648,97 @@
   },
   "components": {
     "schemas": {
+      "KromicStore.API.Controllers.AddDomainRequest": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "nullable": true
+          },
+          "isPrimary": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.API.Controllers.ContactUsRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "subject": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for contact us form."
+      },
+      "KromicStore.API.Controllers.DomainReasonRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.API.Controllers.LifecycleRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.API.Controllers.MaintenanceModeRequest": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "KromicStore.API.Controllers.PagedResponse`1[[KromicStore.Contracts.V1.Webhooks.WebhookConfigurationResponse, KromicStore.Contracts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "object",
         "properties": {
@@ -5334,6 +8903,80 @@
         "additionalProperties": false,
         "description": "Response model for paginated customer orders list."
       },
+      "KromicStore.API.Controllers.QuotaCheckResponse": {
+        "type": "object",
+        "properties": {
+          "usageType": {
+            "type": "string",
+            "description": "Gets or sets the usage type.",
+            "nullable": true
+          },
+          "isExceeded": {
+            "type": "boolean",
+            "description": "Gets or sets whether the quota is exceeded."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response DTO for quota check."
+      },
+      "KromicStore.API.Controllers.QuotaSettingRequest": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "window": {
+            "type": "string",
+            "nullable": true
+          },
+          "enforceHardLimit": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.API.Controllers.RetentionPolicyRequest": {
+        "type": "object",
+        "properties": {
+          "retentionDays": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "scope": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.API.Controllers.SuperUserRegisterRequest": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "minLength": 8,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for SuperUser registration."
+      },
       "KromicStore.API.Controllers.TestEventResponse": {
         "type": "object",
         "properties": {
@@ -5352,6 +8995,62 @@
         },
         "additionalProperties": false,
         "description": "Response DTO for test event."
+      },
+      "KromicStore.API.Controllers.ToggleSettingRequest": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.API.Controllers.VerifyDomainRequest": {
+        "type": "object",
+        "properties": {
+          "verificationToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.CategoryItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KromicStore.Application.Interfaces.CategoryItem"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       },
       "KromicStore.Application.Interfaces.CustomerOrderDto": {
         "type": "object",
@@ -5379,6 +9078,464 @@
           "shippedAt": {
             "type": "string",
             "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.FeaturesBootstrapData": {
+        "type": "object",
+        "properties": {
+          "wishlistEnabled": {
+            "type": "boolean"
+          },
+          "reviewsEnabled": {
+            "type": "boolean"
+          },
+          "blogEnabled": {
+            "type": "boolean"
+          },
+          "couponsEnabled": {
+            "type": "boolean"
+          },
+          "multiCurrencyEnabled": {
+            "type": "boolean"
+          },
+          "multiLanguageEnabled": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.HomepageBootstrapData": {
+        "type": "object",
+        "properties": {
+          "layoutType": {
+            "type": "string",
+            "nullable": true
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KromicStore.Application.Interfaces.SectionData"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.NavigationBootstrapData": {
+        "type": "object",
+        "properties": {
+          "headerMenu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KromicStore.Application.Interfaces.NavigationItem"
+            },
+            "nullable": true
+          },
+          "footerMenu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KromicStore.Application.Interfaces.NavigationItem"
+            },
+            "nullable": true
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KromicStore.Application.Interfaces.CategoryItem"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.NavigationItem": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "opensInNewTab": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.PlatformAnalytics": {
+        "type": "object",
+        "properties": {
+          "totalTenants": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "activeTenants": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "newTenantsThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "monthlyRecurringRevenue": {
+            "type": "number",
+            "format": "double"
+          },
+          "revenueThisMonth": {
+            "type": "number",
+            "format": "double"
+          },
+          "tenantsByPlan": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "tenantsByStatus": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "revenueTrend": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KromicStore.Application.Interfaces.TrendData"
+            },
+            "nullable": true
+          },
+          "tenantGrowthTrend": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KromicStore.Application.Interfaces.TrendData"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.SectionData": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": { },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.SecurityAlert": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "severity": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "tenantId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isResolved": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.SeoBootstrapData": {
+        "type": "object",
+        "properties": {
+          "siteTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "metaDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "faviconUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "openGraphImageUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.StoreBootstrapResponse": {
+        "type": "object",
+        "properties": {
+          "tenant": {
+            "$ref": "#/components/schemas/KromicStore.Application.Interfaces.TenantBootstrapData"
+          },
+          "theme": {
+            "$ref": "#/components/schemas/KromicStore.Application.Interfaces.ThemeBootstrapData"
+          },
+          "navigation": {
+            "$ref": "#/components/schemas/KromicStore.Application.Interfaces.NavigationBootstrapData"
+          },
+          "homepage": {
+            "$ref": "#/components/schemas/KromicStore.Application.Interfaces.HomepageBootstrapData"
+          },
+          "features": {
+            "$ref": "#/components/schemas/KromicStore.Application.Interfaces.FeaturesBootstrapData"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/KromicStore.Application.Interfaces.SeoBootstrapData"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.SystemPerformanceMetrics": {
+        "type": "object",
+        "properties": {
+          "cpuUsage": {
+            "type": "number",
+            "format": "double"
+          },
+          "memoryUsage": {
+            "type": "number",
+            "format": "double"
+          },
+          "diskUsage": {
+            "type": "number",
+            "format": "double"
+          },
+          "networkIn": {
+            "type": "number",
+            "format": "double"
+          },
+          "networkOut": {
+            "type": "number",
+            "format": "double"
+          },
+          "averageResponseTime": {
+            "type": "number",
+            "format": "double"
+          },
+          "requestsPerSecond": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "errorRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "collectedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.TenantBootstrapData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "locale": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.TenantHealthMetrics": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenantName": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "storageUsed": {
+            "type": "number",
+            "format": "double"
+          },
+          "apiCallsThisMonth": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activeUsers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastActivity": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "healthScore": {
+            "type": "string",
+            "nullable": true
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.ThemeBootstrapData": {
+        "type": "object",
+        "properties": {
+          "primaryColor": {
+            "type": "string",
+            "nullable": true
+          },
+          "secondaryColor": {
+            "type": "string",
+            "nullable": true
+          },
+          "accentColor": {
+            "type": "string",
+            "nullable": true
+          },
+          "backgroundColor": {
+            "type": "string",
+            "nullable": true
+          },
+          "textColor": {
+            "type": "string",
+            "nullable": true
+          },
+          "fontFamily": {
+            "type": "string",
+            "nullable": true
+          },
+          "borderRadius": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "spacingUnit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "componentOverrides": {
+            "type": "string",
+            "nullable": true
+          },
+          "layoutOptions": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.TrendData": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Application.Interfaces.UsageSummary": {
+        "type": "object",
+        "properties": {
+          "currentUsage": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "double"
+            },
+            "nullable": true
+          },
+          "quotas": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "double"
+            },
+            "nullable": true
+          },
+          "quotaExceeded": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
             "nullable": true
           }
         },
@@ -5412,6 +9569,103 @@
               }
             },
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.ApiKeys.ApiKeyResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "keyPrefix": {
+            "type": "string",
+            "nullable": true
+          },
+          "scopes": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastUsedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.ApiKeys.CreateApiKeyRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "scopes": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.ApiKeys.CreateApiKeyResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "plainKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "keyPrefix": {
+            "type": "string",
+            "nullable": true
+          },
+          "scopes": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -5840,6 +10094,186 @@
           "phoneNumber": {
             "type": "string",
             "format": "tel",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.Domains.DnsCheckResponse": {
+        "type": "object",
+        "properties": {
+          "domainId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "domain": {
+            "type": "string",
+            "nullable": true
+          },
+          "isConfigured": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.Domains.DomainVerificationResponse": {
+        "type": "object",
+        "properties": {
+          "domainId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "domain": {
+            "type": "string",
+            "nullable": true
+          },
+          "isVerified": {
+            "type": "boolean"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.Domains.SslProvisioningResponse": {
+        "type": "object",
+        "properties": {
+          "domainId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "domain": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.Domains.SslStatusResponse": {
+        "type": "object",
+        "properties": {
+          "domainId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "domain": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.FeatureFlags.CreateFeatureFlagRequest": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "isEnabled": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "plan": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.FeatureFlags.FeatureCheckResponse": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "isEnabled": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.FeatureFlags.FeatureFlagResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "isEnabled": {
+            "type": "boolean"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "plan": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.FeatureFlags.UpdateFeatureFlagRequest": {
+        "type": "object",
+        "properties": {
+          "isEnabled": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
             "nullable": true
           }
         },
@@ -6556,6 +10990,56 @@
         },
         "additionalProperties": false
       },
+      "KromicStore.Contracts.V1.Store.CreateBackupRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.Store.CreateBackupResponse": {
+        "type": "object",
+        "properties": {
+          "backupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenantId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.Store.StoreExportResponse": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "exportDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "KromicStore.Contracts.V1.Storefront.CreateStorefrontFromScratchRequest": {
         "required": [
           "storeName"
@@ -6833,6 +11317,111 @@
         },
         "additionalProperties": false
       },
+      "KromicStore.Contracts.V1.Team.CreateTeamInvitationRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.Team.TeamInvitationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "invitedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.Tenants.TenantLifecycleRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Contracts.V1.Tenants.TenantLifecycleResponse": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "suspendedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "archivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "KromicStore.Contracts.V1.Webhooks.WebhookConfigurationRequest": {
         "type": "object",
         "properties": {
@@ -6965,6 +11554,63 @@
         },
         "additionalProperties": false
       },
+      "KromicStore.Domain.Entities.TenantUsage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "readOnly": true
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "readOnly": true
+          },
+          "tenantId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "usageType": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "unit": {
+            "type": "string",
+            "nullable": true
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "KromicStore.Domain.Enums.WebhookEventType": {
         "enum": [
           1,
@@ -7007,6 +11653,10 @@
       "description": "API controller for platform-wide configuration management endpoints.\r\nAccessible only to SuperUser role."
     },
     {
+      "name": "ApiKey",
+      "description": "Controller for API key management."
+    },
+    {
       "name": "Auth",
       "description": "Authentication endpoints for user registration, login, token refresh, and OAuth authentication.\r\nThese endpoints are publicly accessible without authorization."
     },
@@ -7023,8 +11673,24 @@
       "description": "Controller for managing customers."
     },
     {
+      "name": "DomainManagement",
+      "description": "Tenant domain management and ownership verification endpoints."
+    },
+    {
+      "name": "DomainVerification",
+      "description": "Controller for domain verification and SSL management."
+    },
+    {
+      "name": "FeatureFlag",
+      "description": "Controller for feature flag management."
+    },
+    {
       "name": "Health",
       "description": "Health check endpoint controller.\r\nProvides liveness and readiness checks with Redis keep-alive."
+    },
+    {
+      "name": "Operations",
+      "description": "SaaS operations settings: feature flags, maintenance mode, quotas, usage, and retention policy."
     },
     {
       "name": "Order",
@@ -7043,8 +11709,20 @@
       "description": "Controller for managing products."
     },
     {
+      "name": "Public",
+      "description": "Public endpoints accessible without authentication."
+    },
+    {
       "name": "RazorpayWebhookReceiver",
       "description": "Webhook receiver controller for Razorpay payment and subscription events.\r\nThese endpoints are public and do not require authentication."
+    },
+    {
+      "name": "Store",
+      "description": "Controller for storefront-related endpoints."
+    },
+    {
+      "name": "StoreExport",
+      "description": "Controller for store export, backup, and cloning operations."
     },
     {
       "name": "StorefrontComponent",
@@ -7059,8 +11737,32 @@
       "description": "Controller for managing subscription plans and lifecycle."
     },
     {
+      "name": "SuperUserAnalytics",
+      "description": "Controller for SuperUser analytics dashboard."
+    },
+    {
+      "name": "SuperUserAuth",
+      "description": "Controller for SuperUser authentication (platform admins)."
+    },
+    {
+      "name": "SuperUserPlatform",
+      "description": "SuperUser platform operations for tenant lifecycle, analytics, global search, and operational visibility."
+    },
+    {
+      "name": "SuperUserTenant",
+      "description": "Controller for SuperUser to manage tenant lifecycle (suspend, archive, restore, soft delete)."
+    },
+    {
+      "name": "TeamInvitation",
+      "description": "Controller for team invitation and role management."
+    },
+    {
       "name": "Theme",
       "description": "Controller for retrieving themes (public - no tenant authorization required).\r\nThemes are platform-wide resources available to all tenants."
+    },
+    {
+      "name": "UsageReporting",
+      "description": "Controller for usage reporting and quota management."
     },
     {
       "name": "Webhook",
