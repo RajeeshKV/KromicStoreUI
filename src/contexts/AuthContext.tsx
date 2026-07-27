@@ -16,7 +16,16 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  registerTenant: (companyName: string, subdomain: string, email: string, password: string, country: string) => Promise<any>;
+  registerTenant: (
+    companyName: string,
+    subdomain: string,
+    email: string,
+    firstName: string,
+    lastName: string,
+    password: string,
+    confirmPassword: string,
+    country: string
+  ) => Promise<any>;
   logout: () => Promise<void>;
   setTenantId: (tenantId: string | null) => void;
 }
@@ -108,7 +117,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     companyName: string,
     subdomain: string,
     email: string,
+    firstName: string,
+    lastName: string,
     password: string,
+    confirmPassword: string,
     country: string
   ): Promise<any> => {
     setIsLoading(true);
@@ -117,8 +129,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         companyName,
         subdomain,
         email,
+        firstName,
+        lastName,
         password,
+        confirmPassword,
         country,
+        FirstName: firstName,
+        LastName: lastName,
+        ConfirmPassword: confirmPassword
       });
 
       const { accessToken, refreshToken, tenantId: newTenantId, userId } = response.data.data;

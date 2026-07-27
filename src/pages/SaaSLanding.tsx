@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import apiClient from '../api/apiClient';
-import { Store, Shield, ArrowRight, Lock, Mail, Globe, Sparkles, CheckCircle, ShieldCheck, Zap, Headphones, Phone } from 'lucide-react';
+import { Store, Shield, ArrowRight, Lock, Mail, Globe, Sparkles, CheckCircle, ShieldCheck, Zap, Headphones, Phone, Eye, EyeOff } from 'lucide-react';
 
 const InstagramIcon: React.FC<{ size?: number }> = ({ size = 18 }) => (
   <svg
@@ -37,6 +37,16 @@ const SaaSLanding: React.FC = () => {
   const [subdomainAvailable, setSubdomainAvailable] = useState<boolean | null>(null);
   const [subdomainCheckLoading, setSubdomainCheckLoading] = useState(false);
   const [subdomainError, setSubdomainError] = useState('');
+
+  // New validation fields states
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Password visibility states
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Login Form States
   const [loginEmail, setLoginEmail] = useState('');
@@ -95,10 +105,15 @@ const SaaSLanding: React.FC = () => {
       return;
     }
 
+    if (registerPassword !== confirmPassword) {
+      setErrorMsg('Passwords do not match.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      await registerTenant(companyName, subdomain, registerEmail, registerPassword, country);
+      await registerTenant(companyName, subdomain, registerEmail, firstName, lastName, registerPassword, confirmPassword, country);
       setSuccessMsg('Business registered successfully! Redirecting to console...');
       setTimeout(() => {
         navigate('/business');
@@ -322,17 +337,25 @@ const SaaSLanding: React.FC = () => {
 
                 <div className="form-group">
                   <label className="form-label">Password</label>
-                  <div style={{ position: 'relative' }}>
-                    <Lock size={16} style={{ position: 'absolute', left: 12, top: 14, color: 'var(--text-muted)' }} />
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <Lock size={16} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)' }} />
                     <input
-                      type="password"
+                      type={showLoginPassword ? 'text' : 'password'}
                       className="form-input"
                       placeholder="••••••••"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
-                      style={{ paddingLeft: '2.5rem', width: '100%' }}
+                      style={{ paddingLeft: '2.5rem', paddingRight: '2.5rem', width: '100%' }}
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginPassword(!showLoginPassword)}
+                      style={{ position: 'absolute', right: 12, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 0 }}
+                      title={showLoginPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showLoginPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
                   </div>
                 </div>
 
@@ -414,19 +437,76 @@ const SaaSLanding: React.FC = () => {
                   </div>
                 </div>
 
+                <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label className="form-label">First Name</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="John"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label className="form-label">Last Name</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Doe"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
                 <div className="form-group">
                   <label className="form-label">Admin Password</label>
-                  <div style={{ position: 'relative' }}>
-                    <Lock size={16} style={{ position: 'absolute', left: 12, top: 14, color: 'var(--text-muted)' }} />
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <Lock size={16} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)' }} />
                     <input
-                      type="password"
+                      type={showRegisterPassword ? 'text' : 'password'}
                       className="form-input"
                       placeholder="Min 8 characters"
                       value={registerPassword}
                       onChange={(e) => setRegisterPassword(e.target.value)}
-                      style={{ paddingLeft: '2.5rem', width: '100%' }}
+                      style={{ paddingLeft: '2.5rem', paddingRight: '2.5rem', width: '100%' }}
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                      style={{ position: 'absolute', right: 12, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 0 }}
+                      title={showRegisterPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showRegisterPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Confirm Admin Password</label>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <Lock size={16} style={{ position: 'absolute', left: 12, color: 'var(--text-muted)' }} />
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      className="form-input"
+                      placeholder="Confirm password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      style={{ paddingLeft: '2.5rem', paddingRight: '2.5rem', width: '100%' }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      style={{ position: 'absolute', right: 12, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 0 }}
+                      title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
                   </div>
                 </div>
 
