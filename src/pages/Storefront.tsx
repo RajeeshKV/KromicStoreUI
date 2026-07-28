@@ -63,7 +63,7 @@ const Storefront: React.FC = () => {
 
         // Priority 2: Resolve tenant from subdomain
         const subdomain = extractSubdomain();
-        if (subdomain && subdomain !== 'www') {
+        if (subdomain) {
           const tenant = await resolveTenantBySubdomain(subdomain);
           setTenantId(tenant.tenantId);
           setResolvingTenant(false);

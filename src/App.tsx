@@ -128,7 +128,7 @@ const CartWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const RootRouteResolver: React.FC = () => {
   const subdomain = extractSubdomain();
 
-  if (subdomain && subdomain !== 'www') {
+  if (subdomain) {
     return (
       <CartWrapper>
         <Routes>

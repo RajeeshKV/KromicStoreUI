@@ -11,7 +11,9 @@ export function extractSubdomain(): string | null {
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     // If testing subdomains locally via query param or header (e.g. ?tenant=store)
     const params = new URLSearchParams(window.location.search);
-    return params.get('subdomain') || null;
+    const sub = params.get('subdomain');
+    if (sub === 'www' || sub === 'store') return null;
+    return sub || null;
   }
 
   // Split hostname by dots
@@ -19,7 +21,9 @@ export function extractSubdomain(): string | null {
   
   // If we have at least 3 parts (subdomain.domain.tld), return the first part
   if (parts.length >= 3) {
-    return parts[0];
+    const sub = parts[0];
+    if (sub === 'www' || sub === 'store') return null;
+    return sub;
   }
   
   // If we have exactly 2 parts (domain.tld), no subdomain
