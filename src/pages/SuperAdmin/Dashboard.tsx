@@ -116,11 +116,11 @@ const SuperAdminDashboard: React.FC = () => {
   const loadSuperData = async () => {
     setLoading(true);
     try {
-      const configRes = await apiClient.get('/api/v1/admin/config');
+      const configRes = await apiClient.get('/api/v1/superuser/platform/config');
       // Structure: response.data.data.sections
       setConfigs(configRes.data.data?.sections || configRes.data.data || {});
 
-      const auditRes = await apiClient.get('/api/v1/admin/config/audit-logs');
+      const auditRes = await apiClient.get('/api/v1/superuser/platform/audit-logs');
       setAuditLogs(auditRes.data.data || []);
     } catch (err: any) {
       console.warn('SuperUser configuration API failed, falling back to mock platform configurations.', err);
@@ -193,7 +193,7 @@ const SuperAdminDashboard: React.FC = () => {
     if (!isNaN(Number(editingValue)) && editingValue.trim() !== '') typedValue = Number(editingValue);
 
     try {
-      await apiClient.put(`/api/v1/admin/config/${editingKey}`, {
+      await apiClient.put(`/api/v1/superuser/platform/config/${editingKey}`, {
         value: typedValue,
         reason: reason || 'System maintenance update',
       });
@@ -234,7 +234,7 @@ const SuperAdminDashboard: React.FC = () => {
   const handleExportCSV = async () => {
     try {
       // Fetch binary export file URL
-      window.open(`${API_BASE_URL}/api/v1/admin/config/audit-logs/export`, '_blank');
+      window.open(`${API_BASE_URL}/api/v1/superuser/platform/audit-logs/export`, '_blank');
       setSuccessMsg('CSV Audit exported triggered in browser tab.');
     } catch {
       setSuccessMsg('Local CSV mock exported (download simulated).');

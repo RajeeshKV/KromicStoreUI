@@ -29,14 +29,9 @@ const SaaSLanding: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
 
   // Register Form States
-  const [companyName, setCompanyName] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
   const [country, setCountry] = useState('IN');
-  const [subdomain, setSubdomain] = useState('');
-  const [subdomainAvailable, setSubdomainAvailable] = useState<boolean | null>(null);
-  const [subdomainCheckLoading, setSubdomainCheckLoading] = useState(false);
-  const [subdomainError, setSubdomainError] = useState('');
 
   // New validation fields states
   const [firstName, setFirstName] = useState('');
@@ -58,52 +53,12 @@ const SaaSLanding: React.FC = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const checkSubdomainAvailability = async (val: string) => {
-    const trimmed = val.trim().toLowerCase();
-    if (!trimmed) {
-      setSubdomainError('');
-      setSubdomainAvailable(null);
-      return;
-    }
-    if (trimmed.length < 3) {
-      setSubdomainError('Subdomain must be at least 3 characters.');
-      setSubdomainAvailable(false);
-      return;
-    }
-    const formatRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-    if (!formatRegex.test(trimmed)) {
-      setSubdomainError('Only alphanumeric characters and hyphens are allowed.');
-      setSubdomainAvailable(false);
-      return;
-    }
-    
-    setSubdomainCheckLoading(true);
-    setSubdomainError('');
-    try {
-      const res = await apiClient.get(`/api/v1/public/subdomain/check?subdomain=${trimmed}`);
-      if (res.data.available) {
-        setSubdomainAvailable(true);
-      } else {
-        setSubdomainAvailable(false);
-        setSubdomainError(res.data.reason || 'Subdomain is already taken.');
-      }
-    } catch (err: any) {
-      console.warn('Subdomain check API failed, assuming available locally');
-      setSubdomainAvailable(true);
-    } finally {
-      setSubdomainCheckLoading(false);
-    }
-  };
+
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
-    
-    if (subdomainAvailable === false) {
-      setErrorMsg(`Please resolve subdomain error: ${subdomainError}`);
-      return;
-    }
 
     if (registerPassword !== confirmPassword) {
       setErrorMsg('Passwords do not match.');
@@ -113,7 +68,7 @@ const SaaSLanding: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await registerTenant(companyName, subdomain, registerEmail, firstName, lastName, registerPassword, confirmPassword, country);
+      await registerTenant(registerEmail, firstName, lastName, registerPassword, confirmPassword, country);
       setSuccessMsg('Business registered successfully! Redirecting to console...');
       setTimeout(() => {
         navigate('/business');
@@ -380,46 +335,7 @@ const SaaSLanding: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Company / Business Name</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="My Awesome Business"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    required
-                  />
-                </div>
 
-                <div className="form-group">
-                  <label className="form-label">Subdomain (slug)</label>
-                  <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="e.g. mybusiness"
-                      value={subdomain}
-                      onChange={(e) => {
-                        const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-                        setSubdomain(val);
-                        setSubdomainAvailable(null);
-                      }}
-                      onBlur={() => checkSubdomainAvailability(subdomain)}
-                      required
-                    />
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginLeft: '0.5rem', whiteSpace: 'nowrap' }}>
-                      .kromic.in
-                    </span>
-                  </div>
-                  {subdomainCheckLoading && <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Checking availability...</p>}
-                  {!subdomainCheckLoading && subdomainAvailable === true && (
-                    <p style={{ fontSize: '0.75rem', color: 'var(--success)', marginTop: '0.25rem' }}>✓ Subdomain is available!</p>
-                  )}
-                  {!subdomainCheckLoading && subdomainAvailable === false && (
-                    <p style={{ fontSize: '0.75rem', color: 'var(--danger)', marginTop: '0.25rem' }}>✗ {subdomainError}</p>
-                  )}
-                </div>
 
                 <div className="form-group">
                   <label className="form-label">Admin Email Address</label>

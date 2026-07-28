@@ -17,8 +17,6 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<User>;
   registerTenant: (
-    companyName: string,
-    subdomain: string,
     email: string,
     firstName: string,
     lastName: string,
@@ -114,8 +112,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const registerTenant = async (
-    companyName: string,
-    subdomain: string,
     email: string,
     firstName: string,
     lastName: string,
@@ -126,8 +122,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const response = await apiClient.post('/api/v1/auth/register', {
-        companyName,
-        subdomain,
         email,
         firstName,
         lastName,

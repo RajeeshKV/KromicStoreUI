@@ -6,12 +6,24 @@ import { ToggleLeft, ToggleRight, Search, RefreshCw } from 'lucide-react';
 interface FeatureFlag {
   id: string;
   key: string;
-  name: string;
   description: string;
   isEnabled: boolean;
-  environment: string;
-  lastModifiedBy?: string;
+  type?: string;
+  plan?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+const getFlagDisplayName = (key: string): string => {
+  switch (key) {
+    case 'wishlistEnabled': return 'Customer Wishlist Module';
+    case 'reviewsEnabled': return 'Product Reviews & Ratings';
+    case 'couponsEnabled': return 'Discount Coupon System';
+    case 'blogEnabled': return 'Brand Editorial Blog';
+    case 'multiCurrencyEnabled': return 'Automatic Multi-Currency Exchange';
+    default: return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  }
+};
 
 const FeatureFlags: React.FC = () => {
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
@@ -27,52 +39,46 @@ const FeatureFlags: React.FC = () => {
       setFlags(res.data.data || []);
     } catch (err: any) {
       console.warn('Feature Flag API failed, loading local system configs', err);
-      // Fallback local mockup sync
       const mockFlags: FeatureFlag[] = [
         {
           id: '1',
           key: 'wishlistEnabled',
-          name: 'Customer Wishlist Module',
           description: 'Allows buyers to save items to their wishlists for subsequent sessions.',
           isEnabled: localStorage.getItem('flag:wishlistEnabled') !== 'false',
-          environment: 'Production',
-          lastModifiedBy: 'system-bot'
+          type: 'Storefront',
+          plan: 'Starter'
         },
         {
           id: '2',
           key: 'reviewsEnabled',
-          name: 'Product Reviews & Ratings',
           description: 'Enables customer submitted reviews and star ratings on storefront displays.',
           isEnabled: localStorage.getItem('flag:reviewsEnabled') === 'true',
-          environment: 'Production',
-          lastModifiedBy: 'admin@mystore.com'
+          type: 'Storefront',
+          plan: 'Professional'
         },
         {
           id: '3',
           key: 'couponsEnabled',
-          name: 'Discount Coupon System',
           description: 'Enables promotional campaign code extraction and checkout deduction.',
           isEnabled: localStorage.getItem('flag:couponsEnabled') !== 'false',
-          environment: 'Production',
-          lastModifiedBy: 'system-bot'
+          type: 'Checkout',
+          plan: 'Starter'
         },
         {
           id: '4',
           key: 'blogEnabled',
-          name: 'Brand Editorial Blog',
           description: 'Publishes announcements and brand posts on a separate news tab.',
           isEnabled: localStorage.getItem('flag:blogEnabled') === 'true',
-          environment: 'Staging',
-          lastModifiedBy: 'marketing@mystore.com'
+          type: 'Content',
+          plan: 'Professional'
         },
         {
           id: '5',
           key: 'multiCurrencyEnabled',
-          name: 'Automatic Multi-Currency Exchange',
           description: 'Resolves IP based visitor locations to auto-convert pricing catalogs.',
           isEnabled: localStorage.getItem('flag:multiCurrencyEnabled') === 'true',
-          environment: 'Development',
-          lastModifiedBy: 'admin@mystore.com'
+          type: 'Checkout',
+          plan: 'Enterprise'
         }
       ];
       setFlags(mockFlags);
@@ -89,8 +95,8 @@ const FeatureFlags: React.FC = () => {
     setToggleLoading(flagId);
     setSuccessMsg('');
     try {
-      // Toggle backend state
-      await apiClient.post(`/api/v1/feature-flags/toggle`, { key: currentKey, isEnabled: nextState });
+      // Toggle backend state via PUT /api/v1/feature-flags/{id}
+      await apiClient.put(`/api/v1/feature-flags/${flagId}`, { isEnabled: nextState });
       setFlags(prev => prev.map(f => f.id === flagId ? { ...f, isEnabled: nextState } : f));
       setSuccessMsg(`Feature flag '${currentKey}' updated successfully.`);
     } catch (err: any) {
@@ -104,7 +110,7 @@ const FeatureFlags: React.FC = () => {
   };
 
   const filteredFlags = flags.filter(flag =>
-    flag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    getFlagDisplayName(flag.key).toLowerCase().includes(searchQuery.toLowerCase()) ||
     flag.key.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -160,20 +166,22 @@ const FeatureFlags: React.FC = () => {
                 <div className="card" key={flag.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '2rem' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
-                      <h4 style={{ fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>{flag.name}</h4>
+                      <h4 style={{ fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>{getFlagDisplayName(flag.key)}</h4>
                       <code style={{ fontSize: '0.75rem', backgroundColor: 'var(--bg-tertiary)', padding: '0.1rem 0.4rem', borderRadius: '4px', color: 'var(--text-muted)' }}>
                         {flag.key}
                       </code>
-                      <span className={`status-pill ${flag.environment === 'Production' ? 'success' : flag.environment === 'Staging' ? 'warning' : 'primary'}`} style={{ fontSize: '0.7rem', padding: '0.1rem 0.5rem' }}>
-                        {flag.environment}
-                      </span>
+                      {flag.type && (
+                        <span className="status-pill primary" style={{ fontSize: '0.7rem', padding: '0.1rem 0.5rem' }}>
+                          {flag.type}
+                        </span>
+                      )}
+                      {flag.plan && (
+                        <span className="status-pill warning" style={{ fontSize: '0.7rem', padding: '0.1rem 0.5rem' }}>
+                          {flag.plan} Plan
+                        </span>
+                      )}
                     </div>
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{flag.description}</p>
-                    {flag.lastModifiedBy && (
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        Last modified by: <code>{flag.lastModifiedBy}</code>
-                      </span>
-                    )}
                   </div>
 
                   <div>

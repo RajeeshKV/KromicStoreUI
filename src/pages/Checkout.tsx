@@ -49,7 +49,7 @@ const Checkout: React.FC = () => {
       if (!customerId) {
         // If guest checkout, register customer details on backend first
         try {
-          const custRes = await apiClient.post('/api/v1/Customer', {
+          const custRes = await apiClient.post('/api/v1/customers', {
             email,
             firstName,
             lastName,

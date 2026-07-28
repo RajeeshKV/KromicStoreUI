@@ -118,34 +118,38 @@ const Dashboard: React.FC = () => {
     setLoading(true);
     try {
       // 1. Fetch Subscription Details
-      const subRes = await apiClient.get('/api/v1/subscriptions/current');
-      setSubscription(subRes.data.data);
+      try {
+        const subRes = await apiClient.get('/api/v1/subscriptions/current');
+        setSubscription(subRes.data.data);
+      } catch (subErr) {
+        console.warn('Subscription details API failed, using fallback mock.');
+        setSubscription({
+          plan: 'Professional Trial',
+          status: 'Active',
+          startedAt: new Date(Date.now() - 5 * 24 * 3600000).toISOString(),
+          trialEndsAt: new Date(Date.now() + 25 * 24 * 3600000).toISOString(),
+          features: {
+            maxUsers: 3,
+            maxProducts: 100,
+            maxApiCallsPerMonth: 10000,
+            webhooksEnabled: true,
+            analyticsEnabled: true,
+          },
+        });
+      }
 
       // 2. Fetch Subscription Usage
-      const usageRes = await apiClient.get('/api/v1/subscriptions/current/usage');
-      setUsage(usageRes.data.data);
-    } catch (err: any) {
-      console.warn('Dashboard endpoints failed. Initializing mockup dashboards fallback.', err);
-      // Mock Fallbacks
-      setSubscription({
-        plan: 'Professional Trial',
-        status: 'Active',
-        startedAt: new Date(Date.now() - 5 * 24 * 3600000).toISOString(),
-        trialEndsAt: new Date(Date.now() + 25 * 24 * 3600000).toISOString(),
-        features: {
-          maxUsers: 3,
-          maxProducts: 100,
-          maxApiCallsPerMonth: 10000,
-          webhooksEnabled: true,
-          analyticsEnabled: true,
-        },
-      });
-
-      setUsage({
-        users: { used: 1, limit: 3 },
-        products: { used: 12, limit: 100 },
-        apiCallsThisMonth: { used: 1243, limit: 10000 },
-      });
+      try {
+        const usageRes = await apiClient.get('/api/v1/subscriptions/current/usage');
+        setUsage(usageRes.data.data);
+      } catch (usageErr) {
+        console.warn('Subscription usage API failed, using fallback mock.');
+        setUsage({
+          users: { used: 1, limit: 3 },
+          products: { used: 12, limit: 100 },
+          apiCallsThisMonth: { used: 1243, limit: 10000 },
+        });
+      }
     } finally {
       setLoading(false);
     }

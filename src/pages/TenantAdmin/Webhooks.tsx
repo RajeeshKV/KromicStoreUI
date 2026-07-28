@@ -43,12 +43,23 @@ const Webhooks: React.FC = () => {
     setLoading(true);
     try {
       const res = await apiClient.get('/api/v1/webhooks');
-      setWebhooks(res.data.data || []);
+      const loadedHooks: WebhookItem[] = res.data.data || [];
+      setWebhooks(loadedHooks);
 
-      // If webhookId exists, try fetching delivery logs (usually mock logs)
-      const delivRes = await apiClient.get('/api/v1/webhooks/deliveries').catch(() => null);
-      if (delivRes) {
-        setDeliveries(delivRes.data.data || []);
+      const allDeliveries: WebhookDelivery[] = [];
+      for (const hook of loadedHooks) {
+        try {
+          const delivRes = await apiClient.get(`/api/v1/webhooks/${hook.id}/deliveries`);
+          if (delivRes.data.data) {
+            allDeliveries.push(...delivRes.data.data);
+          }
+        } catch (err) {
+          console.warn(`Failed to fetch deliveries for webhook ${hook.id}`, err);
+        }
+      }
+
+      if (allDeliveries.length > 0) {
+        setDeliveries(allDeliveries);
       } else {
         setDeliveries(getDemoDeliveries());
       }
