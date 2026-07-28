@@ -45,6 +45,7 @@ interface OrderDetail {
 const OrderTracking: React.FC = () => {
   const { storeTenantId, orderId } = useParams<{ storeTenantId: string; orderId: string }>();
   const { setTenantId } = useAuth();
+  const linkPrefix = storeTenantId ? `/store/${storeTenantId}` : '';
 
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -163,7 +164,7 @@ const OrderTracking: React.FC = () => {
           <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
             We could not locate this order ID in our database.
           </p>
-          <Link to={`/store/${storeTenantId}`} className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
+          <Link to={linkPrefix || '/'} className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
             Browse Catalog
           </Link>
         </div>
@@ -178,7 +179,7 @@ const OrderTracking: React.FC = () => {
   return (
     <div className="content-wrapper">
       <div style={{ marginBottom: '2rem' }}>
-        <Link to={`/store/${storeTenantId}`} className="btn btn-secondary">
+        <Link to={linkPrefix || '/'} className="btn btn-secondary">
           <ArrowLeft size={16} /> Back to Catalog
         </Link>
       </div>

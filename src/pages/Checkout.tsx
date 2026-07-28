@@ -10,6 +10,7 @@ const Checkout: React.FC = () => {
   const { user } = useAuth();
   const { cartItems, cartTotal, updateQuantity, removeFromCart, clearCart } = useCart();
   const navigate = useNavigate();
+  const linkPrefix = storeTenantId ? `/store/${storeTenantId}` : '';
 
   // Form States
   const [email, setEmail] = useState(user?.email || '');
@@ -147,14 +148,14 @@ const Checkout: React.FC = () => {
       // Clear Cart on successful payment
       clearCart();
       setShowPaymentModal(false);
-      navigate(`/store/${storeTenantId}/order-tracking/${activeOrder.id}`);
+      navigate(`${linkPrefix}/order-tracking/${activeOrder.id}`);
     } catch (err: any) {
       console.warn('Signature verification failed on server. Proceeding with simulated confirmation.');
       // Since it's a test environment, if signature verify fails (e.g. key mismatch or mock API rules),
       // we clear the cart and allow them to proceed so their flow isn't blocked.
       clearCart();
       setShowPaymentModal(false);
-      navigate(`/store/${storeTenantId}/order-tracking/${activeOrder.id}`);
+      navigate(`${linkPrefix}/order-tracking/${activeOrder.id}`);
     } finally {
       setPaymentLoading(false);
     }
@@ -169,7 +170,7 @@ const Checkout: React.FC = () => {
           <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
             Browse our catalog to add items before checking out.
           </p>
-          <Link to={`/store/${storeTenantId}`} className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
+          <Link to={linkPrefix || '/'} className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
             Browse Products
           </Link>
         </div>
@@ -180,7 +181,7 @@ const Checkout: React.FC = () => {
   return (
     <div className="content-wrapper">
       <div style={{ marginBottom: '2rem' }}>
-        <Link to={`/store/${storeTenantId}`} className="btn btn-secondary">
+        <Link to={linkPrefix || '/'} className="btn btn-secondary">
           <ArrowLeft size={16} /> Back to Catalog
         </Link>
       </div>

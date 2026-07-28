@@ -11,6 +11,7 @@ const ProductDetails: React.FC = () => {
   const { setTenantId } = useAuth();
   const { addToCart, cartCount } = useCart();
   const navigate = useNavigate();
+  const linkPrefix = storeTenantId ? `/store/${storeTenantId}` : '';
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,7 +78,7 @@ const ProductDetails: React.FC = () => {
     }, quantity);
     
     // Quick notification redirect
-    navigate(`/store/${storeTenantId}`);
+    navigate(linkPrefix || '/');
   };
 
   if (loading) {
@@ -98,7 +99,7 @@ const ProductDetails: React.FC = () => {
           <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
             The product you are trying to view does not exist in this tenant's inventory.
           </p>
-          <Link to={`/store/${storeTenantId}`} className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
+          <Link to={linkPrefix || '/'} className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
             <ArrowLeft size={16} /> Back to Catalog
           </Link>
         </div>
@@ -109,11 +110,11 @@ const ProductDetails: React.FC = () => {
   return (
     <div className="content-wrapper">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <Link to={`/store/${storeTenantId}`} className="btn btn-secondary" style={{ padding: '0.5rem 1rem' }}>
+        <Link to={linkPrefix || '/'} className="btn btn-secondary" style={{ padding: '0.5rem 1rem' }}>
           <ArrowLeft size={16} /> Back to Catalog
         </Link>
 
-        <Link to={`/store/${storeTenantId}/checkout`} className="btn btn-primary cart-indicator">
+        <Link to={`${linkPrefix}/checkout`} className="btn btn-primary cart-indicator">
           <ShoppingCart size={18} /> View Cart
           {cartCount > 0 && <span className="cart-count-badge">{cartCount}</span>}
         </Link>

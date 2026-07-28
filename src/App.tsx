@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation, useParams } 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import { extractSubdomain } from './utils/subdomain';
 
 // Pages
 import SaaSLanding from './pages/SaaSLanding';
@@ -120,7 +121,32 @@ const HeaderNavbar: React.FC = () => {
 // Dynamic Cart Provider to scope items correctly by the current store parameter
 const CartWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { storeTenantId } = useParams<{ storeTenantId: string }>();
-  return <CartProvider tenantId={storeTenantId || null}>{children}</CartProvider>;
+  const { tenantId } = useAuth();
+  return <CartProvider tenantId={storeTenantId || tenantId || null}>{children}</CartProvider>;
+};
+
+const RootRouteResolver: React.FC = () => {
+  const subdomain = extractSubdomain();
+
+  if (subdomain && subdomain !== 'www') {
+    return (
+      <CartWrapper>
+        <Routes>
+          <Route path="/" element={<Storefront />} />
+          <Route path="/product/:productId" element={<ProductDetails />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
+        </Routes>
+      </CartWrapper>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<SaaSLanding />} />
+      <Route path="/login" element={<SaaSLanding />} />
+    </Routes>
+  );
 };
 
 const App: React.FC = () => {
@@ -130,9 +156,6 @@ const App: React.FC = () => {
         <div className="app-container">
           <HeaderNavbar />
           <Routes>
-            {/* General Pages */}
-            <Route path="/" element={<SaaSLanding />} />
-            <Route path="/login" element={<SaaSLanding />} />
 
             {/* Scoped Customer Storefront routes */}
             <Route
@@ -224,6 +247,8 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+            {/* General Pages & Subdomain Storefront resolver */}
+            <Route path="/*" element={<RootRouteResolver />} />
           </Routes>
         </div>
       </AuthProvider>

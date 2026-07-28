@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import apiClient from '../api/apiClient';
 import { Search, SlidersHorizontal, ShoppingBag, Eye, Plus, ShoppingCart, RefreshCw } from 'lucide-react';
+import { extractSubdomain } from '../utils/subdomain';
+import { resolveTenantBySubdomain } from '../api/publicApi';
 
 interface Product {
   id: string;
@@ -26,13 +28,20 @@ interface Category {
 
 const Storefront: React.FC = () => {
   const { storeTenantId } = useParams<{ storeTenantId: string }>();
-  const { setTenantId } = useAuth();
+  const { tenantId, setTenantId } = useAuth();
   const { cartCount, addToCart } = useCart();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [bootstrapData, setBootstrapData] = useState<any>(null);
+
+  // Tenant Resolution States
+  const [resolvingTenant, setResolvingTenant] = useState(true);
+  const [resolutionError, setResolutionError] = useState<string | null>(null);
+
+  // Link prefix helper
+  const linkPrefix = storeTenantId ? `/store/${storeTenantId}` : '';
 
   // Filter States
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -41,9 +50,41 @@ const Storefront: React.FC = () => {
   const [maxPrice, setMaxPrice] = useState<number | ''>('');
 
   useEffect(() => {
-    if (storeTenantId) {
-      setTenantId(storeTenantId);
-    }
+    const initializeStorefront = async () => {
+      setResolvingTenant(true);
+      setResolutionError(null);
+      try {
+        // Priority 1: Use tenantId from URL path
+        if (storeTenantId) {
+          setTenantId(storeTenantId);
+          setResolvingTenant(false);
+          return;
+        }
+
+        // Priority 2: Resolve tenant from subdomain
+        const subdomain = extractSubdomain();
+        if (subdomain && subdomain !== 'www') {
+          const tenant = await resolveTenantBySubdomain(subdomain);
+          setTenantId(tenant.tenantId);
+          setResolvingTenant(false);
+          return;
+        }
+
+        // Fallback: No tenant context
+        setResolutionError('Unable to determine store tenant context. Please check the URL.');
+        setResolvingTenant(false);
+      } catch (err: any) {
+        console.error('Failed to resolve tenant:', err);
+        setResolutionError('Store not found. Please check the URL or contact support.');
+        setResolvingTenant(false);
+      }
+    };
+
+    initializeStorefront();
+  }, [storeTenantId, setTenantId]);
+
+  useEffect(() => {
+    if (resolvingTenant || resolutionError) return;
 
     const loadBootstrap = async () => {
       try {
@@ -66,7 +107,7 @@ const Storefront: React.FC = () => {
     };
 
     loadBootstrap();
-  }, [storeTenantId, setTenantId]);
+  }, [resolvingTenant, resolutionError]);
 
   const loadStoreData = async () => {
     setLoading(true);
@@ -102,8 +143,10 @@ const Storefront: React.FC = () => {
   };
 
   useEffect(() => {
-    loadStoreData();
-  }, [storeTenantId, selectedCategory, searchQuery, minPrice, maxPrice]);
+    if (!resolvingTenant && !resolutionError) {
+      loadStoreData();
+    }
+  }, [resolvingTenant, resolutionError, storeTenantId, selectedCategory, searchQuery, minPrice, maxPrice]);
 
   const handleClearFilters = () => {
     setSelectedCategory(null);
@@ -111,6 +154,27 @@ const Storefront: React.FC = () => {
     setMinPrice('');
     setMaxPrice('');
   };
+
+  if (resolvingTenant) {
+    return (
+      <div className="loading-container card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+        <div className="spinner"></div>
+        <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>Resolving storefront context...</p>
+      </div>
+    );
+  }
+
+  if (resolutionError) {
+    return (
+      <div className="card text-center" style={{ padding: '4rem 2rem', maxWidth: '600px', margin: '4rem auto' }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800 }}>Store Not Found</h2>
+        <p style={{ color: 'var(--text-secondary)', margin: '1rem 0 2rem' }}>{resolutionError}</p>
+        <button className="btn btn-primary" onClick={() => window.location.href = 'https://kromic.in'}>
+          Go to Kromic Home
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="content-wrapper">
@@ -126,7 +190,7 @@ const Storefront: React.FC = () => {
           )}
           <div>
             <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2.25rem' }}>{bootstrapData?.tenant?.name || 'Storefront Catalog'}</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>Merchant ID: <code style={{ backgroundColor: 'var(--bg-tertiary)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{storeTenantId}</code></p>
+            <p style={{ color: 'var(--text-secondary)' }}>Merchant ID: <code style={{ backgroundColor: 'var(--bg-tertiary)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{storeTenantId || tenantId}</code></p>
           </div>
         </div>
 
@@ -135,7 +199,7 @@ const Storefront: React.FC = () => {
             <RefreshCw size={18} />
           </button>
           
-          <Link to={`/store/${storeTenantId}/checkout`} className="btn btn-primary cart-indicator">
+          <Link to={`${linkPrefix}/checkout`} className="btn btn-primary cart-indicator">
             <ShoppingCart size={18} />
             View Cart
             {cartCount > 0 && <span className="cart-count-badge">{cartCount}</span>}
@@ -283,7 +347,7 @@ const Storefront: React.FC = () => {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
                         <span className="product-price">${prod.price.toFixed(2)}</span>
                         <div style={{ display: 'flex', gap: '0.35rem' }}>
-                          <Link to={`/store/${storeTenantId}/product/${prod.id}`} className="btn btn-secondary" style={{ padding: '0.45rem' }} title="View details">
+                          <Link to={`${linkPrefix}/product/${prod.id}`} className="btn btn-secondary" style={{ padding: '0.45rem' }} title="View details">
                             <Eye size={16} />
                           </Link>
                           <button
