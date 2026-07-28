@@ -4,7 +4,7 @@ import apiClient from '../api/apiClient';
 
 interface ImageUploadProps {
   value: string;
-  onChange: (url: string) => void;
+  onChange: (url: string, publicId: string) => void;
   label?: string;
   folder?: string;
 }
@@ -19,9 +19,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label = 'Upl
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be smaller than 5MB');
+    // Validate size (max 10MB as per backend specification)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Image must be smaller than 10MB');
       return;
     }
 
@@ -36,7 +36,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label = 'Upl
     }
 
     try {
-      const res = await apiClient.post('/api/v1/upload', formData, {
+      const res = await apiClient.post('/api/v1/media/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -48,9 +48,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label = 'Upl
         },
       });
 
-      const url = res.data?.url || res.data?.data?.url;
+      const url = res.data?.url || res.data?.data?.url || res.data?.Url;
+      const publicId = res.data?.publicId || res.data?.data?.publicId || res.data?.PublicId || '';
       if (url) {
-        onChange(url);
+        onChange(url, publicId);
       } else {
         throw new Error('Upload response did not contain an image URL');
       }
@@ -59,7 +60,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label = 'Upl
       // Fallback to local simulation if upload endpoint fails (useful for local offline testing)
       console.warn('Falling back to local object URL simulation...');
       const simulateUrl = URL.createObjectURL(file);
-      onChange(simulateUrl);
+      onChange(simulateUrl, 'mock-public-id');
     } finally {
       setLoading(false);
       setProgress(0);
@@ -67,7 +68,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label = 'Upl
   };
 
   const handleRemove = () => {
-    onChange('');
+    onChange('', '');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }

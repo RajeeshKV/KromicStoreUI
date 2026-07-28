@@ -40,6 +40,7 @@ const Theme: React.FC = () => {
   const [borderRadius, setBorderRadius] = useState(8);
   const [spacingUnit, setSpacingUnit] = useState(16);
   const [isPublic, setIsPublic] = useState(false);
+  const [previewTab, setPreviewTab] = useState<'catalog' | 'details' | 'checkout' | 'tracking'>('catalog');
 
   useEffect(() => {
     loadThemes();
@@ -56,57 +57,9 @@ const Theme: React.FC = () => {
         handleSelectTheme(active);
       }
     } catch (err: any) {
-      console.warn('Themes API not found or failed, loading fallback mock templates', err);
-      // Premium Mock Themes
-      const fallbacks: ThemeConfig[] = [
-        {
-          id: 'theme-mock-1',
-          name: 'Indigo Velvet (Active)',
-          primaryColor: '#4f46e5',
-          secondaryColor: '#312e81',
-          accentColor: '#10b981',
-          backgroundColor: '#fafafa',
-          textColor: '#1f2937',
-          fontFamily: 'Outfit, sans-serif',
-          borderRadius: 8,
-          spacingUnit: 16,
-          isActive: true,
-          isPublic: true,
-          createdByTenantId: null
-        },
-        {
-          id: 'theme-mock-2',
-          name: 'Emerald Aurora',
-          primaryColor: '#059669',
-          secondaryColor: '#064e3b',
-          accentColor: '#d97706',
-          backgroundColor: '#f4fbf7',
-          textColor: '#0f172a',
-          fontFamily: 'Inter, sans-serif',
-          borderRadius: 12,
-          spacingUnit: 18,
-          isActive: false,
-          isPublic: true,
-          createdByTenantId: null
-        },
-        {
-          id: 'theme-mock-3',
-          name: 'Royal Orchid',
-          primaryColor: '#7c3aed',
-          secondaryColor: '#4c1d95',
-          accentColor: '#ec4899',
-          backgroundColor: '#faf5ff',
-          textColor: '#1e1b4b',
-          fontFamily: 'Playfair Display, serif',
-          borderRadius: 6,
-          spacingUnit: 14,
-          isActive: false,
-          isPublic: false,
-          createdByTenantId: tenantId
-        }
-      ];
-      setThemes(fallbacks);
-      handleSelectTheme(fallbacks[0]);
+      console.error('Failed to load themes:', err);
+      setThemes([]);
+      setErrorMsg('Failed to load theme templates from server.');
     } finally {
       setLoading(false);
     }
@@ -520,9 +473,38 @@ const Theme: React.FC = () => {
           {/* Interactive Live Preview Card */}
           <div style={{ position: 'sticky', top: '2rem' }}>
             <div className="card" style={{ padding: '1.75rem', border: '1px solid var(--border-color)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                <Eye size={18} style={{ color: 'var(--text-secondary)' }} />
-                <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Real-Time Live Storefront Preview</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Eye size={18} style={{ color: 'var(--text-secondary)' }} />
+                  <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Real-Time Live Storefront Preview</h2>
+                </div>
+              </div>
+
+              {/* Navigation Tabs for Preview Flow */}
+              <div style={{ display: 'flex', gap: '0.25rem', border: '1px solid var(--border-color)', padding: '0.2rem', borderRadius: '8px', backgroundColor: 'var(--bg-secondary)', marginBottom: '1.5rem', overflowX: 'auto' }}>
+                {['catalog', 'details', 'checkout', 'tracking'].map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    className={`tab-btn ${previewTab === tab ? 'active' : ''}`}
+                    style={{
+                      border: 'none',
+                      background: previewTab === tab ? 'var(--card-bg)' : 'none',
+                      color: previewTab === tab ? 'var(--primary-color)' : 'var(--text-secondary)',
+                      padding: '0.35rem 0.65rem',
+                      fontSize: '0.75rem',
+                      borderRadius: '6px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      textTransform: 'capitalize',
+                      whiteSpace: 'nowrap',
+                      flexGrow: 1
+                    }}
+                    onClick={() => setPreviewTab(tab as any)}
+                  >
+                    {tab === 'details' ? 'Product Detail' : tab}
+                  </button>
+                ))}
               </div>
 
               {/* Styled Mock Sandbox Container */}
@@ -536,66 +518,168 @@ const Theme: React.FC = () => {
                   border: '1px solid rgba(0,0,0,0.08)',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
                   transition: 'all 0.2s ease',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  minHeight: '380px',
+                  display: 'flex',
+                  flexDirection: 'column'
                 }}
               >
                 {/* Mock Header Navigation bar */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '0.75rem', marginBottom: `${spacingUnit}px` }}>
-                  <span style={{ fontWeight: 800, fontSize: '1.1rem', color: primaryColor }}>MOCK STORE</span>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: secondaryColor }}>Cart (0)</span>
+                  <span style={{ fontWeight: 800, fontSize: '1rem', color: primaryColor }}>MOCK STORE</span>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: secondaryColor }}>Cart (0)</span>
                 </div>
 
-                {/* Mock Hero Product Card */}
-                <div style={{ backgroundColor: '#ffffff', borderRadius: `${borderRadius * 0.75}px`, border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
-                  <div style={{ height: '140px', backgroundColor: 'rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                    <span style={{ color: 'rgba(0,0,0,0.2)', fontSize: '0.75rem', fontWeight: 600 }}>IMAGE CONTAINER</span>
-                    <span 
-                      style={{ 
-                        position: 'absolute', 
-                        top: '8px', 
-                        left: '8px', 
-                        backgroundColor: accentColor, 
-                        color: '#ffffff', 
-                        fontSize: '0.65rem', 
-                        fontWeight: 700, 
-                        padding: '0.2rem 0.5rem', 
-                        borderRadius: `${borderRadius * 0.5}px` 
-                      }}
-                    >
-                      POPULAR
-                    </span>
-                  </div>
+                {/* --- TAB CONTENT: CATALOG --- */}
+                {previewTab === 'catalog' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: `${spacingUnit}px`, flexGrow: 1 }}>
+                    <div style={{ backgroundColor: 'rgba(0,0,0,0.02)', padding: '0.75rem', borderRadius: `${borderRadius * 0.75}px`, textAlign: 'center' }}>
+                      <h4 style={{ fontSize: '0.85rem', fontWeight: 700, margin: '0 0 0.25rem 0' }}>Seasonal Summer Sale</h4>
+                      <p style={{ fontSize: '0.65rem', color: 'rgba(0,0,0,0.5)', margin: 0 }}>Save up to 40% on essentials</p>
+                    </div>
 
-                  <div style={{ padding: `${spacingUnit * 0.75}px`, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                    <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: textColor }}>Premium Cotton Shirt</h3>
-                    <p style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.5)', margin: 0 }}>Lightweight organic summer apparel.</p>
-                    
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
-                      <span style={{ fontWeight: 800, fontSize: '1rem', color: primaryColor }}>$39.00</span>
-                      <button 
-                        type="button"
-                        style={{
-                          backgroundColor: primaryColor,
-                          color: '#ffffff',
-                          border: 'none',
-                          padding: '0.4rem 0.8rem',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          borderRadius: `${borderRadius * 0.5}px`,
-                          cursor: 'pointer',
-                          boxShadow: `0 2px 8px ${primaryColor}40`,
-                        }}
-                      >
-                        Buy Now
-                      </button>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      {[1, 2].map((i) => (
+                        <div key={i} style={{ backgroundColor: '#ffffff', borderRadius: `${borderRadius * 0.75}px`, border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+                          <div style={{ height: '90px', backgroundColor: 'rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                            <span style={{ color: 'rgba(0,0,0,0.15)', fontSize: '0.6rem', fontWeight: 600 }}>PRODUCT {i}</span>
+                          </div>
+                          <div style={{ padding: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                            <h4 style={{ fontSize: '0.75rem', fontWeight: 700, margin: 0 }}>Item {i} Name</h4>
+                            <span style={{ fontWeight: 800, fontSize: '0.8rem', color: primaryColor }}>$29.00</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
+                )}
 
-                {/* Styled timeline progress mock details */}
-                <div style={{ marginTop: `${spacingUnit}px`, borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: '0.75rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.7rem' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: secondaryColor }}><Sparkles size={10} /> Brand Theme details applied</span>
+                {/* --- TAB CONTENT: DETAILS --- */}
+                {previewTab === 'details' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flexGrow: 1 }}>
+                    <span style={{ fontSize: '0.65rem', color: secondaryColor, cursor: 'pointer', fontWeight: 600 }}>← Back to Catalog</span>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.75rem', alignItems: 'start' }}>
+                      <div style={{ height: '120px', backgroundColor: 'rgba(0,0,0,0.03)', borderRadius: `${borderRadius * 0.75}px`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ color: 'rgba(0,0,0,0.15)', fontSize: '0.65rem' }}>PRODUCT IMAGE</span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                        <span style={{ fontSize: '0.6rem', fontWeight: 700, color: accentColor, textTransform: 'uppercase' }}>In Stock</span>
+                        <h4 style={{ fontSize: '0.85rem', fontWeight: 800, margin: 0 }}>Vortex Headphones</h4>
+                        <span style={{ fontWeight: 800, fontSize: '0.95rem', color: primaryColor }}>$199.99</span>
+                      </div>
+                    </div>
+
+                    <p style={{ fontSize: '0.7rem', color: 'rgba(0,0,0,0.5)', margin: 0, lineHeight: 1.4 }}>
+                      Premium wireless headphones with active noise cancellation and up to 40 hours of battery life.
+                    </p>
+
+                    <button 
+                      type="button"
+                      style={{
+                        backgroundColor: primaryColor,
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '0.5rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        borderRadius: `${borderRadius * 0.5}px`,
+                        cursor: 'pointer',
+                        marginTop: 'auto'
+                      }}
+                    >
+                      Add to Shopping Cart
+                    </button>
+                  </div>
+                )}
+
+                {/* --- TAB CONTENT: CHECKOUT --- */}
+                {previewTab === 'checkout' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flexGrow: 1 }}>
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, margin: 0, borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '0.25rem' }}>Billing & Shipping Details</h4>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <input type="text" placeholder="Full Name" style={{ width: '100%', fontSize: '0.7rem', padding: '0.35rem', border: '1px solid rgba(0,0,0,0.1)', borderRadius: `${borderRadius * 0.5}px` }} disabled />
+                      <input type="text" placeholder="Shipping Address" style={{ width: '100%', fontSize: '0.7rem', padding: '0.35rem', border: '1px solid rgba(0,0,0,0.1)', borderRadius: `${borderRadius * 0.5}px` }} disabled />
+                    </div>
+
+                    <div style={{ backgroundColor: 'rgba(0,0,0,0.02)', padding: '0.5rem', borderRadius: `${borderRadius * 0.5}px`, fontSize: '0.7rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                        <span>Subtotal:</span>
+                        <span>$39.00</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
+                        <span>Total Pay:</span>
+                        <span style={{ color: primaryColor }}>$39.00</span>
+                      </div>
+                    </div>
+
+                    <button 
+                      type="button"
+                      style={{
+                        backgroundColor: primaryColor,
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '0.5rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        borderRadius: `${borderRadius * 0.5}px`,
+                        cursor: 'pointer',
+                        marginTop: 'auto'
+                      }}
+                    >
+                      Pay Securely with Razorpay
+                    </button>
+                  </div>
+                )}
+
+                {/* --- TAB CONTENT: TRACKING --- */}
+                {previewTab === 'tracking' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flexGrow: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 700 }}>Order ID: ORD-8012</span>
+                      <span className="badge" style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '0.65rem' }}>Shipped</span>
+                    </div>
+
+                    {/* Step Wizard Progress tracker */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0', position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: '50%', left: '10%', right: '10%', height: '2px', backgroundColor: primaryColor, zIndex: 1 }} />
+                      {[1, 2, 3].map((step) => (
+                        <div 
+                          key={step} 
+                          style={{ 
+                            width: '16px', 
+                            height: '16px', 
+                            borderRadius: '50%', 
+                            backgroundColor: step <= 2 ? primaryColor : '#cbd5e1', 
+                            color: '#ffffff', 
+                            fontSize: '0.55rem', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            zIndex: 2 
+                          }}
+                        >
+                          ✓
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ backgroundColor: 'rgba(0,0,0,0.02)', padding: '0.5rem', borderRadius: `${borderRadius * 0.5}px`, fontSize: '0.7rem' }}>
+                      <div><strong>Courier:</strong> Delhivery</div>
+                      <div><strong>Tracking ID:</strong> <code>DEL9018471253</code></div>
+                    </div>
+
+                    <p style={{ fontSize: '0.65rem', color: 'rgba(0,0,0,0.4)', marginTop: 'auto', textAlign: 'center' }}>
+                      Parcel is in transit. Next update in 24 hours.
+                    </p>
+                  </div>
+                )}
+
+                {/* Styled footer info */}
+                <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: '0.75rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.65rem' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: secondaryColor }}><Sparkles size={10} /> Brand Theme styling details applied</span>
                     <span style={{ color: 'rgba(0,0,0,0.4)' }}>Border Radius: {borderRadius}px</span>
                   </div>
                 </div>

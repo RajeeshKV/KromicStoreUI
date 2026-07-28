@@ -50,25 +50,13 @@ const Config: React.FC = () => {
     loadConfigs();
   }, []);
 
-  const generateUUID = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = (Math.random() * 16) | 0,
-        v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
-  };
-
   const handleSaveConfig = async (key: string, value: string) => {
     setSaveLoading(true);
     setSuccessMsg('');
     setErrorMsg('');
 
     try {
-      const headers: any = {};
-      if (key === 'store:name') {
-        headers['Idempotency-Key'] = generateUUID();
-      }
-      await apiClient.put(`/api/v1/config/${key}`, { value }, { headers });
+      await apiClient.put(`/api/v1/config/${key}`, { value });
       
       setSuccessMsg(`Setting '${key}' saved successfully.`);
       loadConfigs();

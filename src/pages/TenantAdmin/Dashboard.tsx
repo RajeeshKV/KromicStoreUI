@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/apiClient';
-import { LayoutDashboard, Settings, Layers, Package, Webhook, LogOut, ArrowLeftRight, CheckCircle, Globe, Key, ToggleLeft, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, Settings, Layers, Package, Webhook, LogOut, ArrowLeftRight, CheckCircle, Globe, Key, ToggleLeft, ShoppingBag, CreditCard, Users, UserCheck } from 'lucide-react';
 
 interface Subscription {
   plan: string;
@@ -100,6 +100,21 @@ export const AdminSidebar: React.FC<{ active: string }> = ({ active }) => {
         <li>
           <Link to="/business/feature-flags" className={`dashboard-menu-link ${active === 'feature-flags' ? 'active' : ''}`}>
             <ToggleLeft size={18} /> Feature Flags
+          </Link>
+        </li>
+        <li>
+          <Link to="/business/subscription" className={`dashboard-menu-link ${active === 'subscription' ? 'active' : ''}`}>
+            <CreditCard size={18} /> Subscription & Billing
+          </Link>
+        </li>
+        <li>
+          <Link to="/business/customers" className={`dashboard-menu-link ${active === 'customers' ? 'active' : ''}`}>
+            <Users size={18} /> Customers Management
+          </Link>
+        </li>
+        <li>
+          <Link to="/business/team" className={`dashboard-menu-link ${active === 'team' ? 'active' : ''}`}>
+            <UserCheck size={18} /> Team Members
           </Link>
         </li>
       </ul>

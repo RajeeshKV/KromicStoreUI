@@ -3,6 +3,7 @@ import { AdminSidebar } from './Dashboard';
 import apiClient from '../../api/apiClient';
 import { Plus, Trash2, Edit, X, ToggleLeft, ToggleRight, DollarSign } from 'lucide-react';
 import type { Product, Category } from '../Storefront';
+import ImageUpload from '../../components/ImageUpload';
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -25,6 +26,7 @@ const Products: React.FC = () => {
 
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [productImages, setProductImages] = useState<Array<{url: string, publicId: string, displayOrder: number, isPrimary: boolean}>>([]);
 
   const loadData = async () => {
     setLoading(true);
@@ -60,6 +62,7 @@ const Products: React.FC = () => {
     setCategoryId('');
     setDescription('');
     setImageUrl('');
+    setProductImages([]);
     setShowFormModal(true);
   };
 
@@ -71,16 +74,17 @@ const Products: React.FC = () => {
     setStock(prod.stock);
     setCategoryId(prod.categoryId || '');
     setDescription(prod.description || '');
-    setImageUrl(prod.images && prod.images.length > 0 ? prod.images[0].url : '');
+    
+    const prodImages = prod.images || [];
+    setProductImages(prodImages.map((img, idx) => ({
+      url: img.url,
+      publicId: img.cloudinaryPublicId || '',
+      displayOrder: img.displayOrder || idx,
+      isPrimary: img.isPrimary || idx === 0
+    })));
+    setImageUrl(prod.imageUrl || (prodImages.length > 0 ? prodImages[0].url : ''));
+    
     setShowFormModal(true);
-  };
-
-  const generateUUID = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = (Math.random() * 16) | 0,
-        v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
   };
 
   const handleSaveProduct = async (e: React.FormEvent) => {
@@ -97,16 +101,22 @@ const Products: React.FC = () => {
       reorderLevel: Number(reorderLevel),
       categoryId: categoryId || null,
       description,
-      images: imageUrl ? [{ url: imageUrl, displayOrder: 1 }] : [],
+      imageUrl: imageUrl || null,
+      images: productImages.map(img => ({
+        url: img.url,
+        cloudinaryPublicId: img.publicId,
+        displayOrder: img.displayOrder,
+        isPrimary: img.isPrimary,
+        altText: `${name} image`
+      }))
     };
 
     try {
-      const headers = { 'Idempotency-Key': generateUUID() };
       if (editingProduct) {
-        await apiClient.put(`/api/v1/products/${editingProduct.id}`, payload, { headers });
+        await apiClient.put(`/api/v1/products/${editingProduct.id}`, payload);
         setSuccessMsg('Product updated successfully!');
       } else {
-        await apiClient.post('/api/v1/products', payload, { headers });
+        await apiClient.post('/api/v1/products', payload);
         setSuccessMsg('Product created successfully!');
       }
       setShowFormModal(false);
@@ -123,8 +133,7 @@ const Products: React.FC = () => {
     setSuccessMsg('');
     setErrorMsg('');
     try {
-      const headers = { 'Idempotency-Key': generateUUID() };
-      await apiClient.delete(`/api/v1/products/${id}`, { headers });
+      await apiClient.delete(`/api/v1/products/${id}`);
       setSuccessMsg('Product deleted.');
       loadData();
     } catch (err: any) {
@@ -139,11 +148,10 @@ const Products: React.FC = () => {
     const action = prod.status === 'Published' ? 'unpublish' : 'publish';
     
     try {
-      const headers = { 'Idempotency-Key': generateUUID() };
       if (action === 'publish') {
-        await apiClient.post(`/api/v1/products/${prod.id}/publish`, {}, { headers });
+        await apiClient.post(`/api/v1/products/${prod.id}/publish`, {});
       } else {
-        await apiClient.post(`/api/v1/products/${prod.id}/unpublish`, {}, { headers });
+        await apiClient.post(`/api/v1/products/${prod.id}/unpublish`, {});
       }
       setSuccessMsg(`Product ${action === 'publish' ? 'published' : 'unpublished'} successfully.`);
       loadData();
@@ -202,7 +210,7 @@ const Products: React.FC = () => {
                 </thead>
                 <tbody>
                   {products.map((prod) => {
-                    const img = prod.images && prod.images.length > 0 ? prod.images[0].url : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=80&auto=format&fit=crop&q=60';
+                    const img = prod.imageUrl || (prod.images && prod.images.length > 0 ? prod.images[0].url : '') || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=80&auto=format&fit=crop&q=60';
                     return (
                       <tr key={prod.id}>
                         <td style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -301,21 +309,35 @@ const Products: React.FC = () => {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Category</label>
-                  <select className="form-input" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required>
+                  <select className="form-input" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
                     <option value="">-- Select Category --</option>
                     {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
+                      <React.Fragment key={c.id}>
+                        <option value={c.id}>{c.name}</option>
+                        {c.subcategories && c.subcategories.map((sub) => (
+                          <option key={sub.id} value={sub.id}>
+                            &nbsp;&nbsp;↳ {sub.name}
+                          </option>
+                        ))}
+                      </React.Fragment>
                     ))}
                   </select>
                 </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Image URL</label>
-                <input type="url" className="form-input" placeholder="https://unsplash.com/..." value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
-              </div>
+              <ImageUpload
+                value={imageUrl}
+                onChange={(url, publicId) => {
+                  setImageUrl(url);
+                  if (url) {
+                    setProductImages([{ url, publicId, displayOrder: 1, isPrimary: true }]);
+                  } else {
+                    setProductImages([]);
+                  }
+                }}
+                label="Product Image"
+                folder="products"
+              />
 
               <div className="form-group">
                 <label className="form-label">Product Description</label>

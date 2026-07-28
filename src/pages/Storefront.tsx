@@ -15,7 +15,16 @@ interface Product {
   description?: string;
   categoryId?: string;
   stock: number;
-  images?: Array<{ url: string; alt?: string }>;
+  images?: Array<{
+    id?: string;
+    url: string;
+    cloudinaryPublicId?: string;
+    displayOrder?: number;
+    isPrimary?: boolean;
+    altText?: string;
+    alt?: string;
+  }>;
+  imageUrl?: string;
   status: string;
 }
 
@@ -26,7 +35,11 @@ interface Category {
   subcategories?: Category[];
 }
 
-const Storefront: React.FC = () => {
+interface StorefrontProps {
+  previewBootstrapData?: any;
+}
+
+const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
   const { storeTenantId } = useParams<{ storeTenantId: string }>();
   const { tenantId, setTenantId } = useAuth();
   const { cartCount, addToCart } = useCart();
@@ -52,6 +65,10 @@ const Storefront: React.FC = () => {
 
   useEffect(() => {
     const initializeStorefront = async () => {
+      if (previewBootstrapData) {
+        setResolvingTenant(false);
+        return;
+      }
       setResolvingTenant(true);
       setResolutionError(null);
       try {
@@ -82,12 +99,34 @@ const Storefront: React.FC = () => {
     };
 
     initializeStorefront();
-  }, [storeTenantId, setTenantId]);
+  }, [storeTenantId, setTenantId, previewBootstrapData]);
 
   useEffect(() => {
     if (resolvingTenant || resolutionError) return;
 
     const loadBootstrap = async () => {
+      if (previewBootstrapData) {
+        setBootstrapData(previewBootstrapData);
+        if (previewBootstrapData.theme) {
+          const t = previewBootstrapData.theme;
+          if (t.primaryColor) document.documentElement.style.setProperty('--primary-color', t.primaryColor);
+          if (t.secondaryColor) document.documentElement.style.setProperty('--secondary-color', t.secondaryColor);
+          if (t.accentColor) document.documentElement.style.setProperty('--accent-color', t.accentColor);
+          if (t.backgroundColor) document.documentElement.style.setProperty('--bg-primary', t.backgroundColor);
+          if (t.textColor) document.documentElement.style.setProperty('--text-primary', t.textColor);
+          if (t.fontFamily) {
+            document.documentElement.style.setProperty('--font-display', t.fontFamily);
+            document.documentElement.style.setProperty('--font-sans', t.fontFamily);
+          }
+          if (t.borderRadius !== undefined) document.documentElement.style.setProperty('--radius-sm', `${t.borderRadius}px`);
+          if (t.borderRadius !== undefined) document.documentElement.style.setProperty('--radius-md', `${t.borderRadius * 1.5}px`);
+        }
+        if (previewBootstrapData.seo?.siteTitle) {
+          document.title = previewBootstrapData.seo.siteTitle;
+        }
+        return;
+      }
+
       try {
         const res = await apiClient.get('/api/v1/store/bootstrap');
         if (res.data) {
@@ -117,7 +156,7 @@ const Storefront: React.FC = () => {
     };
 
     loadBootstrap();
-  }, [resolvingTenant, resolutionError]);
+  }, [resolvingTenant, resolutionError, previewBootstrapData]);
 
   const loadStoreData = async () => {
     setLoading(true);
@@ -160,21 +199,190 @@ const Storefront: React.FC = () => {
 
   if (resolvingTenant) {
     return (
-      <div className="loading-container card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
-        <div className="spinner"></div>
-        <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>Resolving storefront context...</p>
+      <div className="content-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', minHeight: '80vh' }}>
+        {/* Header Navigation skeleton */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.25rem' }}>
+          <div className="skeleton" style={{ width: '130px', height: '32px', borderRadius: 'var(--radius-sm)' }} />
+          <div style={{ display: 'flex', gap: '1.5rem' }}>
+            <div className="skeleton" style={{ width: '80px', height: '20px', borderRadius: 'var(--radius-sm)' }} />
+            <div className="skeleton" style={{ width: '80px', height: '20px', borderRadius: 'var(--radius-sm)' }} />
+            <div className="skeleton" style={{ width: '80px', height: '20px', borderRadius: 'var(--radius-sm)' }} />
+          </div>
+          <div className="skeleton" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+        </div>
+
+        {/* Hero Banner skeleton */}
+        <div className="skeleton" style={{ width: '100%', height: '200px', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '3rem', gap: '1rem' }}>
+          <div style={{ width: '35%', height: '32px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 'var(--radius-sm)' }} />
+          <div style={{ width: '55%', height: '18px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 'var(--radius-sm)' }} />
+        </div>
+
+        {/* Main Grid skeleton */}
+        <div className="storefront-layout" style={{ marginTop: '1rem' }}>
+          {/* Sidebar filters skeleton */}
+          <div className="sidebar-filters" style={{ gap: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div className="skeleton" style={{ width: '120px', height: '18px', borderRadius: 'var(--radius-sm)' }} />
+              <div className="skeleton" style={{ width: '100%', height: '36px', borderRadius: 'var(--radius-sm)' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div className="skeleton" style={{ width: '100px', height: '18px', borderRadius: 'var(--radius-sm)' }} />
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="skeleton" style={{ width: '100%', height: '32px', borderRadius: 'var(--radius-sm)' }} />
+              ))}
+            </div>
+          </div>
+
+          {/* Products grid skeleton */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="skeleton" style={{ width: '140px', height: '20px', borderRadius: 'var(--radius-sm)' }} />
+              <div className="skeleton" style={{ width: '100px', height: '36px', borderRadius: 'var(--radius-sm)' }} />
+            </div>
+
+            <div className="products-grid">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--border-color)', boxShadow: 'none' }}>
+                  <div className="skeleton" style={{ width: '100%', height: '180px', borderTopLeftRadius: 'var(--radius-md)', borderTopRightRadius: 'var(--radius-md)' }} />
+                  <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div className="skeleton" style={{ width: '80%', height: '20px', borderRadius: 'var(--radius-sm)' }} />
+                    <div className="skeleton" style={{ width: '45%', height: '16px', borderRadius: 'var(--radius-sm)' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                      <div className="skeleton" style={{ width: '60px', height: '22px', borderRadius: 'var(--radius-sm)' }} />
+                      <div className="skeleton" style={{ width: '80px', height: '32px', borderRadius: 'var(--radius-sm)' }} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (resolutionError) {
     return (
-      <div className="card text-center" style={{ padding: '4rem 2rem', maxWidth: '600px', margin: '4rem auto' }}>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800 }}>Store Not Found</h2>
-        <p style={{ color: 'var(--text-secondary)', margin: '1rem 0 2rem' }}>{resolutionError}</p>
-        <button className="btn btn-primary" onClick={() => window.location.href = 'https://kromic.in'}>
-          Go to Kromic Home
-        </button>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '75vh',
+        padding: '2rem',
+        background: 'radial-gradient(circle at top right, rgba(99, 102, 241, 0.04), transparent 40%), radial-gradient(circle at bottom left, rgba(6, 182, 212, 0.04), transparent 40%)'
+      }}>
+        <div className="card text-center" style={{
+          padding: '4rem 3rem',
+          maxWidth: '500px',
+          width: '100%',
+          boxShadow: '0 20px 40px -15px rgba(0,0,0,0.06)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1.25rem',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Neon Top Accent */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            background: 'linear-gradient(90deg, var(--primary-color), var(--accent-color))'
+          }} />
+
+          {/* Icon Circle */}
+          <div style={{
+            width: '74px',
+            height: '74px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(239, 68, 68, 0.05)',
+            color: '#ef4444',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '0.25rem',
+            border: '1px solid rgba(239, 68, 68, 0.12)'
+          }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
+              <path d="m3 9 2.44-4.88A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.12L21 9" />
+              <path d="M12 3v6" />
+              <path d="m2 2 20 20" />
+            </svg>
+          </div>
+
+          <h2 style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 800,
+            fontSize: '1.65rem',
+            margin: 0,
+            letterSpacing: '-0.02em',
+            color: 'var(--text-primary)'
+          }}>
+            Store Not Found
+          </h2>
+
+          <p style={{
+            color: 'var(--text-secondary)',
+            fontSize: '0.9rem',
+            lineHeight: '1.6',
+            margin: '0 0 0.5rem 0'
+          }}>
+            {resolutionError}
+          </p>
+
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem',
+            width: '100%',
+            marginTop: '0.25rem'
+          }}>
+            <button
+              className="btn btn-primary"
+              onClick={() => window.location.href = 'https://kromic.in'}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                justifyContent: 'center',
+                fontWeight: 600,
+                fontSize: '0.9rem'
+              }}
+            >
+              Go to Kromic Hub
+            </button>
+
+            <button
+              className="btn btn-secondary"
+              onClick={() => window.location.reload()}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                justifyContent: 'center',
+                fontWeight: 600,
+                fontSize: '0.9rem'
+              }}
+            >
+              Reload Page
+            </button>
+          </div>
+
+          <div style={{
+            fontSize: '0.75rem',
+            color: 'var(--text-muted)',
+            marginTop: '0.5rem',
+            borderTop: '1px solid var(--border-color)',
+            paddingTop: '1rem',
+            width: '100%'
+          }}>
+            Want to setup your own store? <a href="https://kromic.in/start" style={{ color: 'var(--primary-color)', fontWeight: 600, textDecoration: 'none' }}>Get Started →</a>
+          </div>
+        </div>
       </div>
     );
   }

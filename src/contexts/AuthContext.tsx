@@ -108,9 +108,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<User> => {
     setIsLoading(true);
     try {
-      const isSuperEmail = email === 'admin@kromicstore.com' || email === 'admin@kromic-store.com';
-      const url = isSuperEmail ? '/api/v1/superuser/auth/login' : '/api/v1/auth/login';
-      const response = await apiClient.post(url, { email, password });
+      let response;
+      try {
+        response = await apiClient.post('/api/v1/auth/login', { email, password });
+      } catch (err: any) {
+        console.warn('Standard tenant login failed, trying superuser login...');
+        response = await apiClient.post('/api/v1/superuser/auth/login', { email, password });
+      }
       
       const resData = response.data.data || response.data;
       const { accessToken, refreshToken, userId, email: resEmail, firstName, lastName } = resData;
@@ -123,8 +127,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const claimRole = claims?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || claims?.role;
       const parsedRoles = Array.isArray(claimRole) ? claimRole : claimRole ? [claimRole] : [];
       
-      const isSuper = isSuperEmail || parsedRoles.includes('SuperUser');
-      const userRoles = isSuper ? ['SuperUser'] : parsedRoles.length > 0 ? parsedRoles : ['TenantAdmin'];
+      if (parsedRoles.length === 0) {
+        throw new Error('No roles found in JWT token');
+      }
+
+      const userRoles = parsedRoles;
 
       const userData: User = {
         id: userId,

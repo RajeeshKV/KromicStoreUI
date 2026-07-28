@@ -201,7 +201,11 @@ const Orders: React.FC = () => {
       if (shipOrderId?.startsWith('order-mock-')) {
         setOrders(prev => prev.map(o => o.id === shipOrderId ? { ...o, status: 'Shipped', trackingNumber, courierName } : o));
       } else {
-        await apiClient.post(`/api/v1/orders/${shipOrderId}/ship`, { trackingNumber });
+        await apiClient.post(`/api/v1/orders/${shipOrderId}/ship`, { 
+          trackingNumber, 
+          courierId: selectedCourierId,
+          courierName: courierName
+        });
       }
       
       setOrders(prev => prev.map(o => o.id === shipOrderId ? { ...o, status: 'Shipped', trackingNumber, courierName } : o));

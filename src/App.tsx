@@ -26,6 +26,10 @@ import PaymentSettings from './pages/TenantAdmin/PaymentSettings';
 import Theme from './pages/TenantAdmin/Theme';
 import StorefrontSettings from './pages/TenantAdmin/StorefrontSettings';
 import Orders from './pages/TenantAdmin/Orders';
+import Subscription from './pages/TenantAdmin/Subscription';
+import Customers from './pages/TenantAdmin/Customers';
+import Team from './pages/TenantAdmin/Team';
+import PreviewStorefront from './pages/TenantAdmin/PreviewStorefront';
 
 // Super Admin
 import SuperAdminDashboard from './pages/SuperAdmin/Dashboard';
@@ -285,6 +289,30 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/business/subscription"
+              element={
+                <ProtectedRoute allowedRoles={['TenantAdmin']}>
+                  <Subscription />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/business/customers"
+              element={
+                <ProtectedRoute allowedRoles={['TenantAdmin']}>
+                  <Customers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/business/team"
+              element={
+                <ProtectedRoute allowedRoles={['TenantAdmin']}>
+                  <Team />
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               path="/admin"
@@ -302,6 +330,7 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+            <Route path="/preview-storefront" element={<PreviewStorefront />} />
             {/* General Pages & Subdomain Storefront resolver */}
             <Route path="/*" element={<RootRouteResolver />} />
           </Routes>

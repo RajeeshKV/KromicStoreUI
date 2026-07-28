@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/apiClient';
 import ImageUpload from '../../components/ImageUpload';
-import { Settings, Save, Globe, Loader2 } from 'lucide-react';
+import { Settings, Save, Globe, Loader2, Eye, X } from 'lucide-react';
 import { AdminSidebar } from './Dashboard';
 
 const StorefrontSettings: React.FC = () => {
@@ -10,6 +10,17 @@ const StorefrontSettings: React.FC = () => {
   const [publishing, setPublishing] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [storefrontId, setStorefrontId] = useState<string>('');
+
+  // Preview and Pending Changes States
+  const [showPreview, setShowPreview] = useState(false);
+  const [pendingChanges, setPendingChanges] = useState<{
+    hasPendingChanges: boolean;
+    status?: string;
+    lastUpdated?: string;
+    lastPublished?: string;
+    changes?: string[];
+  } | null>(null);
 
   // Storefront Form States
   const [name, setName] = useState('');
@@ -36,12 +47,26 @@ const StorefrontSettings: React.FC = () => {
     loadStorefrontSettings();
   }, []);
 
+  const loadPendingChanges = async (id?: string) => {
+    const targetId = id || storefrontId;
+    if (!targetId) return;
+    try {
+      const res = await apiClient.get(`/api/v1/storefronts/${targetId}/pending-changes`);
+      setPendingChanges(res.data.data || res.data || null);
+    } catch (err) {
+      console.warn('Pending changes not supported or failed to load:', err);
+    }
+  };
+
   const loadStorefrontSettings = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get('/api/v1/storefront');
-      if (res.data) {
-        const data = res.data.data || res.data;
+      const res = await apiClient.get('/api/v1/storefronts');
+      const storefronts = res.data.data || res.data;
+      if (storefronts && storefronts.length > 0) {
+        const data = storefronts[0];
+        const activeId = data.id || data._id || '';
+        setStorefrontId(activeId);
         setName(data.name || '');
         setLogoUrl(data.logoUrl || '');
         setContactEmail(data.contactEmail || '');
@@ -52,53 +77,21 @@ const StorefrontSettings: React.FC = () => {
         setBrandColor(data.brandColor || '#4f46e5');
         setCopyright(data.copyright || '');
         
-        // Navigation options
         setShowAboutUs(data.showAboutUs !== false);
         setShowContactUs(data.showContactUs !== false);
 
-        // Social links
         if (data.socialLinks) {
           setFacebook(data.socialLinks.facebook || '');
           setTwitter(data.socialLinks.twitter || '');
           setInstagram(data.socialLinks.instagram || '');
           setLinkedin(data.socialLinks.linkedin || '');
         }
+
+        await loadPendingChanges(activeId);
       }
     } catch (err: any) {
-      console.warn('Storefront settings API not found, loading fallback configs', err);
-      // Local storage fallback
-      const localMock = localStorage.getItem('mock_storefront_settings');
-      if (localMock) {
-        const data = JSON.parse(localMock);
-        setName(data.name);
-        setLogoUrl(data.logoUrl);
-        setContactEmail(data.contactEmail);
-        setContactPhone(data.contactPhone);
-        setAddress(data.address);
-        setCurrency(data.currency);
-        setCountry(data.country);
-        setBrandColor(data.brandColor);
-        setCopyright(data.copyright);
-        setShowAboutUs(data.showAboutUs);
-        setShowContactUs(data.showContactUs);
-        setFacebook(data.socialLinks?.facebook || '');
-        setTwitter(data.socialLinks?.twitter || '');
-        setInstagram(data.socialLinks?.instagram || '');
-        setLinkedin(data.socialLinks?.linkedin || '');
-      } else {
-        // Defaults
-        setName('Merchant Storefront');
-        setLogoUrl(localStorage.getItem('storeLogo') || '');
-        setContactEmail('support@merchant.com');
-        setContactPhone('+91-9876543210');
-        setAddress('Corporate Office, Sector 15, Gurugram, India');
-        setCurrency('INR');
-        setCountry('India');
-        setBrandColor('#4f46e5');
-        setCopyright('© 2026 Merchant Inc. All rights reserved.');
-        setShowAboutUs(true);
-        setShowContactUs(true);
-      }
+      console.error('Failed to load storefront settings', err);
+      setErrorMsg('Failed to load storefront settings.');
     } finally {
       setLoading(false);
     }
@@ -106,6 +99,8 @@ const StorefrontSettings: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!storefrontId) return;
+
     setSaving(true);
     setErrorMsg('');
     setSuccessMsg('');
@@ -131,35 +126,49 @@ const StorefrontSettings: React.FC = () => {
     };
 
     try {
-      await apiClient.put('/api/v1/storefront', payload);
-      setSuccessMsg('Storefront settings saved!');
-      localStorage.setItem('mock_storefront_settings', JSON.stringify(payload));
-      if (logoUrl) {
-        localStorage.setItem('storeLogo', logoUrl);
-      }
+      await apiClient.put(`/api/v1/storefronts/${storefrontId}`, payload);
+      setSuccessMsg('Storefront settings saved to draft!');
+      loadStorefrontSettings();
     } catch (err: any) {
       console.error('Failed to save settings:', err);
-      // Simulate locally
-      localStorage.setItem('mock_storefront_settings', JSON.stringify(payload));
-      if (logoUrl) {
-        localStorage.setItem('storeLogo', logoUrl);
-      }
-      setSuccessMsg('Storefront settings updated (simulation fallback)');
+      setErrorMsg('Failed to save settings.');
     } finally {
       setSaving(false);
     }
   };
 
   const handlePublish = async () => {
+    if (!storefrontId) return;
     setPublishing(true);
     setErrorMsg('');
     setSuccessMsg('');
     try {
-      await apiClient.post('/api/v1/storefront/publish');
+      // 1. Validate storefront configuration
+      try {
+        const valRes = await apiClient.get(`/api/v1/storefronts/${storefrontId}/validate`);
+        const valData = valRes.data.data || valRes.data;
+        if (valData && !valData.isValid) {
+          setErrorMsg('Cannot publish: ' + (valData.errors?.join(', ') || 'Validation failed.'));
+          setPublishing(false);
+          return;
+        }
+      } catch (valErr) {
+        console.warn('Validation endpoint failed or does not exist, proceeding to publish', valErr);
+      }
+
+      if (!window.confirm('Are you sure you want to publish these storefront changes to live production?')) {
+        setPublishing(false);
+        return;
+      }
+
+      // 2. Publish
+      await apiClient.post(`/api/v1/storefronts/${storefrontId}/publish`);
       setSuccessMsg('Storefront published successfully to live environment!');
-    } catch (err) {
+      setShowPreview(false);
+      loadStorefrontSettings();
+    } catch (err: any) {
       console.error('Failed to publish settings', err);
-      setSuccessMsg('Published successfully (simulation fallback mode)');
+      setErrorMsg('Failed to publish: ' + (err.response?.data?.message || err.message));
     } finally {
       setPublishing(false);
     }
@@ -170,13 +179,30 @@ const StorefrontSettings: React.FC = () => {
       <AdminSidebar active="config" />
       <main className="dashboard-content">
         <div className="content-wrapper">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.25rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem' }}>Storefront Configuration</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Manage catalog layouts, branding color variables, contact info, and copyright settings.</p>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            Storefront Configuration
+            {pendingChanges?.hasPendingChanges && (
+              <span className="badge" style={{ backgroundColor: 'var(--warning)', color: '#ffffff', fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                {pendingChanges.changes?.length || 0} Draft Changes
+              </span>
+            )}
+          </h1>
+          <p style={{ color: 'var(--text-secondary)' }}>
+            Manage catalog layouts, branding color variables, contact info, and copyright settings.
+            {pendingChanges?.lastPublished && (
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginLeft: '1rem' }}>
+                Last published: {new Date(pendingChanges.lastPublished).toLocaleString()}
+              </span>
+            )}
+          </p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button className="btn btn-secondary" onClick={handlePublish} disabled={publishing || loading}>
+          <button className="btn btn-secondary" onClick={() => setShowPreview(true)} disabled={loading}>
+            <Eye size={16} /> Preview Storefront
+          </button>
+          <button className="btn btn-primary" onClick={handlePublish} disabled={publishing || loading}>
             {publishing ? <Loader2 className="spinner" size={16} /> : <Globe size={16} />} Publish Site
           </button>
         </div>
@@ -415,6 +441,46 @@ const StorefrontSettings: React.FC = () => {
       )}
         </div>
       </main>
+
+      {/* --- PREVIEW IFRAME MODAL --- */}
+      {showPreview && (
+        <div className="modal-backdrop">
+          <div className="modal-content card" style={{ maxWidth: '90%', width: '1200px', padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.35rem' }}>Storefront Interactive Preview</h3>
+                {pendingChanges?.hasPendingChanges && (
+                  <span className="badge" style={{ backgroundColor: 'var(--warning)', color: '#ffffff', fontSize: '0.7rem', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                    Unpublished Draft
+                  </span>
+                )}
+              </div>
+              <button className="btn btn-secondary btn-icon" onClick={() => setShowPreview(false)}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{ border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden', backgroundColor: 'var(--bg-primary)' }}>
+              <iframe
+                src="/preview-storefront"
+                style={{ width: '100%', height: '65vh', border: 'none' }}
+                title="Storefront Live Preview"
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1.5rem' }}>
+              <button className="btn btn-secondary" onClick={() => setShowPreview(false)}>
+                Close Preview
+              </button>
+              {pendingChanges?.hasPendingChanges && (
+                <button className="btn btn-primary" onClick={handlePublish} disabled={publishing}>
+                  {publishing ? <Loader2 className="spinner" size={16} /> : <Globe size={16} />} Publish Changes
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
