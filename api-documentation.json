@@ -16,7 +16,7 @@
   },
   "servers": [
     {
-      "url": "http://kromicstoreapi.onrender.com"
+      "url": "https://storeapi.kromic.in"
     }
   ],
   "paths": {
@@ -1726,6 +1726,344 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/KromicStore.Contracts.Abstractions.ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/couriers": {
+      "get": {
+        "tags": [
+          "Courier"
+        ],
+        "summary": "Gets all couriers for the current tenant.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KromicStore.Domain.Entities.Courier"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Courier"
+        ],
+        "summary": "Creates a new courier.",
+        "requestBody": {
+          "description": "The courier creation request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.CreateCourierRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.CreateCourierRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.CreateCourierRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Domain.Entities.Courier"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/couriers/{id}": {
+      "get": {
+        "tags": [
+          "Courier"
+        ],
+        "summary": "Gets a specific courier by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The courier ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Domain.Entities.Courier"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Courier"
+        ],
+        "summary": "Updates an existing courier.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The courier ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The courier update request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.UpdateCourierRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.UpdateCourierRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.UpdateCourierRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Domain.Entities.Courier"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Courier"
+        ],
+        "summary": "Deletes a courier.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The courier ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/couriers/{id}/status": {
+      "patch": {
+        "tags": [
+          "Courier"
+        ],
+        "summary": "Activates or deactivates a courier.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The courier ID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The activation request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.UpdateCourierStatusRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.UpdateCourierStatusRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.UpdateCourierStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Domain.Entities.Courier"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
               }
             }
@@ -4895,6 +5233,82 @@
         }
       }
     },
+    "/api/v1/public/tenant/by-subdomain": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Resolve tenant by subdomain for storefront initialization.",
+        "parameters": [
+          {
+            "name": "subdomain",
+            "in": "query",
+            "description": "The subdomain to resolve (e.g., \"store\" for store.kromic.in).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant resolved successfully.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "400": {
+            "description": "Subdomain parameter missing.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant not found for the given subdomain.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error resolving tenant.",
+            "content": {
+              "text/plain": {
+                "schema": { }
+              },
+              "application/json": {
+                "schema": { }
+              },
+              "text/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/public/subdomain/check": {
       "get": {
         "tags": [
@@ -5023,6 +5437,195 @@
               },
               "text/json": {
                 "schema": { }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payment/razorpay": {
+      "get": {
+        "tags": [
+          "RazorpayConfiguration"
+        ],
+        "summary": "Gets the Razorpay configuration for the current tenant.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.API.Controllers.RazorpayConfigurationResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "RazorpayConfiguration"
+        ],
+        "summary": "Creates or updates the Razorpay configuration for the current tenant.",
+        "requestBody": {
+          "description": "The Razorpay configuration request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.UpsertRazorpayConfigurationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.UpsertRazorpayConfigurationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.UpsertRazorpayConfigurationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.API.Controllers.RazorpayConfigurationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "RazorpayConfiguration"
+        ],
+        "summary": "Deletes the Razorpay configuration for the current tenant.",
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payment/razorpay/status": {
+      "patch": {
+        "tags": [
+          "RazorpayConfiguration"
+        ],
+        "summary": "Activates or deactivates the Razorpay configuration.",
+        "requestBody": {
+          "description": "The activation request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.UpdateRazorpayStatusRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.UpdateRazorpayStatusRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/KromicStore.API.Controllers.UpdateRazorpayStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.API.Controllers.RazorpayConfigurationResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
               }
             }
           }
@@ -6120,6 +6723,46 @@
           },
           "404": {
             "description": "Subscription not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subscriptions/current/usage": {
+      "get": {
+        "tags": [
+          "Subscription"
+        ],
+        "summary": "Gets the current usage summary for the tenant.",
+        "responses": {
+          "200": {
+            "description": "Usage summary successfully retrieved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KromicStore.Application.Interfaces.UsageSummary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not authorized (must be TenantAdmin or SuperUser).",
             "content": {
               "application/json": {
                 "schema": {
@@ -8692,6 +9335,21 @@
         "additionalProperties": false,
         "description": "Request model for contact us form."
       },
+      "KromicStore.API.Controllers.CreateCourierRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for creating a courier."
+      },
       "KromicStore.API.Controllers.DomainReasonRequest": {
         "type": "object",
         "properties": {
@@ -8940,6 +9598,40 @@
         },
         "additionalProperties": false
       },
+      "KromicStore.API.Controllers.RazorpayConfigurationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "keyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "environment": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response model for Razorpay configuration (without secret)."
+      },
       "KromicStore.API.Controllers.RetentionPolicyRequest": {
         "type": "object",
         "properties": {
@@ -9008,6 +9700,89 @@
           }
         },
         "additionalProperties": false
+      },
+      "KromicStore.API.Controllers.UpdateCourierRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingUrlTemplate": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "averageDeliveryDays": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for updating a courier."
+      },
+      "KromicStore.API.Controllers.UpdateCourierStatusRequest": {
+        "type": "object",
+        "properties": {
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for updating courier status."
+      },
+      "KromicStore.API.Controllers.UpdateRazorpayStatusRequest": {
+        "type": "object",
+        "properties": {
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for updating Razorpay configuration status."
+      },
+      "KromicStore.API.Controllers.UpsertRazorpayConfigurationRequest": {
+        "type": "object",
+        "properties": {
+          "keyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "keySecret": {
+            "type": "string",
+            "nullable": true
+          },
+          "environment": {
+            "type": "string",
+            "nullable": true
+          },
+          "webhookSecret": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for upserting Razorpay configuration."
       },
       "KromicStore.API.Controllers.VerifyDomainRequest": {
         "type": "object",
@@ -9617,15 +10392,21 @@
         "additionalProperties": false
       },
       "KromicStore.Contracts.V1.ApiKeys.CreateApiKeyRequest": {
+        "required": [
+          "name",
+          "scopes"
+        ],
         "type": "object",
         "properties": {
           "name": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
           },
           "scopes": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string"
           },
           "expiresAt": {
             "type": "string",
@@ -10191,24 +10972,34 @@
         "additionalProperties": false
       },
       "KromicStore.Contracts.V1.FeatureFlags.CreateFeatureFlagRequest": {
+        "required": [
+          "key",
+          "type"
+        ],
         "type": "object",
         "properties": {
           "key": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 100,
+            "minLength": 1,
+            "pattern": "^[a-z_][a-z0-9_]*$",
+            "type": "string"
           },
           "isEnabled": {
             "type": "boolean"
           },
           "description": {
+            "maxLength": 500,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           },
           "type": {
-            "type": "string",
-            "nullable": true
+            "pattern": "^(Global|Tenant|Plan)$",
+            "type": "string"
           },
           "plan": {
+            "maxLength": 50,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           }
@@ -10273,6 +11064,8 @@
             "nullable": true
           },
           "description": {
+            "maxLength": 500,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           }
@@ -10994,6 +11787,8 @@
         "type": "object",
         "properties": {
           "description": {
+            "maxLength": 500,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           }
@@ -11318,15 +12113,22 @@
         "additionalProperties": false
       },
       "KromicStore.Contracts.V1.Team.CreateTeamInvitationRequest": {
+        "required": [
+          "email",
+          "role"
+        ],
         "type": "object",
         "properties": {
           "email": {
+            "maxLength": 256,
+            "minLength": 0,
             "type": "string",
-            "nullable": true
+            "format": "email"
           },
           "role": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -11374,6 +12176,8 @@
         "type": "object",
         "properties": {
           "reason": {
+            "maxLength": 500,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           }
@@ -11554,6 +12358,196 @@
         },
         "additionalProperties": false
       },
+      "KromicStore.Domain.Entities.Courier": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "readOnly": true
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "readOnly": true
+          },
+          "tenantId": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "trackingUrlTemplate": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "contactPhone": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "contactEmail": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "averageDeliveryDays": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "readOnly": true
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/KromicStore.Domain.Entities.Tenant"
+          }
+        },
+        "additionalProperties": false
+      },
+      "KromicStore.Domain.Entities.Tenant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "readOnly": true
+          },
+          "updatedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "readOnly": true
+          },
+          "tenantId": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "subdomain": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "isArchived": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "suspendedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true
+          },
+          "archivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true
+          },
+          "lifecycleReason": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "subscriptionPlan": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "contactEmail": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "contactPhone": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "subscriptionEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
       "KromicStore.Domain.Entities.TenantUsage": {
         "type": "object",
         "properties": {
@@ -11669,6 +12663,10 @@
       "description": "API controller for tenant-specific configuration management endpoints.\r\nAccessible to TenantAdmin role."
     },
     {
+      "name": "Courier",
+      "description": "Controller for managing courier configurations."
+    },
+    {
       "name": "Customer",
       "description": "Controller for managing customers."
     },
@@ -11711,6 +12709,10 @@
     {
       "name": "Public",
       "description": "Public endpoints accessible without authentication."
+    },
+    {
+      "name": "RazorpayConfiguration",
+      "description": "Controller for managing Razorpay payment gateway configurations."
     },
     {
       "name": "RazorpayWebhookReceiver",

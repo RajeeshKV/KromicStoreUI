@@ -28,7 +28,15 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-// Request Interceptor: Attach access token and tenant ID dynamically
+const generateUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0,
+      v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
+// Request Interceptor: Attach access token, tenant ID, and idempotency keys dynamically
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const accessToken = localStorage.getItem('accessToken');
@@ -40,6 +48,14 @@ apiClient.interceptors.request.use(
     const tenantId = localStorage.getItem('tenantId');
     if (tenantId) {
       config.headers['X-Tenant-Id'] = tenantId;
+    }
+
+    // Automatically attach Idempotency-Key header for all mutative requests
+    const method = config.method?.toLowerCase();
+    if (method === 'post' || method === 'put' || method === 'delete') {
+      if (!config.headers['Idempotency-Key']) {
+        config.headers['Idempotency-Key'] = generateUUID();
+      }
     }
 
     return config;

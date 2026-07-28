@@ -24,43 +24,23 @@ const Products: React.FC = () => {
   const [imageUrl, setImageUrl] = useState('');
 
   const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const loadData = async () => {
     setLoading(true);
+    setErrorMsg('');
     try {
       // 1. Fetch Categories
       const catRes = await apiClient.get('/api/v1/categories');
-      setCategories(catRes.data.data || []);
+      setCategories(catRes.data.data || catRes.data || []);
 
       // 2. Fetch Products
       const prodRes = await apiClient.get('/api/v1/products');
-      let prodData = prodRes.data.data || [];
-
-      if (prodData.length === 0) {
-        // Fallback mock items
-        const saved = localStorage.getItem('mockProducts');
-        if (saved) {
-          prodData = JSON.parse(saved);
-        } else {
-          prodData = getDemoProducts();
-          localStorage.setItem('mockProducts', JSON.stringify(prodData));
-        }
-      }
+      const prodData = prodRes.data.data || prodRes.data || [];
       setProducts(prodData);
     } catch (err: any) {
-      console.warn('API Products failed. Invoking local database fallback.');
-      const saved = localStorage.getItem('mockProducts');
-      if (saved) {
-        setProducts(JSON.parse(saved));
-      } else {
-        const demoProds = getDemoProducts();
-        localStorage.setItem('mockProducts', JSON.stringify(demoProds));
-        setProducts(demoProds);
-      }
-
-      // Try local categories
-      const catSaved = localStorage.getItem('mockCategories');
-      if (catSaved) setCategories(JSON.parse(catSaved));
+      console.error('API Products loading failed:', err);
+      setErrorMsg(err.response?.data?.message || err.message || 'Failed to retrieve products and categories from server.');
     } finally {
       setLoading(false);
     }
@@ -77,7 +57,7 @@ const Products: React.FC = () => {
     setPrice(0);
     setStock(0);
     setReorderLevel(10);
-    setCategoryId(categories.length > 0 ? categories[0].id : '');
+    setCategoryId('');
     setDescription('');
     setImageUrl('');
     setShowFormModal(true);
@@ -95,10 +75,19 @@ const Products: React.FC = () => {
     setShowFormModal(true);
   };
 
+  const generateUUID = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0,
+        v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  };
+
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setSuccessMsg('');
+    setErrorMsg('');
 
     const payload = {
       name,
@@ -112,42 +101,19 @@ const Products: React.FC = () => {
     };
 
     try {
+      const headers = { 'Idempotency-Key': generateUUID() };
       if (editingProduct) {
-        await apiClient.put(`/api/v1/products/${editingProduct.id}`, payload);
+        await apiClient.put(`/api/v1/products/${editingProduct.id}`, payload, { headers });
         setSuccessMsg('Product updated successfully!');
       } else {
-        await apiClient.post('/api/v1/products', payload);
+        await apiClient.post('/api/v1/products', payload, { headers });
         setSuccessMsg('Product created successfully!');
       }
       setShowFormModal(false);
       loadData();
     } catch (err: any) {
-      console.warn('API save product failed. Saving in localStorage.');
-      const generatedId = editingProduct ? editingProduct.id : `product-mock-${Math.random().toString(36).substr(2, 9)}`;
-      
-      const newProd: Product = {
-        id: generatedId,
-        name,
-        sku,
-        price: Number(price),
-        stock: Number(stock),
-        categoryId,
-        description,
-        images: imageUrl ? [{ url: imageUrl }] : [],
-        status: editingProduct ? editingProduct.status : 'Draft',
-      };
-
-      let updatedList: Product[];
-      if (editingProduct) {
-        updatedList = products.map((p) => (p.id === editingProduct.id ? newProd : p));
-      } else {
-        updatedList = [...products, newProd];
-      }
-
-      localStorage.setItem('mockProducts', JSON.stringify(updatedList));
-      setProducts(updatedList);
-      setShowFormModal(false);
-      setSuccessMsg('Product registered locally.');
+      console.error('API save product failed:', err);
+      setErrorMsg(err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to save product details on server.');
     } finally {
       setSubmitting(false);
     }
@@ -155,44 +121,35 @@ const Products: React.FC = () => {
 
   const handleDeleteProduct = async (id: string) => {
     setSuccessMsg('');
+    setErrorMsg('');
     try {
-      await apiClient.delete(`/api/v1/products/${id}`);
+      const headers = { 'Idempotency-Key': generateUUID() };
+      await apiClient.delete(`/api/v1/products/${id}`, { headers });
       setSuccessMsg('Product deleted.');
       loadData();
-    } catch {
-      const updated = products.filter((p) => p.id !== id);
-      localStorage.setItem('mockProducts', JSON.stringify(updated));
-      setProducts(updated);
-      setSuccessMsg('Product deleted locally.');
+    } catch (err: any) {
+      console.error('Failed to delete product:', err);
+      setErrorMsg(err.response?.data?.message || err.message || 'Failed to delete product from server.');
     }
   };
 
   const handleTogglePublish = async (prod: Product) => {
     setSuccessMsg('');
+    setErrorMsg('');
     const action = prod.status === 'Published' ? 'unpublish' : 'publish';
     
     try {
+      const headers = { 'Idempotency-Key': generateUUID() };
       if (action === 'publish') {
-        await apiClient.post(`/api/v1/products/${prod.id}/publish`);
+        await apiClient.post(`/api/v1/products/${prod.id}/publish`, {}, { headers });
       } else {
-        await apiClient.post(`/api/v1/products/${prod.id}/unpublish`);
+        await apiClient.post(`/api/v1/products/${prod.id}/unpublish`, {}, { headers });
       }
-      setSuccessMsg(`Product ${action === 'publish' ? 'published' : 'unpublished'}.`);
+      setSuccessMsg(`Product ${action === 'publish' ? 'published' : 'unpublished'} successfully.`);
       loadData();
-    } catch {
-      // Local toggle fallback
-      const updated = products.map((p) => {
-        if (p.id === prod.id) {
-          return {
-            ...p,
-            status: action === 'publish' ? 'Published' : 'Draft',
-          };
-        }
-        return p;
-      });
-      localStorage.setItem('mockProducts', JSON.stringify(updated));
-      setProducts(updated);
-      setSuccessMsg(`Product status updated locally to ${action === 'publish' ? 'Published' : 'Draft'}.`);
+    } catch (err: any) {
+      console.error('Failed to update product publish status:', err);
+      setErrorMsg(err.response?.data?.message || err.message || 'Failed to toggle product publishing status on server.');
     }
   };
 
@@ -215,6 +172,12 @@ const Products: React.FC = () => {
         {successMsg && (
           <div className="status-pill success" style={{ width: '100%', padding: '0.75rem', marginBottom: '1.5rem', borderRadius: 'var(--radius-sm)' }}>
             {successMsg}
+          </div>
+        )}
+
+        {errorMsg && (
+          <div className="status-pill danger" style={{ width: '100%', padding: '0.75rem', marginBottom: '1.5rem', borderRadius: 'var(--radius-sm)' }}>
+            {errorMsg}
           </div>
         )}
 

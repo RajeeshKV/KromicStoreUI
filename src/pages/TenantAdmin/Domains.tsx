@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/apiClient';
 import { useAuth } from '../../contexts/AuthContext';
 import { Globe, Save, Loader2, ExternalLink } from 'lucide-react';
+import { AdminSidebar } from './Dashboard';
 
 const Domains: React.FC = () => {
   const { tenantId } = useAuth();
@@ -67,8 +68,11 @@ const Domains: React.FC = () => {
   const localTestUrl = subdomain ? `http://localhost:5173/?subdomain=${subdomain}` : '';
 
   return (
-    <div className="content-wrapper">
-      <div style={{ marginBottom: '2rem' }}>
+    <div className="dashboard-layout">
+      <AdminSidebar active="domains" />
+      <main className="dashboard-content">
+        <div className="content-wrapper">
+          <div style={{ marginBottom: '2rem' }}>
         <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem' }}>Store Address (Subdomain)</h1>
         <p style={{ color: 'var(--text-secondary)' }}>Configure the web address subdomain that customer traffic resolves to access your online storefront catalog.</p>
       </div>
@@ -179,6 +183,8 @@ const Domains: React.FC = () => {
 
         </div>
       )}
+    </div>
+      </main>
     </div>
   );
 };
