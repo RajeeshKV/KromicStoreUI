@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/apiClient';
 import ImageUpload from '../../components/ImageUpload';
-import { Settings, Save, Globe, Loader2, Eye, X } from 'lucide-react';
+import { Settings, Save, Globe, Loader2, Eye, X, Mail, Phone, MessageCircle } from 'lucide-react';
 import { AdminSidebar } from './Dashboard';
 
 const StorefrontSettings: React.FC = () => {
@@ -22,22 +22,29 @@ const StorefrontSettings: React.FC = () => {
     changes?: string[];
   } | null>(null);
 
-  // Storefront Form States
+  // Storefront Details (Name, Logo)
   const [name, setName] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
+
+  // Contact Information (For Footer)
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
   const [address, setAddress] = useState('');
+  
+  // Store Configuration
   const [currency, setCurrency] = useState('INR');
   const [country, setCountry] = useState('India');
-  const [brandColor, setBrandColor] = useState('#4f46e5');
   const [copyright, setCopyright] = useState('');
   
-  // Navigation & Page Toggles
-  const [showAboutUs, setShowAboutUs] = useState(true);
-  const [showContactUs, setShowContactUs] = useState(true);
+  // Content Sections - About Us (Toggle + Optional Text)
+  const [showAboutUs, setShowAboutUs] = useState(false);
+  const [aboutUsContent, setAboutUsContent] = useState('');
 
-  // Social Links
+  // Content Sections - Contact Us (Toggle + Form)
+  const [showContactUs, setShowContactUs] = useState(false);
+
+  // Social Links (Footer Icons)
   const [facebook, setFacebook] = useState('');
   const [twitter, setTwitter] = useState('');
   const [instagram, setInstagram] = useState('');
@@ -72,13 +79,14 @@ const StorefrontSettings: React.FC = () => {
         setLogoUrl('');
         setContactEmail('');
         setContactPhone('');
+        setWhatsapp('');
         setAddress('');
         setCurrency('INR');
         setCountry('India');
-        setBrandColor('#4f46e5');
         setCopyright('');
-        setShowAboutUs(true);
-        setShowContactUs(true);
+        setShowAboutUs(false);
+        setAboutUsContent('');
+        setShowContactUs(false);
         setFacebook('');
         setTwitter('');
         setInstagram('');
@@ -88,19 +96,28 @@ const StorefrontSettings: React.FC = () => {
       const data = storefronts[0];
       const activeId = data.id || data._id || '';
       setStorefrontId(activeId);
+      
+      // Storefront Details
       setName(data.name || '');
       setLogoUrl(data.logoUrl || '');
+      
+      // Contact Information
       setContactEmail(data.contactEmail || '');
       setContactPhone(data.contactPhone || '');
+      setWhatsapp(data.whatsapp || '');
       setAddress(data.address || '');
+      
+      // Store Configuration
       setCurrency(data.currency || 'INR');
       setCountry(data.country || 'India');
-      setBrandColor(data.brandColor || '#4f46e5');
       setCopyright(data.copyright || '');
       
-      setShowAboutUs(data.showAboutUs !== false);
-      setShowContactUs(data.showContactUs !== false);
+      // Content Sections
+      setShowAboutUs(data.showAboutUs === true);
+      setAboutUsContent(data.aboutUsContent || '');
+      setShowContactUs(data.showContactUs === true);
 
+      // Social Links
       if (data.socialLinks) {
         setFacebook(data.socialLinks.facebook || '');
         setTwitter(data.socialLinks.twitter || '');
@@ -126,17 +143,27 @@ const StorefrontSettings: React.FC = () => {
     setSuccessMsg('');
 
     const payload = {
+      // Storefront Details
       name,
       logoUrl,
+      
+      // Contact Information
       contactEmail,
       contactPhone,
+      whatsapp,
       address,
+      
+      // Store Configuration
       currency,
       country,
-      brandColor,
       copyright,
+      
+      // Content Sections
       showAboutUs,
+      aboutUsContent: showAboutUs ? aboutUsContent : '',
       showContactUs,
+      
+      // Social Links
       socialLinks: {
         facebook,
         twitter,
@@ -256,120 +283,124 @@ const StorefrontSettings: React.FC = () => {
             {/* Main configurations card */}
             <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)', margin: 0 }}>
-                <Settings size={20} /> Store Information
+                <Settings size={20} /> Storefront Details
               </h2>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontWeight: 600 }}>Store Display Name *</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={name} 
-                    onChange={(e) => setName(e.target.value)} 
-                    placeholder="e.g. My Premium Store"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" style={{ fontWeight: 600 }}>Store Brand Color</label>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <input 
-                      type="color" 
-                      value={brandColor} 
-                      onChange={(e) => setBrandColor(e.target.value)} 
-                      style={{ width: '40px', height: '38px', padding: 0, border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer' }}
-                    />
+              {/* Store Name & Logo Section */}
+              <div style={{ paddingBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-secondary)' }}>Store Branding</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.25rem' }}>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontWeight: 600 }}>Store Display Name *</label>
                     <input 
                       type="text" 
                       className="form-control" 
-                      value={brandColor} 
-                      onChange={(e) => setBrandColor(e.target.value)} 
+                      value={name} 
+                      onChange={(e) => setName(e.target.value)} 
+                      placeholder="e.g. My Premium Store"
+                      required
                     />
                   </div>
                 </div>
-              </div>
 
-              {/* Cloudinary upload for store logo */}
-              <ImageUpload 
-                label="Store Header Logo" 
-                value={logoUrl} 
-                onChange={(url) => setLogoUrl(url)} 
-                folder="storefront_branding"
-              />
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontWeight: 600 }}>Contact Email</label>
-                  <input 
-                    type="email" 
-                    className="form-control" 
-                    value={contactEmail} 
-                    onChange={(e) => setContactEmail(e.target.value)} 
-                    placeholder="support@mystore.com"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" style={{ fontWeight: 600 }}>Contact Phone</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={contactPhone} 
-                    onChange={(e) => setContactPhone(e.target.value)} 
-                    placeholder="e.g. +91-98765-xxxxx"
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" style={{ fontWeight: 600 }}>Physical Address</label>
-                <textarea 
-                  className="form-control" 
-                  rows={2}
-                  value={address} 
-                  onChange={(e) => setAddress(e.target.value)} 
-                  placeholder="Insert store warehouse/office location"
+                <ImageUpload 
+                  label="Store Header Logo" 
+                  value={logoUrl} 
+                  onChange={(url) => setLogoUrl(url)} 
+                  folder="storefront_branding"
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontWeight: 600 }}>Default Currency</label>
-                  <select 
-                    className="form-control" 
-                    value={currency} 
-                    onChange={(e) => setCurrency(e.target.value)}
-                  >
-                    <option value="INR">INR (₹)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                  </select>
+              {/* Contact Information Section */}
+              <div style={{ paddingBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-secondary)' }}>Contact Information</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontWeight: 600 }}>Contact Email</label>
+                    <input 
+                      type="email" 
+                      className="form-control" 
+                      value={contactEmail} 
+                      onChange={(e) => setContactEmail(e.target.value)} 
+                      placeholder="support@mystore.com"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontWeight: 600 }}>Contact Phone</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      value={contactPhone} 
+                      onChange={(e) => setContactPhone(e.target.value)} 
+                      placeholder="e.g. +91-98765-xxxxx"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontWeight: 600 }}>WhatsApp Number</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      value={whatsapp} 
+                      onChange={(e) => setWhatsapp(e.target.value)} 
+                      placeholder="e.g. +91-98765-xxxxx"
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label" style={{ fontWeight: 600 }}>Country</label>
-                  <input 
-                    type="text" 
+                  <label className="form-label" style={{ fontWeight: 600 }}>Physical Address</label>
+                  <textarea 
                     className="form-control" 
-                    value={country} 
-                    onChange={(e) => setCountry(e.target.value)} 
-                    placeholder="e.g. India"
+                    rows={2}
+                    value={address} 
+                    onChange={(e) => setAddress(e.target.value)} 
+                    placeholder="Insert store warehouse/office location"
                   />
                 </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label" style={{ fontWeight: 600 }}>Copyright Text</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  value={copyright} 
-                  onChange={(e) => setCopyright(e.target.value)} 
-                  placeholder="e.g. © 2026 MyStore. All rights reserved."
-                />
+              {/* Store Configuration Section */}
+              <div style={{ paddingBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-secondary)' }}>Store Configuration</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontWeight: 600 }}>Default Currency</label>
+                    <select 
+                      className="form-control" 
+                      value={currency} 
+                      onChange={(e) => setCurrency(e.target.value)}
+                    >
+                      <option value="INR">INR (₹)</option>
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label" style={{ fontWeight: 600 }}>Country</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      value={country} 
+                      onChange={(e) => setCountry(e.target.value)} 
+                      placeholder="e.g. India"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600 }}>Copyright Text</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    value={copyright} 
+                    onChange={(e) => setCopyright(e.target.value)} 
+                    placeholder="e.g. © 2026 MyStore. All rights reserved."
+                  />
+                </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
@@ -380,81 +411,124 @@ const StorefrontSettings: React.FC = () => {
 
             </div>
 
-            {/* Sidebar widgets (Social links & navigation items) */}
+            {/* Sidebar - Content Sections & Social Links */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               
-              {/* Navigation settings */}
+              {/* Content Sections */}
               <div className="card" style={{ padding: '1.75rem' }}>
-                <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '1rem' }}>Navigation Options</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <input 
-                      type="checkbox" 
-                      id="showAbout" 
-                      checked={showAboutUs} 
-                      onChange={(e) => setShowAboutUs(e.target.checked)} 
-                    />
-                    <label htmlFor="showAbout" style={{ cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', margin: 0 }}>Enable "About Us" Footer Link</label>
+                <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Content Sections</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  
+                  {/* About Us Toggle */}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                      <input 
+                        type="checkbox" 
+                        id="showAbout" 
+                        checked={showAboutUs} 
+                        onChange={(e) => setShowAboutUs(e.target.checked)} 
+                      />
+                      <label htmlFor="showAbout" style={{ cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', margin: 0 }}>Enable About Us Section</label>
+                    </div>
+                    {showAboutUs && (
+                      <textarea 
+                        className="form-control" 
+                        rows={4}
+                        value={aboutUsContent} 
+                        onChange={(e) => setAboutUsContent(e.target.value)} 
+                        placeholder="Add your About Us content here. This will be displayed on the dedicated About Us page."
+                        style={{ fontSize: '0.85rem' }}
+                      />
+                    )}
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <input 
-                      type="checkbox" 
-                      id="showContact" 
-                      checked={showContactUs} 
-                      onChange={(e) => setShowContactUs(e.target.checked)} 
-                    />
-                    <label htmlFor="showContact" style={{ cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', margin: 0 }}>Enable "Contact Us" Footer Link</label>
+                  {/* Contact Us Toggle */}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <input 
+                        type="checkbox" 
+                        id="showContact" 
+                        checked={showContactUs} 
+                        onChange={(e) => setShowContactUs(e.target.checked)} 
+                      />
+                      <label htmlFor="showContact" style={{ cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', margin: 0 }}>Enable Contact Us Section</label>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>A contact form will appear before the footer with your contact information.</p>
                   </div>
                 </div>
               </div>
 
-              {/* Social links */}
-              <div className="card" style={{ padding: '1.75rem' }}>
-                <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem' }}>Social Media Links</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>Facebook URL</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      value={facebook} 
-                      onChange={(e) => setFacebook(e.target.value)} 
-                      placeholder="https://facebook.com/brand"
-                    />
+              {/* Footer - Social Links & Contact Icons */}
+              <div className="card" style={{ padding: '1.75rem', backgroundColor: 'var(--bg-secondary)' }}>
+                <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem', color: 'var(--text-primary)' }}>Footer Information</h3>
+                
+                <div style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                  <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '1rem' }}>Contact Icons (displayed in footer)</p>
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {contactEmail && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: 'var(--bg-primary)', borderRadius: '6px', fontSize: '0.85rem' }}>
+                        <Mail size={16} /> {contactEmail}
+                      </div>
+                    )}
+                    {contactPhone && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: 'var(--bg-primary)', borderRadius: '6px', fontSize: '0.85rem' }}>
+                        <Phone size={16} /> {contactPhone}
+                      </div>
+                    )}
+                    {whatsapp && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: 'var(--bg-primary)', borderRadius: '6px', fontSize: '0.85rem' }}>
+                        <MessageCircle size={16} /> {whatsapp}
+                      </div>
+                    )}
                   </div>
+                </div>
 
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>Twitter / X URL</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      value={twitter} 
-                      onChange={(e) => setTwitter(e.target.value)} 
-                      placeholder="https://x.com/brand"
-                    />
-                  </div>
+                <div>
+                  <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '1rem' }}>Social Media Links (footer icons)</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>Facebook URL</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        value={facebook} 
+                        onChange={(e) => setFacebook(e.target.value)} 
+                        placeholder="https://facebook.com/brand"
+                      />
+                    </div>
 
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>Instagram URL</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      value={instagram} 
-                      onChange={(e) => setInstagram(e.target.value)} 
-                      placeholder="https://instagram.com/brand"
-                    />
-                  </div>
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>Twitter / X URL</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        value={twitter} 
+                        onChange={(e) => setTwitter(e.target.value)} 
+                        placeholder="https://x.com/brand"
+                      />
+                    </div>
 
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>LinkedIn URL</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      value={linkedin} 
-                      onChange={(e) => setLinkedin(e.target.value)} 
-                      placeholder="https://linkedin.com/company/brand"
-                    />
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>Instagram URL</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        value={instagram} 
+                        onChange={(e) => setInstagram(e.target.value)} 
+                        placeholder="https://instagram.com/brand"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>LinkedIn URL</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        value={linkedin} 
+                        onChange={(e) => setLinkedin(e.target.value)} 
+                        placeholder="https://linkedin.com/company/brand"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
