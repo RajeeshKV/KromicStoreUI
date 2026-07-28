@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { AdminSidebar } from './Dashboard';
 import apiClient from '../../api/apiClient';
-import { Save, Upload } from 'lucide-react';
-
+import ImageUpload from '../../components/ImageUpload';
+import { Save, Truck, CreditCard, Palette, Settings, ArrowRight, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface AuditLog {
   id: string;
@@ -13,15 +14,12 @@ interface AuditLog {
 }
 
 const Config: React.FC = () => {
-
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Variable states
   const [storeName, setStoreName] = useState('');
   const [storeLogo, setStoreLogo] = useState('');
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [webhooksRetries, setWebhooksRetries] = useState(3);
   
   const [saveLoading, setSaveLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -30,28 +28,22 @@ const Config: React.FC = () => {
     setLoading(true);
     try {
       const res = await apiClient.get('/api/v1/config');
-      const data = res.data.data || {};
+      const data = res.data.data || res.data || {};
       
-      // Parse settings
       setStoreName(data['store:name'] || 'My Awesome Store');
       setStoreLogo(data['store:logo'] || '');
-      setNotificationsEnabled(data['notifications:enabled'] === 'true' || data['notifications:enabled'] === true);
-      setWebhooksRetries(Number(data['webhooks:maxRetries'] || 3));
 
       // Fetch logs
       const logRes = await apiClient.get('/api/v1/config/audit-logs');
-      setAuditLogs(logRes.data.data || []);
+      setAuditLogs(logRes.data.data || logRes.data || []);
     } catch (err: any) {
       console.warn('Config endpoints failed. Using mock system configurations.', err);
-      // Mock Fallbacks
       setStoreName(localStorage.getItem('storeName') || 'My Awesome Store');
       setStoreLogo(localStorage.getItem('storeLogo') || '');
-      setNotificationsEnabled(localStorage.getItem('notificationsEnabled') === 'true');
-      setWebhooksRetries(Number(localStorage.getItem('webhooksRetries') || 3));
 
       setAuditLogs([
         { id: '1', configKey: 'store:name', oldValue: 'Initial Shop', newValue: 'My Awesome Store', changedAt: new Date(Date.now() - 3600000).toISOString() },
-        { id: '2', configKey: 'webhooks:maxRetries', oldValue: '5', newValue: '3', changedAt: new Date().toISOString() }
+        { id: '2', configKey: 'store:logo', oldValue: '', newValue: localStorage.getItem('storeLogo') || '', changedAt: new Date().toISOString() }
       ]);
     } finally {
       setLoading(false);
@@ -62,27 +54,22 @@ const Config: React.FC = () => {
     loadConfigs();
   }, []);
 
-  const handleSaveConfig = async (key: string, value: string | boolean | number) => {
+  const handleSaveConfig = async (key: string, value: string) => {
     setSaveLoading(true);
     setSuccessMsg('');
 
     try {
       await apiClient.put(`/api/v1/config/${key}`, { value });
       
-      // Keep mock synchronized
-      if (key === 'store:name') localStorage.setItem('storeName', String(value));
-      if (key === 'store:logo') localStorage.setItem('storeLogo', String(value));
-      if (key === 'notifications:enabled') localStorage.setItem('notificationsEnabled', String(value));
-      if (key === 'webhooks:maxRetries') localStorage.setItem('webhooksRetries', String(value));
+      if (key === 'store:name') localStorage.setItem('storeName', value);
+      if (key === 'store:logo') localStorage.setItem('storeLogo', value);
 
       setSuccessMsg(`Setting '${key}' saved successfully.`);
       loadConfigs();
     } catch (err: any) {
       console.warn('API Config put failed. Saving locally.');
-      if (key === 'store:name') localStorage.setItem('storeName', String(value));
-      if (key === 'store:logo') localStorage.setItem('storeLogo', String(value));
-      if (key === 'notifications:enabled') localStorage.setItem('notificationsEnabled', String(value));
-      if (key === 'webhooks:maxRetries') localStorage.setItem('webhooksRetries', String(value));
+      if (key === 'store:name') localStorage.setItem('storeName', value);
+      if (key === 'store:logo') localStorage.setItem('storeLogo', value);
       setSuccessMsg(`Setting '${key}' saved locally.`);
       loadConfigs();
     } finally {
@@ -90,16 +77,14 @@ const Config: React.FC = () => {
     }
   };
 
-
-
   return (
     <div className="dashboard-layout">
       <AdminSidebar active="config" />
 
       <main className="dashboard-content">
         <div style={{ marginBottom: '2.5rem' }}>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem' }}>Store Configurations</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Manage notification defaults, webhook retries, and store parameters.</p>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem' }}>Configurations</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Manage store variables, brand assets, and quick-links to advanced settings panels.</p>
         </div>
 
         {successMsg && (
@@ -110,13 +95,15 @@ const Config: React.FC = () => {
 
         {loading ? (
           <div className="loading-container card">
-            <div className="spinner"></div>
-            <p>Fetching store configuration profiles...</p>
+            <Loader2 className="spinner" size={32} />
+            <p style={{ marginTop: '1rem' }}>Fetching store configuration profiles...</p>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2.5rem', alignItems: 'start' }}>
-            {/* Left side: config variables form cards */}
+            
+            {/* Left side: Config list forms */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              
               {/* Store Name setting */}
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.15rem' }}>Store Name</h3>
@@ -140,122 +127,72 @@ const Config: React.FC = () => {
                 </div>
               </div>
 
-              {/* Store Logo setting */}
+              {/* Store Logo setting (with ImageUpload integration) */}
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.15rem' }}>Store Logo</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Upload your business brand logo to Cloudinary to display on invoices and store catalogs.</p>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                  Configure your storefront branding logo. Changes save automatically when upload completes.
+                </p>
                 
-                {storeLogo && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', width: 'fit-content' }}>
-                    <img src={storeLogo} alt="Preview" style={{ height: '48px', objectFit: 'contain' }} />
-                    <div>
-                      <p style={{ fontSize: '0.8rem', fontWeight: 600 }}>Active Logo URL</p>
-                      <code style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{storeLogo}</code>
+                <ImageUpload 
+                  value={storeLogo} 
+                  onChange={(url) => handleSaveConfig('store:logo', url)} 
+                  label=""
+                  folder="branding_logo"
+                />
+              </div>
+
+              {/* Navigation Cards Deck for Advanced settings */}
+              <div style={{ marginTop: '1rem' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem' }}>Advanced Customizations</h3>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                  <Link to="/business/couriers" style={{ textDecoration: 'none' }}>
+                    <div className="card hover-card" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
+                      <Truck size={24} style={{ color: 'var(--primary-color)', marginBottom: '0.75rem' }} />
+                      <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Couriers</h4>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', flexGrow: 1 }}>Configure third-party delivery and package tracking URL templates.</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', color: 'var(--primary-color)', fontWeight: 600, marginTop: '0.75rem' }}>
+                        Configure <ArrowRight size={12} />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  </Link>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <div style={{ flex: 1 }}>
-                      <input
-                        type="text"
-                        className="form-input"
-                        placeholder="Cloudinary Logo URL"
-                        value={storeLogo}
-                        onChange={(e) => setStoreLogo(e.target.value)}
-                        style={{ marginBottom: 0 }}
-                      />
+                  <Link to="/business/payments" style={{ textDecoration: 'none' }}>
+                    <div className="card hover-card" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
+                      <CreditCard size={24} style={{ color: 'var(--accent-color)', marginBottom: '0.75rem' }} />
+                      <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Payment Gateway</h4>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', flexGrow: 1 }}>Set up your merchant Razorpay API credential settings.</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', color: 'var(--accent-color)', fontWeight: 600, marginTop: '0.75rem' }}>
+                        Configure <ArrowRight size={12} />
+                      </div>
                     </div>
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => handleSaveConfig('store:logo', storeLogo)}
-                      disabled={saveLoading}
-                    >
-                      <Save size={16} /> Save
-                    </button>
-                  </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <label className="btn btn-secondary" style={{ cursor: 'pointer', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Upload size={16} /> Upload Image
-                      <input
-                        type="file"
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setSaveLoading(true);
-                            setSuccessMsg('');
-                            try {
-                              // Simulate Cloudinary upload delay
-                              await new Promise((resolve) => setTimeout(resolve, 1500));
-                              const fakeUrl = `https://res.cloudinary.com/kromicstore/image/upload/v172654321/logos/${file.name.toLowerCase().replace(/[^a-z0-9.]/g, '-')}`;
-                              setStoreLogo(fakeUrl);
-                              await handleSaveConfig('store:logo', fakeUrl);
-                            } catch (err) {
-                              console.error(err);
-                            } finally {
-                              setSaveLoading(false);
-                            }
-                          }
-                        }}
-                      />
-                    </label>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>PNG, JPG or SVG formats. Uploads automatically.</span>
-                  </div>
+                  </Link>
+
+                  <Link to="/business/theme" style={{ textDecoration: 'none' }}>
+                    <div className="card hover-card" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
+                      <Palette size={24} style={{ color: '#ec4899', marginBottom: '0.75rem' }} />
+                      <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Themes Editor</h4>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', flexGrow: 1 }}>Build and modify custom visual styles with live catalog previews.</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', color: '#ec4899', fontWeight: 600, marginTop: '0.75rem' }}>
+                        Design <ArrowRight size={12} />
+                      </div>
+                    </div>
+                  </Link>
+
+                  <Link to="/business/settings" style={{ textDecoration: 'none' }}>
+                    <div className="card hover-card" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
+                      <Settings size={24} style={{ color: '#10b981', marginBottom: '0.75rem' }} />
+                      <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Storefront Details</h4>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', flexGrow: 1 }}>Manage address coordinates, social links, currency options, and navigations.</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', color: '#10b981', fontWeight: 600, marginTop: '0.75rem' }}>
+                        Manage <ArrowRight size={12} />
+                      </div>
+                    </div>
+                  </Link>
                 </div>
               </div>
 
-              {/* Notifications setting */}
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.15rem' }}>Notification Dispatcher</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Enable or disable system-triggered customer email confirmations automatically.</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label className="form-label" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <input
-                      type="checkbox"
-                      checked={notificationsEnabled}
-                      onChange={(e) => setNotificationsEnabled(e.target.checked)}
-                      style={{ width: '18px', height: '18px' }}
-                    />
-                    <span>Dispatch Client Confirmations</span>
-                  </label>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => handleSaveConfig('notifications:enabled', notificationsEnabled)}
-                    disabled={saveLoading}
-                  >
-                    <Save size={16} /> Save
-                  </button>
-                </div>
-              </div>
-
-              {/* Webhook retries setting */}
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.15rem' }}>Webhook Redelivery Cap</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Set maximum retry limits for failed merchant webhook notifications.</p>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
-                  <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={webhooksRetries}
-                      onChange={(e) => setWebhooksRetries(Number(e.target.value))}
-                      min={1}
-                      max={10}
-                    />
-                  </div>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => handleSaveConfig('webhooks:maxRetries', webhooksRetries)}
-                    disabled={saveLoading}
-                  >
-                    <Save size={16} /> Save
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* Right side: Audit logs list */}

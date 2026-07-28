@@ -21,9 +21,15 @@ import Webhooks from './pages/TenantAdmin/Webhooks';
 import Domains from './pages/TenantAdmin/Domains';
 import ApiKeys from './pages/TenantAdmin/ApiKeys';
 import FeatureFlags from './pages/TenantAdmin/FeatureFlags';
+import Couriers from './pages/TenantAdmin/Couriers';
+import PaymentSettings from './pages/TenantAdmin/PaymentSettings';
+import Theme from './pages/TenantAdmin/Theme';
+import StorefrontSettings from './pages/TenantAdmin/StorefrontSettings';
+import Orders from './pages/TenantAdmin/Orders';
 
 // Super Admin
 import SuperAdminDashboard from './pages/SuperAdmin/Dashboard';
+import SuperAdminThemes from './pages/SuperAdmin/Themes';
 
 import { Sun, Moon, Shield } from 'lucide-react';
 
@@ -190,6 +196,46 @@ const App: React.FC = () => {
               }
             />
             <Route
+              path="/business/couriers"
+              element={
+                <ProtectedRoute allowedRoles={['TenantAdmin']}>
+                  <Couriers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/business/payments"
+              element={
+                <ProtectedRoute allowedRoles={['TenantAdmin']}>
+                  <PaymentSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/business/theme"
+              element={
+                <ProtectedRoute allowedRoles={['TenantAdmin']}>
+                  <Theme />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/business/settings"
+              element={
+                <ProtectedRoute allowedRoles={['TenantAdmin']}>
+                  <StorefrontSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/business/orders"
+              element={
+                <ProtectedRoute allowedRoles={['TenantAdmin']}>
+                  <Orders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/business/categories"
               element={
                 <ProtectedRoute allowedRoles={['TenantAdmin']}>
@@ -238,12 +284,19 @@ const App: React.FC = () => {
               }
             />
 
-            {/* Platform SuperUser Dashboard */}
             <Route
               path="/admin"
               element={
                 <ProtectedRoute allowedRoles={['SuperUser']}>
                   <SuperAdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/themes"
+              element={
+                <ProtectedRoute allowedRoles={['SuperUser']}>
+                  <SuperAdminThemes />
                 </ProtectedRoute>
               }
             />

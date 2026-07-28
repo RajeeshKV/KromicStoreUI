@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient, { API_BASE_URL } from '../../api/apiClient';
-import { ShieldCheck, LogOut, Settings, Edit, FileSpreadsheet, Activity, Save, X } from 'lucide-react';
+import { ShieldCheck, LogOut, Settings, Edit, FileSpreadsheet, Activity, Save, X, Palette } from 'lucide-react';
 
 interface ConfigSection {
   [key: string]: {
@@ -251,7 +251,13 @@ const SuperAdminDashboard: React.FC = () => {
           <span className="status-pill danger" style={{ fontSize: '0.6rem', padding: '0.15rem 0.5rem', marginLeft: '0.5rem' }}>Super User</span>
         </div>
 
-        <div className="nav-actions">
+        <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <Link to="/admin" className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <Settings size={14} /> Configs
+          </Link>
+          <Link to="/admin/themes" className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <Palette size={14} /> Themes
+          </Link>
           <button className="btn btn-secondary" onClick={handleLogout} style={{ color: 'var(--danger)' }}>
             <LogOut size={16} /> Sign Out
           </button>

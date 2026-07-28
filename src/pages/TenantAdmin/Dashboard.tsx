@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/apiClient';
-import { LayoutDashboard, Settings, Layers, Package, Webhook, LogOut, ArrowLeftRight, CheckCircle, Globe, Key, ToggleLeft } from 'lucide-react';
+import { LayoutDashboard, Settings, Layers, Package, Webhook, LogOut, ArrowLeftRight, CheckCircle, Globe, Key, ToggleLeft, ShoppingBag } from 'lucide-react';
 
 interface Subscription {
   plan: string;
@@ -33,6 +33,14 @@ export const AdminSidebar: React.FC<{ active: string }> = ({ active }) => {
     navigate('/');
   };
 
+  const handleViewStorefront = () => {
+    const sub = localStorage.getItem('mock_subdomain');
+    const targetUrl = sub 
+      ? `http://localhost:5173/?subdomain=${sub}` 
+      : `/store/${user?.tenantId || 'tenant-a1b2c3d4'}`;
+    window.open(targetUrl, '_blank');
+  };
+
   return (
     <aside className="dashboard-sidebar">
       <div style={{ marginBottom: '2.5rem', paddingLeft: '1rem' }}>
@@ -44,6 +52,11 @@ export const AdminSidebar: React.FC<{ active: string }> = ({ active }) => {
         <li>
           <Link to="/business" className={`dashboard-menu-link ${active === 'overview' ? 'active' : ''}`}>
             <LayoutDashboard size={18} /> Overview
+          </Link>
+        </li>
+        <li>
+          <Link to="/business/orders" className={`dashboard-menu-link ${active === 'orders' ? 'active' : ''}`}>
+            <ShoppingBag size={18} /> Orders Fulfillment
           </Link>
         </li>
         <li>
@@ -68,7 +81,7 @@ export const AdminSidebar: React.FC<{ active: string }> = ({ active }) => {
         </li>
         <li>
           <Link to="/business/domains" className={`dashboard-menu-link ${active === 'domains' ? 'active' : ''}`}>
-            <Globe size={18} /> Custom Domains
+            <Globe size={18} /> Store Address (Domain)
           </Link>
         </li>
         <li>
@@ -88,7 +101,7 @@ export const AdminSidebar: React.FC<{ active: string }> = ({ active }) => {
       <ul className="dashboard-menu">
         <li>
           <button
-            onClick={() => navigate(`/store/${user?.tenantId || 'tenant-a1b2c3d4'}`)}
+            onClick={handleViewStorefront}
             className="dashboard-menu-link"
             style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left' }}
           >
