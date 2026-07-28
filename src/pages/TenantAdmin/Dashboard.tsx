@@ -33,12 +33,20 @@ export const AdminSidebar: React.FC<{ active: string }> = ({ active }) => {
     navigate('/');
   };
 
-  const handleViewStorefront = () => {
-    const sub = localStorage.getItem('mock_subdomain');
-    const targetUrl = sub 
-      ? `http://localhost:5173/?subdomain=${sub}` 
-      : `/store/${user?.tenantId || 'tenant-a1b2c3d4'}`;
-    window.open(targetUrl, '_blank');
+  const handleViewStorefront = async () => {
+    try {
+      if (user?.tenantId) {
+        const res = await apiClient.get(`/api/v1/tenants/${user.tenantId}`);
+        if (res.data && (res.data.subdomain || res.data.data?.subdomain)) {
+          const sub = res.data.subdomain || res.data.data.subdomain;
+          window.open(`https://${sub}.kromic.in`, '_blank');
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to resolve subdomain from backend:', e);
+    }
+    window.open(`https://store.kromic.in/store/${user?.tenantId || ''}`, '_blank');
   };
 
   return (
@@ -126,43 +134,22 @@ const Dashboard: React.FC = () => {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [usage, setUsage] = useState<Usage | null>(null);
   const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const fetchDashboardData = async () => {
     setLoading(true);
+    setApiError(null);
     try {
       // 1. Fetch Subscription Details
-      try {
-        const subRes = await apiClient.get('/api/v1/subscriptions/current');
-        setSubscription(subRes.data.data);
-      } catch (subErr) {
-        console.warn('Subscription details API failed, using fallback mock.');
-        setSubscription({
-          plan: 'Professional Trial',
-          status: 'Active',
-          startedAt: new Date(Date.now() - 5 * 24 * 3600000).toISOString(),
-          trialEndsAt: new Date(Date.now() + 25 * 24 * 3600000).toISOString(),
-          features: {
-            maxUsers: 3,
-            maxProducts: 100,
-            maxApiCallsPerMonth: 10000,
-            webhooksEnabled: true,
-            analyticsEnabled: true,
-          },
-        });
-      }
+      const subRes = await apiClient.get('/api/v1/subscriptions/current');
+      setSubscription(subRes.data.data || subRes.data);
 
       // 2. Fetch Subscription Usage
-      try {
-        const usageRes = await apiClient.get('/api/v1/subscriptions/current/usage');
-        setUsage(usageRes.data.data);
-      } catch (usageErr) {
-        console.warn('Subscription usage API failed, using fallback mock.');
-        setUsage({
-          users: { used: 1, limit: 3 },
-          products: { used: 12, limit: 100 },
-          apiCallsThisMonth: { used: 1243, limit: 10000 },
-        });
-      }
+      const usageRes = await apiClient.get('/api/v1/subscriptions/current/usage');
+      setUsage(usageRes.data.data || usageRes.data);
+    } catch (err: any) {
+      console.error('API error fetching dashboard data:', err);
+      setApiError(err.response?.data?.message || err.message || 'Failed to retrieve subscription and usage details from server.');
     } finally {
       setLoading(false);
     }
@@ -187,6 +174,14 @@ const Dashboard: React.FC = () => {
             <div className="spinner"></div>
             <p>Loading overview metrics...</p>
           </div>
+        ) : apiError ? (
+          <div className="card text-center" style={{ padding: '3rem', borderLeft: '4px solid var(--error-color)' }}>
+            <h3 style={{ color: 'var(--error-color)', fontWeight: 800 }}>Server Connection Error</h3>
+            <p style={{ color: 'var(--text-secondary)', margin: '1rem 0 1.5rem' }}>{apiError}</p>
+            <button className="btn btn-primary" onClick={fetchDashboardData}>
+              Retry Connection
+            </button>
+          </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {/* Quick Metrics */}
@@ -206,9 +201,9 @@ const Dashboard: React.FC = () => {
                 </span>
               </div>
               <div className="card stat-card">
-                <span className="stat-label">System Health</span>
-                <div className="stat-val" style={{ color: 'var(--success)' }}>99.9%</div>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>API Render nodes online</span>
+                <span className="stat-label">Server Status</span>
+                <div className="stat-val" style={{ color: 'var(--success)' }}>Online</div>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Connected to Kromic Store API</span>
               </div>
             </div>
 

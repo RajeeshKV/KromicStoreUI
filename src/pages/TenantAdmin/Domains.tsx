@@ -17,21 +17,17 @@ const Domains: React.FC = () => {
 
   const loadSubdomain = async () => {
     setLoading(true);
+    setErrorMsg('');
     try {
       // Get current tenant details
       const res = await apiClient.get(`/api/v1/tenants/${tenantId}`);
-      if (res.data) {
-        setSubdomain(res.data.subdomain || '');
+      const data = res.data.data || res.data;
+      if (data) {
+        setSubdomain(data.subdomain || '');
       }
     } catch (err: any) {
-      console.warn('Failed to load tenant info, falling back to local simulation', err);
-      // Fallback load
-      const savedSub = localStorage.getItem('mock_subdomain');
-      if (savedSub) {
-        setSubdomain(savedSub);
-      } else {
-        setSubdomain('');
-      }
+      console.error('Failed to load tenant info:', err);
+      setErrorMsg(err.response?.data?.message || err.message || 'Failed to retrieve subdomain information from server.');
     } finally {
       setLoading(false);
     }
@@ -58,14 +54,10 @@ const Domains: React.FC = () => {
     try {
       await apiClient.put(`/api/v1/tenants/${tenantId}`, { subdomain: cleanSub });
       setSubdomain(cleanSub);
-      localStorage.setItem('mock_subdomain', cleanSub);
       setSuccessMsg('Subdomain updated successfully!');
     } catch (err: any) {
       console.error('Failed to update subdomain:', err);
-      // Simulate fallback
-      localStorage.setItem('mock_subdomain', cleanSub);
-      setSubdomain(cleanSub);
-      setSuccessMsg('Subdomain updated successfully (simulation fallback mode)');
+      setErrorMsg(err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to update subdomain on the server.');
     } finally {
       setSaving(false);
     }
