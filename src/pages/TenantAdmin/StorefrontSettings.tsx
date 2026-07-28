@@ -205,42 +205,42 @@ const StorefrontSettings: React.FC = () => {
         <div className="content-wrapper">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.25rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
             Storefront Configuration
             {pendingChanges?.hasPendingChanges && (
-              <span className="badge" style={{ backgroundColor: 'var(--warning)', color: '#ffffff', fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
-                {pendingChanges.changes?.length || 0} Draft Changes
+              <span className="badge" style={{ backgroundColor: 'var(--warning)', color: '#ffffff', fontSize: '0.75rem', padding: '0.35rem 0.65rem', borderRadius: '6px', fontWeight: 700 }}>
+                {pendingChanges.changes?.length || 0} Pending
               </span>
             )}
           </h1>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            Manage catalog layouts, branding color variables, contact info, and copyright settings.
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', margin: 0 }}>
+            Manage store branding, contact information, content sections, and publication settings.
             {pendingChanges?.lastPublished && (
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginLeft: '1rem' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginLeft: '1rem', display: 'block', marginTop: '0.25rem' }}>
                 Last published: {new Date(pendingChanges.lastPublished).toLocaleString()}
               </span>
             )}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button className="btn btn-secondary" onClick={() => setShowPreview(true)} disabled={loading}>
-            <Eye size={16} /> Preview Storefront
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button className="btn btn-secondary" onClick={() => setShowPreview(true)} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.25rem', fontWeight: 600 }}>
+            <Eye size={18} /> Preview
           </button>
-          <button className="btn btn-primary" onClick={handlePublish} disabled={publishing || loading}>
-            {publishing ? <Loader2 className="spinner" size={16} /> : <Globe size={16} />} Publish Site
+          <button className="btn btn-primary" onClick={handlePublish} disabled={publishing || loading} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.25rem', fontWeight: 600 }}>
+            {publishing ? <Loader2 className="spinner" size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Globe size={18} />} Publish
           </button>
         </div>
       </div>
 
       {successMsg && (
-        <div className="card" style={{ borderLeft: '4px solid var(--accent-color)', padding: '1rem', marginBottom: '1.5rem', color: 'var(--accent-color)' }}>
-          {successMsg}
+        <div className="card" style={{ borderLeft: '4px solid var(--accent-color)', padding: '1rem', marginBottom: '1.5rem', backgroundColor: 'rgba(79, 70, 229, 0.05)' }}>
+          <p style={{ color: 'var(--accent-color)', fontWeight: 600, margin: 0 }}>{successMsg}</p>
         </div>
       )}
 
       {errorMsg && (
-        <div className="card" style={{ borderLeft: '4px solid var(--error-color)', padding: '1rem', marginBottom: '1.5rem', color: 'var(--error-color)' }}>
-          {errorMsg}
+        <div className="card" style={{ borderLeft: '4px solid var(--error-color)', padding: '1rem', marginBottom: '1.5rem', backgroundColor: 'rgba(239, 68, 68, 0.05)' }}>
+          <p style={{ color: 'var(--error-color)', fontWeight: 600, margin: 0 }}>{errorMsg}</p>
         </div>
       )}
 
@@ -255,8 +255,8 @@ const StorefrontSettings: React.FC = () => {
             
             {/* Main configurations card */}
             <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Settings size={18} /> Store Details & Metadata
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)', margin: 0 }}>
+                <Settings size={20} /> Store Information
               </h2>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
@@ -373,8 +373,8 @@ const StorefrontSettings: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
-                  {saving ? <Loader2 className="spinner" size={16} /> : <Save size={16} />} Save Settings
+                <button type="submit" className="btn btn-primary" disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, padding: '0.75rem 1.5rem' }}>
+                  {saving ? <Loader2 className="spinner" size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={16} />} {saving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
 

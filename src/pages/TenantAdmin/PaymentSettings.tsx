@@ -145,13 +145,13 @@ const PaymentSettings: React.FC = () => {
       <main className="dashboard-content">
         <div className="content-wrapper">
       <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem' }}>Razorpay Integration</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>Configure your Razorpay Merchant Payment Gateway API credentials to accept payments on your storefront.</p>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem', marginBottom: '0.5rem' }}>Payment Gateway Integration</h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '600px' }}>Configure and manage your Razorpay payment processor to accept customer payments securely on your storefront.</p>
       </div>
 
       {successMsg && (
-        <div className="card" style={{ borderLeft: '4px solid var(--accent-color)', padding: '1rem', marginBottom: '1.5rem', color: 'var(--accent-color)' }}>
-          {successMsg}
+        <div className="card" style={{ borderLeft: '4px solid var(--accent-color)', padding: '1rem', marginBottom: '1.5rem', backgroundColor: 'rgba(79, 70, 229, 0.05)' }}>
+          <p style={{ color: 'var(--accent-color)', fontWeight: 600, margin: 0 }}>{successMsg}</p>
         </div>
       )}
 
@@ -165,11 +165,15 @@ const PaymentSettings: React.FC = () => {
           
           {/* Settings Form */}
           <div className="card" style={{ padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Key size={18} /> Credentials Settings
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
+              <Key size={20} /> API Credentials
             </h2>
             <form onSubmit={handleSave}>
-              {errorMsg && <p style={{ color: 'var(--error-color)', marginBottom: '1rem' }}>{errorMsg}</p>}
+              {errorMsg && (
+                <div style={{ padding: '0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: '6px', color: 'var(--error-color)', marginBottom: '1.5rem', fontSize: '0.9rem', fontWeight: 600 }}>
+                  {errorMsg}
+                </div>
+              )}
               
               <div className="form-group" style={{ marginBottom: '1.25rem' }}>
                 <label className="form-label" style={{ fontWeight: 600 }}>Razorpay Key ID *</label>
@@ -212,14 +216,14 @@ const PaymentSettings: React.FC = () => {
 
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'space-between', marginTop: '2.5rem', alignItems: 'center' }}>
                 {config ? (
-                  <button type="button" className="btn btn-secondary" style={{ color: 'var(--error-color)', display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={handleDelete} disabled={deleting}>
-                    {deleting ? <Loader2 className="spinner" size={14} /> : <Trash2 size={14} />} Remove Gateway
+                  <button type="button" className="btn btn-secondary" style={{ color: 'var(--error-color)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }} onClick={handleDelete} disabled={deleting}>
+                    {deleting ? <Loader2 className="spinner" size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Trash2 size={16} />} Remove Gateway
                   </button>
                 ) : (
                   <div></div>
                 )}
-                <button type="submit" className="btn btn-primary" disabled={saving}>
-                  {saving ? <Loader2 className="spinner" size={16} /> : <Save size={16} />} Save Configurations
+                <button type="submit" className="btn btn-primary" disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, padding: '0.75rem 1.5rem' }}>
+                  {saving ? <Loader2 className="spinner" size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={16} />} {saving ? 'Saving...' : 'Save Credentials'}
                 </button>
               </div>
             </form>

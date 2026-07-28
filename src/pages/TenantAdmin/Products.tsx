@@ -187,68 +187,71 @@ const Products: React.FC = () => {
       <AdminSidebar active="products" />
 
       <main className="dashboard-content">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem' }}>Product Catalog</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>Manage pricing details, configure inventories, and publish items to storefront.</p>
+        <div className="content-wrapper">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem', marginBottom: '0.25rem' }}>Product Catalog</h1>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>Manage pricing, inventory, and publication status for your product listings.</p>
+            </div>
+
+            <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.25rem' }}>
+              <Plus size={18} /> Add Product
+            </button>
           </div>
 
-          <button className="btn btn-primary" onClick={openCreateModal}>
-            <Plus size={16} /> Add Product
-          </button>
-        </div>
-
         {successMsg && (
-          <div className="status-pill success" style={{ width: '100%', padding: '0.75rem', marginBottom: '1.5rem', borderRadius: 'var(--radius-sm)' }}>
-            {successMsg}
+          <div className="card" style={{ borderLeft: '4px solid var(--accent-color)', padding: '1rem', marginBottom: '1.5rem', backgroundColor: 'rgba(79, 70, 229, 0.05)' }}>
+            <p style={{ color: 'var(--accent-color)', fontWeight: 600, margin: 0 }}>{successMsg}</p>
           </div>
         )}
 
         {errorMsg && (
-          <div className="status-pill danger" style={{ width: '100%', padding: '0.75rem', marginBottom: '1.5rem', borderRadius: 'var(--radius-sm)' }}>
-            {errorMsg}
+          <div className="card" style={{ borderLeft: '4px solid var(--error-color)', padding: '1rem', marginBottom: '1.5rem', backgroundColor: 'rgba(239, 68, 68, 0.05)' }}>
+            <p style={{ color: 'var(--error-color)', fontWeight: 600, margin: 0 }}>{errorMsg}</p>
           </div>
         )}
 
         {/* Pagination and Filter Controls */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-              Items per page:
+        <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', backgroundColor: 'var(--bg-secondary)' }}>
+          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <label style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Show:</label>
               <select 
                 value={pageSize} 
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));
                   setPageNumber(1);
                 }}
-                style={{ marginLeft: '0.5rem', padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '0.9rem' }}
+                style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.9rem', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontWeight: 500, cursor: 'pointer' }}
               >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
+                <option value={10}>10 items</option>
+                <option value={20}>20 items</option>
+                <option value={50}>50 items</option>
               </select>
-            </label>
+            </div>
             
-            <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-              Status:
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <label style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Filter:</label>
               <select 
                 value={statusFilter} 
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
                   setPageNumber(1);
                 }}
-                style={{ marginLeft: '0.5rem', padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '0.9rem' }}
+                style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.9rem', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontWeight: 500, cursor: 'pointer' }}
               >
-                <option value="">All</option>
+                <option value="">All Status</option>
                 <option value="Published">Published</option>
                 <option value="Draft">Draft</option>
               </select>
-            </label>
+            </div>
           </div>
 
           {totalCount > 0 && (
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Showing {Math.min(pageSize, products.length)} of {totalCount} products (Page {pageNumber})
+            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span>{Math.min(pageSize, products.length)} of {totalCount} products</span>
+              <span style={{ color: 'var(--text-muted)' }}>•</span>
+              <span>Page {pageNumber}</span>
             </div>
           )}
         </div>
@@ -265,100 +268,122 @@ const Products: React.FC = () => {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Product</th>
-                      <th>SKU</th>
-                      <th>Price</th>
-                      <th>Stock</th>
-                      <th>Status</th>
-                      <th style={{ textAlign: 'right' }}>Actions</th>
+                      <th style={{ fontWeight: 700, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Product</th>
+                      <th style={{ fontWeight: 700, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>SKU</th>
+                      <th style={{ fontWeight: 700, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Price</th>
+                      <th style={{ fontWeight: 700, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Stock</th>
+                      <th style={{ fontWeight: 700, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</th>
+                      <th style={{ textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((prod) => {
-                      const img = prod.imageUrl || (prod.images && prod.images.length > 0 ? prod.images[0].url : '') || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=80&auto=format&fit=crop&q=60';
-                      return (
-                        <tr key={prod.id}>
-                          <td style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <img src={img} alt={prod.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                            <div>
-                              <span style={{ fontWeight: 700, color: 'var(--text-primary)', display: 'block' }}>{prod.name}</span>
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: {prod.id}</span>
-                            </div>
-                          </td>
-                          <td><code style={{ fontSize: '0.8rem' }}>{prod.sku || 'N/A'}</code></td>
-                          <td style={{ fontWeight: 700 }}>${prod.price.toFixed(2)}</td>
-                          <td>
-                            <span className={`status-pill ${prod.stock > 10 ? 'success' : prod.stock > 0 ? 'warning' : 'danger'}`}>
-                              {prod.stock} Items
-                            </span>
-                          </td>
-                          <td>
-                            <span className={`status-pill ${prod.status === 'Published' ? 'info' : 'warning'}`}>
-                              {prod.status || 'Draft'}
-                            </span>
-                          </td>
-                          <td style={{ textAlign: 'right' }}>
-                            <div style={{ display: 'inline-flex', gap: '0.35rem' }}>
-                              <button
-                                className="btn btn-secondary"
-                                style={{ padding: '0.35rem' }}
-                                onClick={() => handleTogglePublish(prod)}
-                                title={prod.status === 'Published' ? 'Unpublish Product' : 'Publish Product'}
-                              >
-                                {prod.status === 'Published' ? <ToggleRight size={18} style={{ color: 'var(--success)' }} /> : <ToggleLeft size={18} />}
-                              </button>
-                              <button
-                                className="btn btn-secondary"
-                                style={{ padding: '0.35rem' }}
-                                onClick={() => openEditModal(prod)}
-                                title="Edit product"
-                              >
-                                <Edit size={14} />
-                              </button>
-                              <button
-                                className="btn btn-secondary"
-                                style={{ padding: '0.35rem', color: 'var(--danger)' }}
-                                onClick={() => handleDeleteProduct(prod.id)}
-                                title="Delete product"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {products.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                          <p style={{ fontSize: '0.95rem' }}>No products found.</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      products.map((prod) => {
+                        const img = prod.imageUrl || (prod.images && prod.images.length > 0 ? prod.images[0].url : '') || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=80&auto=format&fit=crop&q=60';
+                        return (
+                          <tr key={prod.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                            <td style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem' }}>
+                              <img src={img} alt={prod.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} />
+                              <div>
+                                <span style={{ fontWeight: 700, color: 'var(--text-primary)', display: 'block', fontSize: '0.95rem' }}>{prod.name}</span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: {prod.id.substring(0, 8)}...</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: '0.75rem' }}><code style={{ fontSize: '0.8rem', backgroundColor: 'var(--bg-secondary)', padding: '0.25rem 0.5rem', borderRadius: '4px' }}>{prod.sku || 'N/A'}</code></td>
+                            <td style={{ padding: '0.75rem', fontWeight: 700, color: 'var(--accent-color)' }}>${prod.price.toFixed(2)}</td>
+                            <td style={{ padding: '0.75rem' }}>
+                              <span className={`status-pill ${prod.stock > 10 ? 'success' : prod.stock > 0 ? 'warning' : 'danger'}`} style={{ fontSize: '0.8rem', padding: '0.35rem 0.65rem' }}>
+                                {prod.stock} units
+                              </span>
+                            </td>
+                            <td style={{ padding: '0.75rem' }}>
+                              <span className={`status-pill ${prod.status === 'Published' ? 'info' : 'warning'}`} style={{ fontSize: '0.8rem', padding: '0.35rem 0.65rem' }}>
+                                {prod.status || 'Draft'}
+                              </span>
+                            </td>
+                            <td style={{ textAlign: 'right', padding: '0.75rem' }}>
+                              <div style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <button
+                                  className="btn btn-secondary"
+                                  style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                                  onClick={() => handleTogglePublish(prod)}
+                                  title={prod.status === 'Published' ? 'Unpublish Product' : 'Publish Product'}
+                                >
+                                  {prod.status === 'Published' ? <ToggleRight size={16} style={{ color: 'var(--success)' }} /> : <ToggleLeft size={16} />}
+                                </button>
+                                <button
+                                  className="btn btn-secondary"
+                                  style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
+                                  onClick={() => openEditModal(prod)}
+                                  title="Edit product"
+                                >
+                                  <Edit size={14} />
+                                </button>
+                                <button
+                                  className="btn btn-secondary"
+                                  style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem', color: 'var(--error-color)' }}
+                                  onClick={() => handleDeleteProduct(prod.id)}
+                                  title="Delete product"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
             </div>
 
             {/* Pagination Navigation */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', marginTop: '2rem', padding: '1.5rem' }}>
               <button
                 className="btn btn-secondary"
                 disabled={pageNumber <= 1}
                 onClick={() => setPageNumber(Math.max(1, pageNumber - 1))}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1rem', fontSize: '0.9rem', fontWeight: 600 }}
               >
-                <ChevronLeft size={16} /> Previous
+                <ChevronLeft size={18} /> Previous
               </button>
               
-              <span style={{ fontSize: '0.9rem', fontWeight: 600, minWidth: '100px', textAlign: 'center' }}>
-                Page {pageNumber} of {Math.ceil((totalCount || pageSize) / pageSize)}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Page</span>
+                <input 
+                  type="number" 
+                  min={1}
+                  max={Math.ceil((totalCount || pageSize) / pageSize)}
+                  value={pageNumber}
+                  onChange={(e) => {
+                    const max = Math.ceil((totalCount || pageSize) / pageSize);
+                    const newPage = Math.max(1, Math.min(max, Number(e.target.value)));
+                    setPageNumber(newPage);
+                  }}
+                  style={{ width: '50px', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}
+                />
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>of {Math.ceil((totalCount || pageSize) / pageSize)}</span>
+              </div>
               
               <button
                 className="btn btn-secondary"
                 disabled={pageNumber * pageSize >= (totalCount || pageSize)}
                 onClick={() => setPageNumber(pageNumber + 1)}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1rem', fontSize: '0.9rem', fontWeight: 600 }}
               >
-                Next <ChevronRight size={16} />
+                Next <ChevronRight size={18} />
               </button>
             </div>
           </>
         )}
+        </div>
       </main>
 
       {/* --- FORM DIALOG MODAL --- */}
