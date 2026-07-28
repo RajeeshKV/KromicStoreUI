@@ -60,9 +60,11 @@ const ThemeToggle: React.FC = () => {
 const HeaderNavbar: React.FC = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const subdomain = extractSubdomain();
+  const isStorefront = subdomain || location.pathname.startsWith('/store');
 
-  // Hide the standard SaaS navbar when viewing dashboards (Admin / SuperAdmin)
-  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/business')) {
+  // Hide the standard SaaS navbar when viewing dashboards or storefront
+  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/business') || isStorefront) {
     return null;
   }
 

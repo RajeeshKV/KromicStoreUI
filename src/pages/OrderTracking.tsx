@@ -49,6 +49,7 @@ const OrderTracking: React.FC = () => {
 
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
   
   // Support Form State
   const [supportSubject, setSupportSubject] = useState('');
@@ -56,12 +57,14 @@ const OrderTracking: React.FC = () => {
   const [supportCategory, setSupportCategory] = useState('missing_item');
   const [supportTicket, setSupportTicket] = useState<any | null>(null);
   const [supportLoading, setSupportLoading] = useState(false);
+  const [supportError, setSupportError] = useState<string | null>(null);
 
   // Return Form State
   const [returnItemId, setReturnItemId] = useState('');
   const [returnReason, setReturnReason] = useState('');
   const [returnSuccess, setReturnSuccess] = useState(false);
   const [returnLoading, setReturnLoading] = useState(false);
+  const [returnError, setReturnError] = useState<string | null>(null);
 
   useEffect(() => {
     if (storeTenantId) {
@@ -71,16 +74,13 @@ const OrderTracking: React.FC = () => {
 
   const loadOrderDetails = async () => {
     setLoading(true);
+    setApiError(null);
     try {
-      if (orderId?.startsWith('order-mock-')) {
-        setOrder(generateMockOrder(orderId));
-      } else {
-        const res = await apiClient.get(`/api/v1/orders/${orderId}`);
-        setOrder(res.data.data);
-      }
+      const res = await apiClient.get(`/api/v1/orders/${orderId}`);
+      setOrder(res.data.data || res.data);
     } catch (err: any) {
-      console.warn('API error fetching order details. Generating mock backup.', err);
-      setOrder(generateMockOrder(orderId || 'ORD-UNKNOWN'));
+      console.error('API error fetching order details:', err);
+      setApiError(err.response?.data?.message || err.message || 'Failed to retrieve tracking details from server.');
     } finally {
       setLoading(false);
     }
@@ -93,32 +93,19 @@ const OrderTracking: React.FC = () => {
   const handleSupportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSupportLoading(true);
+    setSupportError(null);
     try {
-      // Endpoint: POST /api/v1/orders/{id}/support
-      // We check if it is mock, otherwise try endpoint
-      if (orderId?.startsWith('order-mock-')) {
-        setSupportTicket({
-          ticketId: `tkt-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-          subject: supportSubject,
-          status: 'Open',
-        });
-      } else {
-        const res = await apiClient.post(`/api/v1/orders/${orderId}/support`, {
-          subject: supportSubject,
-          description: supportDesc,
-          category: supportCategory,
-        });
-        setSupportTicket(res.data.data);
-      }
+      const res = await apiClient.post(`/api/v1/orders/${orderId}/support`, {
+        subject: supportSubject,
+        description: supportDesc,
+        category: supportCategory,
+      });
+      setSupportTicket(res.data.data || res.data);
       setSupportSubject('');
       setSupportDesc('');
-    } catch (error) {
-      console.warn('API support failed, fallback to local confirmation.');
-      setSupportTicket({
-        ticketId: `tkt-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-        subject: supportSubject,
-        status: 'Open',
-      });
+    } catch (err: any) {
+      console.error('API support creation failed:', err);
+      setSupportError(err.response?.data?.message || err.message || 'Failed to submit support ticket.');
     } finally {
       setSupportLoading(false);
     }
@@ -127,20 +114,16 @@ const OrderTracking: React.FC = () => {
   const handleReturnSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setReturnLoading(true);
+    setReturnError(null);
     try {
-      if (orderId?.startsWith('order-mock-')) {
-        setReturnSuccess(true);
-      } else {
-        // Endpoint: POST /api/v1/orders/{id}/returns
-        await apiClient.post(`/api/v1/orders/${orderId}/returns`, {
-          itemId: returnItemId,
-          reason: returnReason,
-        });
-        setReturnSuccess(true);
-      }
-    } catch (error) {
-      console.warn('API return failed, fallback to local confirmation.');
+      await apiClient.post(`/api/v1/orders/${orderId}/returns`, {
+        itemId: returnItemId,
+        reason: returnReason,
+      });
       setReturnSuccess(true);
+    } catch (err: any) {
+      console.error('API return submission failed:', err);
+      setReturnError(err.response?.data?.message || err.message || 'Failed to submit return request.');
     } finally {
       setReturnLoading(false);
     }
@@ -151,6 +134,21 @@ const OrderTracking: React.FC = () => {
       <div className="loading-container">
         <div className="spinner"></div>
         <p>Loading tracking information...</p>
+      </div>
+    );
+  }
+
+  if (apiError) {
+    return (
+      <div className="content-wrapper" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <div className="card text-center" style={{ maxWidth: '480px', padding: '3rem', borderLeft: '4px solid var(--error-color)' }}>
+          <AlertCircle size={48} style={{ color: 'var(--error-color)', marginBottom: '1rem' }} />
+          <h3>Connection Error</h3>
+          <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{apiError}</p>
+          <Link to={linkPrefix || '/'} className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
+            Browse Catalog
+          </Link>
+        </div>
       </div>
     );
   }
@@ -348,6 +346,11 @@ const OrderTracking: React.FC = () => {
               </div>
             ) : (
               <form onSubmit={handleSupportSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {supportError && (
+                  <div className="status-pill danger" style={{ padding: '0.65rem', borderRadius: '4px', fontSize: '0.8rem' }}>
+                    {supportError}
+                  </div>
+                )}
                 <div className="form-group">
                   <label className="form-label">Subject</label>
                   <input
@@ -407,6 +410,11 @@ const OrderTracking: React.FC = () => {
                 </div>
               ) : (
                 <form onSubmit={handleReturnSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {returnError && (
+                    <div className="status-pill danger" style={{ padding: '0.65rem', borderRadius: '4px', fontSize: '0.8rem' }}>
+                      {returnError}
+                    </div>
+                  )}
                   <div className="form-group">
                     <label className="form-label">Select Item to Return</label>
                     <select
@@ -448,53 +456,6 @@ const OrderTracking: React.FC = () => {
     </div>
   );
 };
-
-// Mock Fallbacks
-function generateMockOrder(id: string): OrderDetail {
-  return {
-    id,
-    orderNumber: id.startsWith('order-mock-') ? `ORD-${id.split('-')[2]?.toUpperCase()}` : 'ORD-20240115-998822',
-    status: 'Confirmed', // Default to confirmed since payment is simulated
-    total: 344.99,
-    subtotal: 310.00,
-    tax: 24.80,
-    shipping: 10.19,
-    items: [
-      {
-        productId: 'product-demo-1',
-        productName: 'Vortex Wireless Headphones',
-        quantity: 1,
-        unitPrice: 199.99,
-        lineTotal: 199.99,
-      },
-      {
-        productId: 'product-demo-2',
-        productName: 'Titanium Travel Mug',
-        quantity: 2,
-        unitPrice: 55.00,
-        lineTotal: 110.00,
-      }
-    ],
-    shippingAddress: {
-      street: '123 Main Street, Apt 4B',
-      city: 'New York',
-      state: 'NY',
-      postalCode: '10001',
-      country: 'US',
-    },
-    payment: {
-      id: 'pay-xyz789',
-      status: 'Completed',
-      paidAt: new Date().toISOString(),
-      method: 'razorpay',
-    },
-    timeline: [
-      { status: 'Pending', timestamp: new Date(Date.now() - 3600000).toISOString() },
-      { status: 'Confirmed', timestamp: new Date().toISOString() }
-    ],
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-  };
-}
 
 export default OrderTracking;
 export type { OrderDetail };

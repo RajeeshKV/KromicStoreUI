@@ -49,72 +49,43 @@ const Checkout: React.FC = () => {
 
       if (!customerId) {
         // If guest checkout, register customer details on backend first
-        try {
-          const custRes = await apiClient.post('/api/v1/customers', {
-            email,
-            firstName,
-            lastName,
-            phoneNumber: phone,
-          });
-          customerId = custRes.data.data.id;
-        } catch (cErr) {
-          console.warn('Customer creation failed, generating a temporary guest UUID');
-          customerId = `cust-guest-${Math.random().toString(36).substr(2, 9)}`;
-        }
+        const custRes = await apiClient.post('/api/v1/customers', {
+          email,
+          firstName,
+          lastName,
+          phoneNumber: phone,
+        });
+        customerId = custRes.data.data.id;
       }
 
       // Format items for order payload
       const orderItems = cartItems.map((item) => ({
-        productId: item.id.startsWith('product-demo-') ? 'product-demo' : item.id,
+        productId: item.id,
         quantity: item.quantity,
       }));
 
       // Step 2: Create order on backend
-      let orderData: any;
-      try {
-        const orderRes = await apiClient.post('/api/v1/orders', {
-          customerId,
-          items: orderItems,
-          shippingAddress: { street, city, state, postalCode, country },
-          billingAddress: { street, city, state, postalCode, country },
-        });
-        orderData = orderRes.data.data;
-      } catch (oErr: any) {
-        console.warn('Order creation failed, falling back to simulated order object');
-        orderData = {
-          id: `order-mock-${Math.random().toString(36).substr(2, 9)}`,
-          orderNumber: `ORD-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-          total: cartTotal,
-        };
-      }
-
+      const orderRes = await apiClient.post('/api/v1/orders', {
+        customerId,
+        items: orderItems,
+        shippingAddress: { street, city, state, postalCode, country },
+        billingAddress: { street, city, state, postalCode, country },
+      });
+      const orderData = orderRes.data.data || orderRes.data;
       setActiveOrder(orderData);
 
       // Step 3: Initiate Payment session
-      let paymentData: any;
-      try {
-        const payRes = await apiClient.post('/api/v1/payments/create', {
-          orderId: orderData.id,
-          amount: orderData.total || cartTotal,
-          currency: country === 'IN' ? 'INR' : 'USD',
-        });
-        paymentData = payRes.data.data;
-      } catch (pErr) {
-        console.warn('Payment creation failed, generating simulated payment object');
-        paymentData = {
-          id: `pay-session-${Math.random().toString(36).substr(2, 9)}`,
-          orderId: orderData.id,
-          amount: orderData.total || cartTotal,
-          currency: country === 'IN' ? 'INR' : 'USD',
-          razorpayOrderId: `order_${Math.random().toString(36).substr(2, 14)}`,
-          razorpayKey: 'rzp_test_KromicDummyKey123',
-        };
-      }
-
+      const payRes = await apiClient.post('/api/v1/payments/create', {
+        orderId: orderData.id,
+        amount: orderData.total || cartTotal,
+        currency: country === 'IN' ? 'INR' : 'USD',
+      });
+      const paymentData = payRes.data.data || payRes.data;
       setActivePayment(paymentData);
       setShowPaymentModal(true);
     } catch (err: any) {
-      setErrorMsg(err.response?.data?.message || 'Checkout failed. Please inspect your address format.');
+      console.error('Checkout creation failed:', err);
+      setErrorMsg(err.response?.data?.message || err.response?.data?.error || err.message || 'Checkout failed. Please inspect your address format.');
     } finally {
       setIsSubmitting(false);
     }

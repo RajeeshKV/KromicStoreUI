@@ -17,6 +17,7 @@ const ProductDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState('');
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (storeTenantId) {
@@ -27,32 +28,19 @@ const ProductDetails: React.FC = () => {
   useEffect(() => {
     const fetchProductDetails = async () => {
       setLoading(true);
+      setApiError(null);
       try {
-        if (productId?.startsWith('product-demo-')) {
-          const demos = getDemoProducts();
-          const found = demos.find((d) => d.id === productId) || null;
-          setProduct(found);
-          if (found && found.images && found.images.length > 0) {
-            setActiveImage(found.images[0].url);
-          }
+        const res = await apiClient.get(`/api/v1/products/${productId}`);
+        const data = res.data.data || res.data;
+        setProduct(data);
+        if (data && data.images && data.images.length > 0) {
+          setActiveImage(data.images[0].url);
         } else {
-          const res = await apiClient.get(`/api/v1/products/${productId}`);
-          const data = res.data.data;
-          setProduct(data);
-          if (data && data.images && data.images.length > 0) {
-            setActiveImage(data.images[0].url);
-          } else {
-            setActiveImage('https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60');
-          }
+          setActiveImage('https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60');
         }
-      } catch (error) {
-        console.warn('API error fetching product details. Searching mock database.', error);
-        const demos = getDemoProducts();
-        const found = demos.find((d) => d.id === productId) || null;
-        setProduct(found);
-        if (found && found.images && found.images.length > 0) {
-          setActiveImage(found.images[0].url);
-        }
+      } catch (error: any) {
+        console.error('API error fetching product details:', error);
+        setApiError(error.response?.data?.message || error.message || 'Failed to retrieve product details from server.');
       } finally {
         setLoading(false);
       }
@@ -86,6 +74,21 @@ const ProductDetails: React.FC = () => {
       <div className="loading-container">
         <div className="spinner"></div>
         <p>Loading product details...</p>
+      </div>
+    );
+  }
+
+  if (apiError) {
+    return (
+      <div className="content-wrapper" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <div className="card text-center" style={{ maxWidth: '480px', padding: '3rem', borderLeft: '4px solid var(--error-color)' }}>
+          <ShoppingBag size={48} style={{ color: 'var(--error-color)', marginBottom: '1rem' }} />
+          <h3>Connection Error</h3>
+          <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{apiError}</p>
+          <Link to={linkPrefix || '/'} className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
+            <ArrowLeft size={16} /> Back to Catalog
+          </Link>
+        </div>
       </div>
     );
   }
@@ -219,58 +222,5 @@ const ProductDetails: React.FC = () => {
     </div>
   );
 };
-
-// Mock Fallbacks
-function getDemoProducts(): Product[] {
-  return [
-    {
-      id: 'product-demo-1',
-      name: 'Vortex Wireless Headphones',
-      price: 199.99,
-      sku: 'VTX-WH-09',
-      description: 'Premium wireless headphones with active noise cancellation, built-in EQ controls, and up to 40 hours of battery life.',
-      categoryId: 'category-audio',
-      stock: 35,
-      images: [
-        { url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=60' },
-        { url: 'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=500&auto=format&fit=crop&q=60' }
-      ],
-      status: 'Published',
-    },
-    {
-      id: 'product-demo-2',
-      name: 'Aero Minimalist Wristwatch',
-      price: 145.00,
-      sku: 'AER-MW-22',
-      description: 'Minimalist quartz watch with top-grain leather straps, surgical grade steel casing, and water-resistance up to 50 meters.',
-      categoryId: 'category-watches',
-      stock: 4,
-      images: [{ url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60' }],
-      status: 'Published',
-    },
-    {
-      id: 'product-demo-3',
-      name: 'Pixel mechanical keyboard',
-      price: 129.99,
-      sku: 'PXL-MK-88',
-      description: 'Hot-swappable tactile mechanical keyboard featuring customized RGB backlight matrices and robust double-shot keycaps.',
-      categoryId: 'category-keyboards',
-      stock: 12,
-      images: [{ url: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500&auto=format&fit=crop&q=60' }],
-      status: 'Published',
-    },
-    {
-      id: 'product-demo-4',
-      name: 'Titanium Travel Mug',
-      price: 45.50,
-      sku: 'TTM-TM-01',
-      description: 'Ultra-lightweight vacuum insulated travel flask keeping liquids hot for 12 hours or ice-cold for 24 hours.',
-      categoryId: 'category-travel',
-      stock: 80,
-      images: [{ url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=60' }],
-      status: 'Published',
-    },
-  ];
-}
 
 export default ProductDetails;

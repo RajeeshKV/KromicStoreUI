@@ -35,6 +35,7 @@ const Storefront: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [bootstrapData, setBootstrapData] = useState<any>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Tenant Resolution States
   const [resolvingTenant, setResolvingTenant] = useState(true);
@@ -96,13 +97,22 @@ const Storefront: React.FC = () => {
             if (t.primaryColor) document.documentElement.style.setProperty('--primary-color', t.primaryColor);
             if (t.secondaryColor) document.documentElement.style.setProperty('--secondary-color', t.secondaryColor);
             if (t.accentColor) document.documentElement.style.setProperty('--accent-color', t.accentColor);
+            if (t.backgroundColor) document.documentElement.style.setProperty('--bg-primary', t.backgroundColor);
+            if (t.textColor) document.documentElement.style.setProperty('--text-primary', t.textColor);
+            if (t.fontFamily) {
+              document.documentElement.style.setProperty('--font-display', t.fontFamily);
+              document.documentElement.style.setProperty('--font-sans', t.fontFamily);
+            }
+            if (t.borderRadius !== undefined) document.documentElement.style.setProperty('--radius-sm', `${t.borderRadius}px`);
+            if (t.borderRadius !== undefined) document.documentElement.style.setProperty('--radius-md', `${t.borderRadius * 1.5}px`);
           }
           if (res.data.seo?.siteTitle) {
             document.title = res.data.seo.siteTitle;
           }
         }
-      } catch (error) {
-        console.warn('Bootstrap API failed, using default fallbacks', error);
+      } catch (error: any) {
+        console.error('Bootstrap API failed:', error);
+        setApiError(error.response?.data?.message || error.message || 'Failed to retrieve storefront configuration details from server.');
       }
     };
 
@@ -111,10 +121,11 @@ const Storefront: React.FC = () => {
 
   const loadStoreData = async () => {
     setLoading(true);
+    setApiError(null);
     try {
       // 1. Fetch categories
       const catRes = await apiClient.get('/api/v1/categories');
-      setCategories(catRes.data.data || []);
+      setCategories(catRes.data.data || catRes.data || []);
 
       // 2. Fetch products
       const params: any = { status: 'Published' };
@@ -124,19 +135,11 @@ const Storefront: React.FC = () => {
       if (maxPrice !== '') params.maxPrice = maxPrice;
 
       const prodRes = await apiClient.get('/api/v1/products', { params });
-      let prodData = prodRes.data.data || [];
-
-      // If the backend has no products yet for this tenant, load gorgeous demo items
-      if (prodData.length === 0 && !selectedCategory && !searchQuery && minPrice === '' && maxPrice === '') {
-        prodData = getDemoProducts();
-      }
-
+      const prodData = prodRes.data.data || prodRes.data || [];
       setProducts(prodData);
     } catch (err: any) {
-      console.warn('API error, loading demo storefront fallback products', err);
-      // Fallback in case of API sleep or initial empty state
-      setProducts(getDemoProducts());
-      setCategories(getDemoCategories());
+      console.error('API error fetching storefront data:', err);
+      setApiError(err.response?.data?.message || err.message || 'Failed to retrieve storefront catalog items from server.');
     } finally {
       setLoading(false);
     }
@@ -176,15 +179,27 @@ const Storefront: React.FC = () => {
     );
   }
 
+  if (apiError) {
+    return (
+      <div className="card text-center" style={{ padding: '4rem 2rem', maxWidth: '600px', margin: '4rem auto', borderLeft: '4px solid var(--error-color)' }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, color: 'var(--error-color)' }}>Server Connection Error</h2>
+        <p style={{ color: 'var(--text-secondary)', margin: '1rem 0 2rem' }}>{apiError}</p>
+        <button className="btn btn-primary" onClick={loadStoreData} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', margin: '0 auto' }}>
+          <RefreshCw size={16} /> Retry Connection
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="content-wrapper">
       {/* Storefront Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          {(bootstrapData?.tenant?.logoUrl || localStorage.getItem('storeLogo')) && (
+          {bootstrapData?.tenant?.logoUrl && (
             <img 
-              src={bootstrapData?.tenant?.logoUrl || localStorage.getItem('storeLogo') || ''} 
-              alt={bootstrapData?.tenant?.name || 'Store Logo'} 
+              src={bootstrapData.tenant.logoUrl} 
+              alt={bootstrapData.tenant.name || 'Store Logo'} 
               style={{ height: '60px', maxHeight: '60px', maxWidth: '120px', objectFit: 'contain', borderRadius: '8px', padding: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}
             />
           )}
@@ -378,73 +393,6 @@ const Storefront: React.FC = () => {
     </div>
   );
 };
-
-// --- MOCK FALLBACK DATA ---
-function getDemoProducts(): Product[] {
-  return [
-    {
-      id: 'product-demo-1',
-      name: 'Vortex Wireless Headphones',
-      price: 199.99,
-      description: 'Premium wireless headphones with active noise cancellation, built-in EQ controls, and up to 40 hours of battery life.',
-      categoryId: 'category-audio',
-      stock: 35,
-      images: [{ url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=60' }],
-      status: 'Published',
-    },
-    {
-      id: 'product-demo-2',
-      name: 'Aero Minimalist Wristwatch',
-      price: 145.00,
-      description: 'Minimalist quartz watch with top-grain leather straps, surgical grade steel casing, and water-resistance up to 50 meters.',
-      categoryId: 'category-watches',
-      stock: 4,
-      images: [{ url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60' }],
-      status: 'Published',
-    },
-    {
-      id: 'product-demo-3',
-      name: 'Pixel mechanical keyboard',
-      price: 129.99,
-      description: 'Hot-swappable tactile mechanical keyboard featuring customized RGB backlight matrices and robust double-shot keycaps.',
-      categoryId: 'category-keyboards',
-      stock: 12,
-      images: [{ url: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500&auto=format&fit=crop&q=60' }],
-      status: 'Published',
-    },
-    {
-      id: 'product-demo-4',
-      name: 'Titanium Travel Mug',
-      price: 45.50,
-      description: 'Ultra-lightweight vacuum insulated travel flask keeping liquids hot for 12 hours or ice-cold for 24 hours.',
-      categoryId: 'category-travel',
-      stock: 80,
-      images: [{ url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=60' }],
-      status: 'Published',
-    },
-  ];
-}
-
-function getDemoCategories(): Category[] {
-  return [
-    {
-      id: 'category-audio',
-      name: 'Audio',
-      productCount: 1,
-      subcategories: [{ id: 'category-headphones', name: 'Headphones', productCount: 1 }],
-    },
-    {
-      id: 'category-watches',
-      name: 'Timepieces',
-      productCount: 1,
-    },
-    {
-      id: 'category-keyboards',
-      name: 'Keyboards',
-      productCount: 1,
-    },
-  ];
-}
 
 export default Storefront;
 export type { Product, Category };
