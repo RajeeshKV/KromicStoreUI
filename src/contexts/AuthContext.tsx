@@ -28,6 +28,23 @@ interface AuthContextType {
   setTenantId: (tenantId: string | null) => void;
 }
 
+const parseJwt = (token: string) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -133,7 +150,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ConfirmPassword: confirmPassword
       });
 
-      const { accessToken, refreshToken, tenantId: newTenantId, userId } = response.data.data;
+      const resData = response.data.data || response.data;
+      const { accessToken, refreshToken, userId, email: resEmail, firstName: resFirstName, lastName: resLastName } = resData;
+
+      // Extract tenantId from JWT claims
+      const claims = parseJwt(accessToken);
+      const newTenantId = claims?.tenant_id || claims?.tenantId || resData.tenantId || null;
 
       // Automatically log in the TenantAdmin
       localStorage.setItem('accessToken', accessToken);
@@ -141,7 +163,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const adminUser: User = {
         id: userId,
-        email,
+        email: resEmail || email,
+        firstName: resFirstName || firstName || '',
+        lastName: resLastName || lastName || '',
         roles: ['TenantAdmin'],
         tenantId: newTenantId,
       };
@@ -150,7 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(adminUser);
       setTenantId(newTenantId);
 
-      return response.data.data;
+      return resData;
     } catch (error) {
       throw error;
     } finally {
