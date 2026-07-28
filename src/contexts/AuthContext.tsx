@@ -104,10 +104,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<User> => {
     setIsLoading(true);
     try {
-      const isSuper = email === 'admin@kromicstore.com' || email === 'admin@kromic-store.com';
-      const url = isSuper ? '/api/v1/superuser/auth/login' : '/api/v1/auth/login';
+      const isSuperEmail = email === 'admin@kromicstore.com' || email === 'admin@kromic-store.com';
+      const url = isSuperEmail ? '/api/v1/superuser/auth/login' : '/api/v1/auth/login';
       const response = await apiClient.post(url, { email, password });
-      const { accessToken, refreshToken, user: userData } = response.data.data;
+      
+      const resData = response.data.data || response.data;
+      const { accessToken, refreshToken, userId, email: resEmail, firstName, lastName } = resData;
+
+      // Extract tenantId and roles from JWT claims
+      const claims = parseJwt(accessToken);
+      const newTenantId = claims?.tenant_id || claims?.tenantId || resData.tenantId || null;
+      
+      // Decrypt Microsoft claim URI or standard role parameter
+      const claimRole = claims?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || claims?.role;
+      const parsedRoles = Array.isArray(claimRole) ? claimRole : claimRole ? [claimRole] : [];
+      
+      const isSuper = isSuperEmail || parsedRoles.includes('SuperUser');
+      const userRoles = isSuper ? ['SuperUser'] : parsedRoles.length > 0 ? parsedRoles : ['TenantAdmin'];
+
+      const userData: User = {
+        id: userId,
+        email: resEmail || email,
+        firstName: firstName || '',
+        lastName: lastName || '',
+        roles: userRoles,
+        tenantId: newTenantId,
+      };
 
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
@@ -115,12 +137,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setUser(userData);
       
-      // If user belongs to a tenant, set it.
-      if (userData.tenantId) {
-        setTenantId(userData.tenantId);
+      if (newTenantId) {
+        setTenantId(newTenantId);
       }
 
-      return userData as User;
+      return userData;
     } catch (error) {
       throw error;
     } finally {
