@@ -98,7 +98,8 @@ const SaaSLanding: React.FC = () => {
         }
       }, 1000);
     } catch (err: any) {
-      setErrorMsg(err.response?.data?.message || err.response?.data?.error?.message || 'Invalid credentials.');
+      console.error('Login function failed:', err);
+      setErrorMsg(err.response?.data?.message || err.response?.data?.error?.message || err.message || 'Invalid credentials.');
     } finally {
       setIsSubmitting(false);
     }
