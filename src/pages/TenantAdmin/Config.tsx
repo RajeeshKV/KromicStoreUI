@@ -23,28 +23,24 @@ const Config: React.FC = () => {
   
   const [saveLoading, setSaveLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const loadConfigs = async () => {
     setLoading(true);
+    setErrorMsg('');
     try {
       const res = await apiClient.get('/api/v1/config');
       const data = res.data.data || res.data || {};
       
-      setStoreName(data['store:name'] || 'My Awesome Store');
+      setStoreName(data['store:name'] || '');
       setStoreLogo(data['store:logo'] || '');
 
       // Fetch logs
       const logRes = await apiClient.get('/api/v1/config/audit-logs');
       setAuditLogs(logRes.data.data || logRes.data || []);
     } catch (err: any) {
-      console.warn('Config endpoints failed. Using mock system configurations.', err);
-      setStoreName(localStorage.getItem('storeName') || 'My Awesome Store');
-      setStoreLogo(localStorage.getItem('storeLogo') || '');
-
-      setAuditLogs([
-        { id: '1', configKey: 'store:name', oldValue: 'Initial Shop', newValue: 'My Awesome Store', changedAt: new Date(Date.now() - 3600000).toISOString() },
-        { id: '2', configKey: 'store:logo', oldValue: '', newValue: localStorage.getItem('storeLogo') || '', changedAt: new Date().toISOString() }
-      ]);
+      console.error('Config endpoints failed:', err);
+      setErrorMsg(err.response?.data?.message || err.message || 'Failed to retrieve configuration settings from server.');
     } finally {
       setLoading(false);
     }
@@ -54,24 +50,31 @@ const Config: React.FC = () => {
     loadConfigs();
   }, []);
 
+  const generateUUID = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0,
+        v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  };
+
   const handleSaveConfig = async (key: string, value: string) => {
     setSaveLoading(true);
     setSuccessMsg('');
+    setErrorMsg('');
 
     try {
-      await apiClient.put(`/api/v1/config/${key}`, { value });
+      const headers: any = {};
+      if (key === 'store:name') {
+        headers['Idempotency-Key'] = generateUUID();
+      }
+      await apiClient.put(`/api/v1/config/${key}`, { value }, { headers });
       
-      if (key === 'store:name') localStorage.setItem('storeName', value);
-      if (key === 'store:logo') localStorage.setItem('storeLogo', value);
-
       setSuccessMsg(`Setting '${key}' saved successfully.`);
       loadConfigs();
     } catch (err: any) {
-      console.warn('API Config put failed. Saving locally.');
-      if (key === 'store:name') localStorage.setItem('storeName', value);
-      if (key === 'store:logo') localStorage.setItem('storeLogo', value);
-      setSuccessMsg(`Setting '${key}' saved locally.`);
-      loadConfigs();
+      console.error('API Config put failed:', err);
+      setErrorMsg(err.response?.data?.message || err.response?.data?.error || err.message || `Failed to save setting '${key}' on server.`);
     } finally {
       setSaveLoading(false);
     }
@@ -90,6 +93,12 @@ const Config: React.FC = () => {
         {successMsg && (
           <div className="status-pill success" style={{ width: '100%', padding: '0.75rem', marginBottom: '1.5rem', borderRadius: 'var(--radius-sm)' }}>
             {successMsg}
+          </div>
+        )}
+
+        {errorMsg && (
+          <div className="status-pill danger" style={{ width: '100%', padding: '0.75rem', marginBottom: '1.5rem', borderRadius: 'var(--radius-sm)' }}>
+            {errorMsg}
           </div>
         )}
 

@@ -134,22 +134,27 @@ const Dashboard: React.FC = () => {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [usage, setUsage] = useState<Usage | null>(null);
   const [loading, setLoading] = useState(true);
-  const [apiError, setApiError] = useState<string | null>(null);
 
   const fetchDashboardData = async () => {
     setLoading(true);
-    setApiError(null);
     try {
       // 1. Fetch Subscription Details
-      const subRes = await apiClient.get('/api/v1/subscriptions/current');
-      setSubscription(subRes.data.data || subRes.data);
+      try {
+        const subRes = await apiClient.get('/api/v1/subscriptions/current');
+        setSubscription(subRes.data.data || subRes.data || null);
+      } catch (subErr) {
+        console.error('Failed to retrieve subscription details:', subErr);
+        setSubscription(null);
+      }
 
       // 2. Fetch Subscription Usage
-      const usageRes = await apiClient.get('/api/v1/subscriptions/current/usage');
-      setUsage(usageRes.data.data || usageRes.data);
-    } catch (err: any) {
-      console.error('API error fetching dashboard data:', err);
-      setApiError(err.response?.data?.message || err.message || 'Failed to retrieve subscription and usage details from server.');
+      try {
+        const usageRes = await apiClient.get('/api/v1/subscriptions/current/usage');
+        setUsage(usageRes.data.data || usageRes.data || null);
+      } catch (usageErr) {
+        console.error('Failed to retrieve subscription usage details:', usageErr);
+        setUsage(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -158,6 +163,8 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  const isOnline = subscription !== null || usage !== null;
 
   return (
     <div className="dashboard-layout">
@@ -174,36 +181,32 @@ const Dashboard: React.FC = () => {
             <div className="spinner"></div>
             <p>Loading overview metrics...</p>
           </div>
-        ) : apiError ? (
-          <div className="card text-center" style={{ padding: '3rem', borderLeft: '4px solid var(--error-color)' }}>
-            <h3 style={{ color: 'var(--error-color)', fontWeight: 800 }}>Server Connection Error</h3>
-            <p style={{ color: 'var(--text-secondary)', margin: '1rem 0 1.5rem' }}>{apiError}</p>
-            <button className="btn btn-primary" onClick={fetchDashboardData}>
-              Retry Connection
-            </button>
-          </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {/* Quick Metrics */}
             <div className="stats-grid">
               <div className="card stat-card">
                 <span className="stat-label">Store Products</span>
-                <div className="stat-val">{usage?.products.used || 0}</div>
+                <div className="stat-val">{usage?.products.used !== undefined ? usage.products.used : '__'}</div>
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  Limit: {usage?.products.limit} published items
+                  Limit: {usage?.products.limit !== undefined ? usage.products.limit : '__'} published items
                 </span>
               </div>
               <div className="card stat-card">
                 <span className="stat-label">API Consumption</span>
-                <div className="stat-val">{usage?.apiCallsThisMonth.used || 0}</div>
+                <div className="stat-val">{usage?.apiCallsThisMonth.used !== undefined ? usage.apiCallsThisMonth.used : '__'}</div>
                 <span className="stat-change positive">
-                  {(((usage?.apiCallsThisMonth.used || 0) / (usage?.apiCallsThisMonth.limit || 1)) * 100).toFixed(1)}% of quota
+                  {usage ? `${(((usage.apiCallsThisMonth.used || 0) / (usage.apiCallsThisMonth.limit || 1)) * 100).toFixed(1)}% of quota` : '__% of quota'}
                 </span>
               </div>
               <div className="card stat-card">
                 <span className="stat-label">Server Status</span>
-                <div className="stat-val" style={{ color: 'var(--success)' }}>Online</div>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Connected to Kromic Store API</span>
+                <div className="stat-val" style={{ color: isOnline ? 'var(--success)' : 'var(--danger)' }}>
+                  {isOnline ? 'Online' : 'Offline'}
+                </div>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  {isOnline ? 'Connected to Kromic Store API' : 'Disconnected from Kromic Store API'}
+                </span>
               </div>
             </div>
 
@@ -212,38 +215,36 @@ const Dashboard: React.FC = () => {
               <div className="card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                   <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>Active Subscription</h3>
-                  <span className="status-pill success">{subscription?.status}</span>
+                  <span className="status-pill success">{subscription?.status || '__'}</span>
                 </div>
 
                 <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--accent-primary)', marginBottom: '1.25rem' }}>
-                  {subscription?.plan}
+                  {subscription?.plan || '__'}
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-                  <p>Started At: <strong>{subscription ? new Date(subscription.startedAt).toLocaleDateString() : 'N/A'}</strong></p>
-                  {subscription?.trialEndsAt && (
-                    <p>Trial Ends At: <strong>{new Date(subscription.trialEndsAt).toLocaleDateString()}</strong></p>
-                  )}
+                  <p>Started At: <strong>{subscription?.startedAt ? new Date(subscription.startedAt).toLocaleDateString() : '__'}</strong></p>
+                  <p>Trial Ends At: <strong>{subscription?.trialEndsAt ? new Date(subscription.trialEndsAt).toLocaleDateString() : '__'}</strong></p>
                 </div>
 
                 <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
                   <h4 style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.75rem' }}>Included Features</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.85rem' }}>
-                      <CheckCircle size={16} style={{ color: 'var(--success)' }} />
-                      <span>{subscription?.features.maxUsers} Admin Seats</span>
+                      <CheckCircle size={16} style={{ color: isOnline ? 'var(--success)' : 'var(--text-muted)' }} />
+                      <span>{subscription?.features.maxUsers !== undefined ? subscription.features.maxUsers : '__'} Admin Seats</span>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.85rem' }}>
-                      <CheckCircle size={16} style={{ color: 'var(--success)' }} />
-                      <span>{subscription?.features.maxProducts} Catalog Limit</span>
+                      <CheckCircle size={16} style={{ color: isOnline ? 'var(--success)' : 'var(--text-muted)' }} />
+                      <span>{subscription?.features.maxProducts !== undefined ? subscription.features.maxProducts : '__'} Catalog Limit</span>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.85rem' }}>
-                      <CheckCircle size={16} style={{ color: 'var(--success)' }} />
-                      <span>Webhooks {subscription?.features.webhooksEnabled ? 'Enabled' : 'Disabled'}</span>
+                      <CheckCircle size={16} style={{ color: isOnline ? 'var(--success)' : 'var(--text-muted)' }} />
+                      <span>Webhooks {subscription ? (subscription.features.webhooksEnabled ? 'Enabled' : 'Disabled') : '__'}</span>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.85rem' }}>
-                      <CheckCircle size={16} style={{ color: 'var(--success)' }} />
-                      <span>Analytics {subscription?.features.analyticsEnabled ? 'Enabled' : 'Disabled'}</span>
+                      <CheckCircle size={16} style={{ color: isOnline ? 'var(--success)' : 'var(--text-muted)' }} />
+                      <span>Analytics {subscription ? (subscription.features.analyticsEnabled ? 'Enabled' : 'Disabled') : '__'}</span>
                     </div>
                   </div>
                 </div>
@@ -258,12 +259,12 @@ const Dashboard: React.FC = () => {
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
                       <span style={{ fontWeight: 600 }}>Products List Limit</span>
-                      <span>{usage?.products.used} / {usage?.products.limit}</span>
+                      <span>{usage?.products.used !== undefined ? usage.products.used : '__'} / {usage?.products.limit !== undefined ? usage.products.limit : '__'}</span>
                     </div>
                     <div style={{ height: '8px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '100px', overflow: 'hidden' }}>
                       <div style={{
                         height: '100%',
-                        width: `${((usage?.products.used || 0) / (usage?.products.limit || 1)) * 100}%`,
+                        width: `${usage ? ((usage.products.used || 0) / (usage.products.limit || 1)) * 100 : 0}%`,
                         backgroundColor: 'var(--accent-primary)',
                         borderRadius: '100px'
                       }} />
@@ -274,12 +275,12 @@ const Dashboard: React.FC = () => {
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
                       <span style={{ fontWeight: 600 }}>Admin Seats</span>
-                      <span>{usage?.users.used} / {usage?.users.limit}</span>
+                      <span>{usage?.users.used !== undefined ? usage.users.used : '__'} / {usage?.users.limit !== undefined ? usage.users.limit : '__'}</span>
                     </div>
                     <div style={{ height: '8px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '100px', overflow: 'hidden' }}>
                       <div style={{
                         height: '100%',
-                        width: `${((usage?.users.used || 0) / (usage?.users.limit || 1)) * 100}%`,
+                        width: `${usage ? ((usage.users.used || 0) / (usage.users.limit || 1)) * 100 : 0}%`,
                         backgroundColor: 'var(--accent-secondary)',
                         borderRadius: '100px'
                       }} />
@@ -290,12 +291,12 @@ const Dashboard: React.FC = () => {
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
                       <span style={{ fontWeight: 600 }}>Monthly API Queries</span>
-                      <span>{usage?.apiCallsThisMonth.used} / {usage?.apiCallsThisMonth.limit}</span>
+                      <span>{usage?.apiCallsThisMonth.used !== undefined ? usage.apiCallsThisMonth.used : '__'} / {usage?.apiCallsThisMonth.limit !== undefined ? usage.apiCallsThisMonth.limit : '__'}</span>
                     </div>
                     <div style={{ height: '8px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '100px', overflow: 'hidden' }}>
                       <div style={{
                         height: '100%',
-                        width: `${((usage?.apiCallsThisMonth.used || 0) / (usage?.apiCallsThisMonth.limit || 1)) * 100}%`,
+                        width: `${usage ? ((usage.apiCallsThisMonth.used || 0) / (usage.apiCallsThisMonth.limit || 1)) * 100 : 0}%`,
                         backgroundColor: 'var(--warning)',
                         borderRadius: '100px'
                       }} />
