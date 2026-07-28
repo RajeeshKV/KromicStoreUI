@@ -345,7 +345,7 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
           }}>
             <button
               className="btn btn-primary"
-              onClick={() => window.location.href = 'https://kromic.in'}
+              onClick={() => window.location.href = 'https://store.kromic.in'}
               style={{
                 width: '100%',
                 padding: '0.75rem',
@@ -380,7 +380,7 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
             paddingTop: '1rem',
             width: '100%'
           }}>
-            Want to setup your own store? <a href="https://kromic.in/start" style={{ color: 'var(--primary-color)', fontWeight: 600, textDecoration: 'none' }}>Get Started →</a>
+            Want to setup your own store? <a href="https://store.kromic.in/start" style={{ color: 'var(--primary-color)', fontWeight: 600, textDecoration: 'none' }}>Get Started →</a>
           </div>
         </div>
       </div>
@@ -405,9 +405,9 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
           {bootstrapData?.tenant?.logoUrl && (
-            <img 
-              src={bootstrapData.tenant.logoUrl} 
-              alt={bootstrapData.tenant.name || 'Store Logo'} 
+            <img
+              src={bootstrapData.tenant.logoUrl}
+              alt={bootstrapData.tenant.name || 'Store Logo'}
               style={{ height: '60px', maxHeight: '60px', maxWidth: '120px', objectFit: 'contain', borderRadius: '8px', padding: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}
             />
           )}
@@ -421,7 +421,7 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
           <button className="btn btn-secondary btn-icon" onClick={loadStoreData} title="Refresh storefront">
             <RefreshCw size={18} />
           </button>
-          
+
           <Link to={`${linkPrefix}/checkout`} className="btn btn-primary cart-indicator">
             <ShoppingCart size={18} />
             View Cart
@@ -550,7 +550,7 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
                 const mainImg = prod.images && prod.images.length > 0
                   ? prod.images[0].url
                   : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60';
-                
+
                 return (
                   <div className="card product-card" key={prod.id}>
                     <div className="product-img-wrapper">

@@ -5,11 +5,12 @@ import { AdminSidebar } from './Dashboard';
 
 interface RazorpayConfig {
   id?: string;
-  keyId: string;
-  environment: 'Test' | 'Live';
+  razorpayKeyIdMasked?: string;
   isActive: boolean;
-  description?: string;
-  webhookSecret?: string;
+  paymentProvider?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  lastValidatedAt?: string;
 }
 
 const PaymentSettings: React.FC = () => {
@@ -23,9 +24,7 @@ const PaymentSettings: React.FC = () => {
   // Form Fields
   const [keyId, setKeyId] = useState('');
   const [keySecret, setKeySecret] = useState(''); // Masked on read
-  const [environment, setEnvironment] = useState<'Test' | 'Live'>('Test');
   const [webhookSecret, setWebhookSecret] = useState('');
-  const [description, setDescription] = useState('');
   const [isActive, setIsActive] = useState(true);
 
   // Constants
@@ -38,39 +37,24 @@ const PaymentSettings: React.FC = () => {
   const loadRazorpayConfig = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get('/api/v1/payment/razorpay');
+      const res = await apiClient.get('/api/v1/payments/configuration');
       if (res.data) {
-        const payload = res.data;
+        const payload = res.data.data || res.data;
         setConfig(payload);
-        setKeyId(payload.keyId || '');
-        setKeySecret(MASK_PLACEHOLDER); // Mask key secret on load
-        setEnvironment(payload.environment || 'Test');
-        setWebhookSecret(payload.webhookSecret || '');
-        setDescription(payload.description || '');
+        // Use masked key from backend or show placeholder
+        setKeyId(payload.razorpayKeyIdMasked || '');
+        setKeySecret(MASK_PLACEHOLDER); // Always mask on load for security
+        setWebhookSecret('');
         setIsActive(payload.isActive !== false);
       }
     } catch (err: any) {
-      console.warn('Razorpay configuration not found or failed, using demo placeholders if offline', err);
-      // For local testing, we can check localStorage to simulate persistence
-      const savedMock = localStorage.getItem('mock_razorpay_config');
-      if (savedMock) {
-        const payload = JSON.parse(savedMock);
-        setConfig(payload);
-        setKeyId(payload.keyId);
-        setKeySecret(MASK_PLACEHOLDER);
-        setEnvironment(payload.environment);
-        setWebhookSecret(payload.webhookSecret || '');
-        setDescription(payload.description || '');
-        setIsActive(payload.isActive);
-      } else {
-        setConfig(null);
-        setKeyId('');
-        setKeySecret('');
-        setEnvironment('Test');
-        setWebhookSecret('');
-        setDescription('');
-        setIsActive(true);
-      }
+      console.error('Failed to load Razorpay config:', err);
+      setErrorMsg('Failed to retrieve payment gateway configuration from server.');
+      setConfig(null);
+      setKeyId('');
+      setKeySecret('');
+      setWebhookSecret('');
+      setIsActive(true);
     } finally {
       setLoading(false);
     }
@@ -92,35 +76,23 @@ const PaymentSettings: React.FC = () => {
     setSuccessMsg('');
 
     const payload: any = {
-      keyId,
-      environment,
-      isActive,
-      description: description || undefined,
-      webhookSecret: webhookSecret || undefined
+      razorpayKeyId: keyId,
+      razorpayKeySecret: keySecret !== MASK_PLACEHOLDER ? keySecret : undefined,
+      razorpayWebhookSecret: webhookSecret || undefined
     };
 
-    // Only send keySecret if it has been updated from the masked placeholder
-    if (keySecret !== MASK_PLACEHOLDER) {
-      payload.keySecret = keySecret;
-    }
+    // Remove undefined values to avoid overwriting with nulls
+    Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
 
     try {
-      const res = await apiClient.post('/api/v1/payment/razorpay', payload);
-      const updated = res.data || payload;
+      const res = await apiClient.post('/api/v1/payments/configuration', payload);
+      const updated = res.data.data || res.data || payload;
       setConfig(updated);
       setKeySecret(MASK_PLACEHOLDER); // Reset to mask
       setSuccessMsg('Razorpay settings saved successfully!');
-      
-      // Local testing backup
-      localStorage.setItem('mock_razorpay_config', JSON.stringify({ ...payload, keySecret: MASK_PLACEHOLDER }));
     } catch (err: any) {
       console.error('Failed to save Razorpay config:', err);
-      // Force local fallback simulation
-      const fallbackConfig = { ...payload, id: 'rzp-config-active' };
-      setConfig(fallbackConfig);
-      localStorage.setItem('mock_razorpay_config', JSON.stringify(fallbackConfig));
-      setKeySecret(MASK_PLACEHOLDER);
-      setSuccessMsg('Saved successfully (simulation fallback mode)');
+      setErrorMsg(err.response?.data?.message || err.message || 'Failed to save configuration on server.');
     } finally {
       setSaving(false);
     }
@@ -130,50 +102,38 @@ const PaymentSettings: React.FC = () => {
     if (!config) return;
     try {
       const nextActive = !isActive;
-      await apiClient.patch('/api/v1/payment/razorpay/status', { isActive: nextActive });
+      // Use PATCH endpoint for status update - correct HTTP method
+      await apiClient.patch('/api/v1/payments/configuration/status', {
+        isActive: nextActive
+      });
       setIsActive(nextActive);
       if (config) {
         const updated = { ...config, isActive: nextActive };
         setConfig(updated);
-        localStorage.setItem('mock_razorpay_config', JSON.stringify(updated));
       }
       setSuccessMsg(`Razorpay is now ${nextActive ? 'Active' : 'Inactive'}`);
-    } catch (err) {
-      console.error('Failed to patch status', err);
-      const nextActive = !isActive;
-      setIsActive(nextActive);
-      if (config) {
-        const updated = { ...config, isActive: nextActive };
-        setConfig(updated);
-        localStorage.setItem('mock_razorpay_config', JSON.stringify(updated));
-      }
-      setSuccessMsg(`Status updated (simulation fallback)`);
+    } catch (err: any) {
+      console.error('Failed to patch status:', err);
+      setErrorMsg('Failed to update Razorpay status.');
     }
   };
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to remove Razorpay settings?')) return;
     setDeleting(true);
+    setErrorMsg('');
+    setSuccessMsg('');
     try {
-      await apiClient.delete('/api/v1/payment/razorpay');
+      await apiClient.delete('/api/v1/payments/configuration');
       setConfig(null);
-      localStorage.removeItem('mock_razorpay_config');
       setKeyId('');
       setKeySecret('');
       setWebhookSecret('');
-      setDescription('');
       setIsActive(true);
       setSuccessMsg('Razorpay configuration removed.');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to delete config', err);
-      setConfig(null);
-      localStorage.removeItem('mock_razorpay_config');
-      setKeyId('');
-      setKeySecret('');
-      setWebhookSecret('');
-      setDescription('');
-      setIsActive(true);
-      setSuccessMsg('Configuration removed.');
+      setErrorMsg(err.response?.data?.message || err.message || 'Failed to remove configuration from server.');
     } finally {
       setDeleting(false);
     }
@@ -239,19 +199,7 @@ const PaymentSettings: React.FC = () => {
                 </p>
               </div>
 
-              <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-                <label className="form-label" style={{ fontWeight: 600 }}>Environment Mode</label>
-                <select 
-                  className="form-control" 
-                  value={environment} 
-                  onChange={(e) => setEnvironment(e.target.value as 'Test' | 'Live')}
-                >
-                  <option value="Test">Test (Sandbox mode - no real money)</option>
-                  <option value="Live">Live (Production payments active)</option>
-                </select>
-              </div>
-
-              <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                 <label className="form-label" style={{ fontWeight: 600 }}>Webhook Secret (Optional)</label>
                 <input 
                   type="password" 
@@ -259,17 +207,6 @@ const PaymentSettings: React.FC = () => {
                   value={webhookSecret} 
                   onChange={(e) => setWebhookSecret(e.target.value)} 
                   placeholder="e.g. whsec_xxxxxx"
-                />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                <label className="form-label" style={{ fontWeight: 600 }}>Description</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  value={description} 
-                  onChange={(e) => setDescription(e.target.value)} 
-                  placeholder="e.g. Main corporate Razorpay payment account"
                 />
               </div>
 
@@ -309,8 +246,8 @@ const PaymentSettings: React.FC = () => {
               
               {config && (
                 <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <div><strong>Key ID:</strong> <code>{config.keyId}</code></div>
-                  <div><strong>Env Mode:</strong> <span className="badge" style={{ backgroundColor: config.environment === 'Live' ? '#ffebeb' : 'var(--bg-secondary)', color: config.environment === 'Live' ? 'var(--error-color)' : 'var(--text-secondary)' }}>{config.environment}</span></div>
+                  <div><strong>Key ID:</strong> <code>{config.razorpayKeyIdMasked}</code></div>
+                  <div><strong>Status:</strong> <span className="badge" style={{ backgroundColor: config.isActive ? 'var(--bg-secondary)' : '#ffebeb', color: config.isActive ? 'var(--text-secondary)' : 'var(--error-color)' }}>{config.isActive ? 'Active' : 'Inactive'}</span></div>
                 </div>
               )}
             </div>

@@ -31,12 +31,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label = 'Upl
 
     const formData = new FormData();
     formData.append('file', file);
-    if (folder) {
-      formData.append('folder', folder);
-    }
 
     try {
-      const res = await apiClient.post('/api/v1/media/upload', formData, {
+      const uploadUrl = folder ? `/api/v1/media/upload?folder=${encodeURIComponent(folder)}` : '/api/v1/media/upload';
+      const res = await apiClient.post(uploadUrl, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

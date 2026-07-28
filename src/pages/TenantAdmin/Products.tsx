@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AdminSidebar } from './Dashboard';
 import apiClient from '../../api/apiClient';
-import { Plus, Trash2, Edit, X, ToggleLeft, ToggleRight, DollarSign } from 'lucide-react';
+import { Plus, Trash2, Edit, X, ToggleLeft, ToggleRight, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Product, Category } from '../Storefront';
 import ImageUpload from '../../components/ImageUpload';
 
@@ -10,6 +10,12 @@ const Products: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
+  // Pagination state
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [statusFilter, setStatusFilter] = useState('');
+  const [totalCount, setTotalCount] = useState(0);
 
   // Form States (Create / Edit modal)
   const [showFormModal, setShowFormModal] = useState(false);
@@ -36,10 +42,24 @@ const Products: React.FC = () => {
       const catRes = await apiClient.get('/api/v1/categories');
       setCategories(catRes.data.data || catRes.data || []);
 
-      // 2. Fetch Products
-      const prodRes = await apiClient.get('/api/v1/products');
+      // 2. Fetch Products with pagination
+      const params: any = {
+        pageNumber: pageNumber,
+        pageSize: pageSize
+      };
+
+      if (statusFilter) {
+        params.status = statusFilter;
+      }
+
+      const prodRes = await apiClient.get('/api/v1/products', { params });
       const prodData = prodRes.data.data || prodRes.data || [];
       setProducts(prodData);
+
+      // Store total count if backend provides it
+      if (prodRes.data.totalCount) {
+        setTotalCount(prodRes.data.totalCount);
+      }
     } catch (err: any) {
       console.error('API Products loading failed:', err);
       setErrorMsg(err.response?.data?.message || err.message || 'Failed to retrieve products and categories from server.');
@@ -48,9 +68,10 @@ const Products: React.FC = () => {
     }
   };
 
+  // Re-fetch when pagination changes
   useEffect(() => {
     loadData();
-  }, []);
+  }, [pageNumber, pageSize, statusFilter]);
 
   const openCreateModal = () => {
     setEditingProduct(null);
@@ -189,84 +210,154 @@ const Products: React.FC = () => {
           </div>
         )}
 
+        {/* Pagination and Filter Controls */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+              Items per page:
+              <select 
+                value={pageSize} 
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPageNumber(1);
+                }}
+                style={{ marginLeft: '0.5rem', padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '0.9rem' }}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </label>
+            
+            <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+              Status:
+              <select 
+                value={statusFilter} 
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPageNumber(1);
+                }}
+                style={{ marginLeft: '0.5rem', padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '0.9rem' }}
+              >
+                <option value="">All</option>
+                <option value="Published">Published</option>
+                <option value="Draft">Draft</option>
+              </select>
+            </label>
+          </div>
+
+          {totalCount > 0 && (
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              Showing {Math.min(pageSize, products.length)} of {totalCount} products (Page {pageNumber})
+            </div>
+          )}
+        </div>
+
         {loading ? (
           <div className="loading-container card">
             <div className="spinner"></div>
             <p>Fetching merchant product inventory...</p>
           </div>
         ) : (
-          <div className="card">
-            <div className="table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>SKU</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>Status</th>
-                    <th style={{ textAlign: 'right' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((prod) => {
-                    const img = prod.imageUrl || (prod.images && prod.images.length > 0 ? prod.images[0].url : '') || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=80&auto=format&fit=crop&q=60';
-                    return (
-                      <tr key={prod.id}>
-                        <td style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          <img src={img} alt={prod.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                          <div>
-                            <span style={{ fontWeight: 700, color: 'var(--text-primary)', display: 'block' }}>{prod.name}</span>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: {prod.id}</span>
-                          </div>
-                        </td>
-                        <td><code style={{ fontSize: '0.8rem' }}>{prod.sku || 'N/A'}</code></td>
-                        <td style={{ fontWeight: 700 }}>${prod.price.toFixed(2)}</td>
-                        <td>
-                          <span className={`status-pill ${prod.stock > 10 ? 'success' : prod.stock > 0 ? 'warning' : 'danger'}`}>
-                            {prod.stock} Items
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`status-pill ${prod.status === 'Published' ? 'info' : 'warning'}`}>
-                            {prod.status || 'Draft'}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <div style={{ display: 'inline-flex', gap: '0.35rem' }}>
-                            <button
-                              className="btn btn-secondary"
-                              style={{ padding: '0.35rem' }}
-                              onClick={() => handleTogglePublish(prod)}
-                              title={prod.status === 'Published' ? 'Unpublish Product' : 'Publish Product'}
-                            >
-                              {prod.status === 'Published' ? <ToggleRight size={18} style={{ color: 'var(--success)' }} /> : <ToggleLeft size={18} />}
-                            </button>
-                            <button
-                              className="btn btn-secondary"
-                              style={{ padding: '0.35rem' }}
-                              onClick={() => openEditModal(prod)}
-                              title="Edit product"
-                            >
-                              <Edit size={14} />
-                            </button>
-                            <button
-                              className="btn btn-secondary"
-                              style={{ padding: '0.35rem', color: 'var(--danger)' }}
-                              onClick={() => handleDeleteProduct(prod.id)}
-                              title="Delete product"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+          <>
+            <div className="card">
+              <div className="table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>SKU</th>
+                      <th>Price</th>
+                      <th>Stock</th>
+                      <th>Status</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map((prod) => {
+                      const img = prod.imageUrl || (prod.images && prod.images.length > 0 ? prod.images[0].url : '') || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=80&auto=format&fit=crop&q=60';
+                      return (
+                        <tr key={prod.id}>
+                          <td style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <img src={img} alt={prod.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                            <div>
+                              <span style={{ fontWeight: 700, color: 'var(--text-primary)', display: 'block' }}>{prod.name}</span>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: {prod.id}</span>
+                            </div>
+                          </td>
+                          <td><code style={{ fontSize: '0.8rem' }}>{prod.sku || 'N/A'}</code></td>
+                          <td style={{ fontWeight: 700 }}>${prod.price.toFixed(2)}</td>
+                          <td>
+                            <span className={`status-pill ${prod.stock > 10 ? 'success' : prod.stock > 0 ? 'warning' : 'danger'}`}>
+                              {prod.stock} Items
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`status-pill ${prod.status === 'Published' ? 'info' : 'warning'}`}>
+                              {prod.status || 'Draft'}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', gap: '0.35rem' }}>
+                              <button
+                                className="btn btn-secondary"
+                                style={{ padding: '0.35rem' }}
+                                onClick={() => handleTogglePublish(prod)}
+                                title={prod.status === 'Published' ? 'Unpublish Product' : 'Publish Product'}
+                              >
+                                {prod.status === 'Published' ? <ToggleRight size={18} style={{ color: 'var(--success)' }} /> : <ToggleLeft size={18} />}
+                              </button>
+                              <button
+                                className="btn btn-secondary"
+                                style={{ padding: '0.35rem' }}
+                                onClick={() => openEditModal(prod)}
+                                title="Edit product"
+                              >
+                                <Edit size={14} />
+                              </button>
+                              <button
+                                className="btn btn-secondary"
+                                style={{ padding: '0.35rem', color: 'var(--danger)' }}
+                                onClick={() => handleDeleteProduct(prod.id)}
+                                title="Delete product"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+
+            {/* Pagination Navigation */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+              <button
+                className="btn btn-secondary"
+                disabled={pageNumber <= 1}
+                onClick={() => setPageNumber(Math.max(1, pageNumber - 1))}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              >
+                <ChevronLeft size={16} /> Previous
+              </button>
+              
+              <span style={{ fontSize: '0.9rem', fontWeight: 600, minWidth: '100px', textAlign: 'center' }}>
+                Page {pageNumber} of {Math.ceil((totalCount || pageSize) / pageSize)}
+              </span>
+              
+              <button
+                className="btn btn-secondary"
+                disabled={pageNumber * pageSize >= (totalCount || pageSize)}
+                onClick={() => setPageNumber(pageNumber + 1)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              >
+                Next <ChevronRight size={16} />
+              </button>
+            </div>
+          </>
         )}
       </main>
 

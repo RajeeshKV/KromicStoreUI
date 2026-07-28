@@ -54,7 +54,9 @@ const StorefrontSettings: React.FC = () => {
       const res = await apiClient.get(`/api/v1/storefronts/${targetId}/pending-changes`);
       setPendingChanges(res.data.data || res.data || null);
     } catch (err) {
-      console.warn('Pending changes not supported or failed to load:', err);
+      // Pending changes are optional - feature may not be implemented
+      console.warn('Pending changes feature not available:', err);
+      setPendingChanges(null);
     }
   };
 
@@ -63,32 +65,50 @@ const StorefrontSettings: React.FC = () => {
     try {
       const res = await apiClient.get('/api/v1/storefronts');
       const storefronts = res.data.data || res.data;
-      if (storefronts && storefronts.length > 0) {
-        const data = storefronts[0];
-        const activeId = data.id || data._id || '';
-        setStorefrontId(activeId);
-        setName(data.name || '');
-        setLogoUrl(data.logoUrl || '');
-        setContactEmail(data.contactEmail || '');
-        setContactPhone(data.contactPhone || '');
-        setAddress(data.address || '');
-        setCurrency(data.currency || 'INR');
-        setCountry(data.country || 'India');
-        setBrandColor(data.brandColor || '#4f46e5');
-        setCopyright(data.copyright || '');
-        
-        setShowAboutUs(data.showAboutUs !== false);
-        setShowContactUs(data.showContactUs !== false);
-
-        if (data.socialLinks) {
-          setFacebook(data.socialLinks.facebook || '');
-          setTwitter(data.socialLinks.twitter || '');
-          setInstagram(data.socialLinks.instagram || '');
-          setLinkedin(data.socialLinks.linkedin || '');
-        }
-
-        await loadPendingChanges(activeId);
+      if (!storefronts || storefronts.length === 0) {
+        setErrorMsg('No storefront found. Please create one first.');
+        setStorefrontId('');
+        setName('');
+        setLogoUrl('');
+        setContactEmail('');
+        setContactPhone('');
+        setAddress('');
+        setCurrency('INR');
+        setCountry('India');
+        setBrandColor('#4f46e5');
+        setCopyright('');
+        setShowAboutUs(true);
+        setShowContactUs(true);
+        setFacebook('');
+        setTwitter('');
+        setInstagram('');
+        setLinkedin('');
+        return;
       }
+      const data = storefronts[0];
+      const activeId = data.id || data._id || '';
+      setStorefrontId(activeId);
+      setName(data.name || '');
+      setLogoUrl(data.logoUrl || '');
+      setContactEmail(data.contactEmail || '');
+      setContactPhone(data.contactPhone || '');
+      setAddress(data.address || '');
+      setCurrency(data.currency || 'INR');
+      setCountry(data.country || 'India');
+      setBrandColor(data.brandColor || '#4f46e5');
+      setCopyright(data.copyright || '');
+      
+      setShowAboutUs(data.showAboutUs !== false);
+      setShowContactUs(data.showContactUs !== false);
+
+      if (data.socialLinks) {
+        setFacebook(data.socialLinks.facebook || '');
+        setTwitter(data.socialLinks.twitter || '');
+        setInstagram(data.socialLinks.instagram || '');
+        setLinkedin(data.socialLinks.linkedin || '');
+      }
+
+      await loadPendingChanges(activeId);
     } catch (err: any) {
       console.error('Failed to load storefront settings', err);
       setErrorMsg('Failed to load storefront settings.');
@@ -153,7 +173,11 @@ const StorefrontSettings: React.FC = () => {
           return;
         }
       } catch (valErr) {
-        console.warn('Validation endpoint failed or does not exist, proceeding to publish', valErr);
+        console.warn('Validation endpoint returned error:', valErr);
+        if (!window.confirm('Validation check failed. Do you want to continue publishing anyway?')) {
+          setPublishing(false);
+          return;
+        }
       }
 
       if (!window.confirm('Are you sure you want to publish these storefront changes to live production?')) {
