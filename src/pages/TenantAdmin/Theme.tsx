@@ -128,7 +128,7 @@ const ThemePreview: React.FC<{
   );
 };
 
-// Theme Grid Card Component
+// Theme Grid Card Component - Now as a table row
 interface ThemeGridCardProps {
   theme: Theme;
   isOwned: boolean;
@@ -151,77 +151,58 @@ const ThemeGridCard: React.FC<ThemeGridCardProps> = ({
   return (
     <div
       style={{
-        padding: '1.25rem',
-        border: theme.isActive ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
-        borderRadius: '12px',
-        backgroundColor: theme.isActive ? 'rgba(99, 102, 241, 0.05)' : 'var(--card-bg)',
-        cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        display: 'flex',
-        flexDirection: 'column',
+        display: 'grid',
+        gridTemplateColumns: '80px 1fr 150px 200px',
         gap: '1rem',
-        position: 'relative',
-        overflow: 'hidden'
-      }}
-      onMouseEnter={(e) => {
-        if (!theme.isActive) {
-          (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
-          (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
-        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+        padding: '1rem',
+        alignItems: 'center',
+        borderBottom: '1px solid var(--border-color)',
+        backgroundColor: theme.isActive ? 'rgba(99, 102, 241, 0.05)' : 'transparent',
+        borderLeft: theme.isActive ? '4px solid var(--primary-color)' : '4px solid transparent',
+        transition: 'all 0.2s ease'
       }}
     >
-      {/* Active Badge */}
-      {theme.isActive && (
-        <div style={{
-          position: 'absolute',
-          top: '0.75rem',
-          right: '0.75rem',
-          backgroundColor: 'var(--primary-color)',
-          color: '#ffffff',
-          padding: '0.35rem 0.75rem',
-          borderRadius: '20px',
-          fontSize: '0.7rem',
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em'
-        }}>
-          Active
-        </div>
-      )}
-
       {/* Color Palette */}
-      <div style={{ display: 'flex', gap: '6px' }}>
-        <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: theme.primaryColor, border: '1px solid rgba(0,0,0,0.1)' }} />
-        <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: theme.secondaryColor, border: '1px solid rgba(0,0,0,0.1)' }} />
-        <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: theme.accentColor, border: '1px solid rgba(0,0,0,0.1)' }} />
-        <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: theme.backgroundColor, border: '1px solid var(--border-color)' }} />
+      <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+        <div style={{ width: '18px', height: '18px', borderRadius: '3px', backgroundColor: theme.primaryColor, border: '1px solid rgba(0,0,0,0.1)' }} />
+        <div style={{ width: '18px', height: '18px', borderRadius: '3px', backgroundColor: theme.secondaryColor, border: '1px solid rgba(0,0,0,0.1)' }} />
+        <div style={{ width: '18px', height: '18px', borderRadius: '3px', backgroundColor: theme.accentColor, border: '1px solid rgba(0,0,0,0.1)' }} />
       </div>
 
-      {/* Name and Badges */}
+      {/* Name and Status */}
       <div>
-        <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>{theme.name}</h3>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+            {theme.name}
+          </h4>
+          {theme.isActive && (
+            <span style={{ fontSize: '0.65rem', backgroundColor: 'var(--primary-color)', color: '#ffffff', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 700, textTransform: 'uppercase' }}>
+              Active
+            </span>
+          )}
           {theme.isPublic && (
-            <span style={{ fontSize: '0.7rem', backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-secondary)', padding: '0.2rem 0.5rem', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <span style={{ fontSize: '0.65rem', backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-secondary)', padding: '0.2rem 0.5rem', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
               <Globe size={10} /> Public
             </span>
           )}
         </div>
       </div>
 
+      {/* Font & Config */}
+      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+        <div>{theme.fontFamily.split(',')[0]}</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>R: {theme.borderRadius}px</div>
+      </div>
+
       {/* Action Buttons */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
         {isOwned ? (
           <>
             {!theme.isActive && (
               <button
                 onClick={() => onActivate?.(theme.id)}
                 className="btn btn-secondary"
-                style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', flex: 1, minWidth: '60px' }}
+                style={{ fontSize: '0.7rem', padding: '0.35rem 0.75rem' }}
                 title="Activate"
               >
                 Activate
@@ -256,7 +237,7 @@ const ThemeGridCard: React.FC<ThemeGridCardProps> = ({
           <button
             onClick={() => onClone?.(theme)}
             className="btn btn-primary"
-            style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+            style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
           >
             <Copy size={14} /> Clone
           </button>
@@ -329,42 +310,72 @@ const ThemeEditorModal: React.FC<ThemeEditorModalProps> = ({
     <div style={{
       position: 'fixed',
       inset: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: 'rgba(0, 0, 0, 0.6)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 1000,
-      padding: '1rem'
+      padding: '2rem',
+      backdropFilter: 'blur(4px)'
     }}>
       <div style={{
         backgroundColor: 'var(--card-bg)',
-        borderRadius: '12px',
-        maxWidth: '1200px',
+        borderRadius: '16px',
+        maxWidth: '1100px',
         width: '100%',
-        maxHeight: '90vh',
-        overflow: 'auto',
+        maxHeight: '85vh',
+        overflow: 'hidden',
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 0
+        gridTemplateColumns: '45% 55%',
+        gap: 0,
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+        border: '1px solid var(--border-color)'
       }}>
         
         {/* Left: Form */}
-        <div style={{ padding: '2rem', borderRight: '1px solid var(--border-color)', overflowY: 'auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
+        <div style={{ 
+          padding: '2.5rem', 
+          borderRight: '1px solid var(--border-color)', 
+          overflowY: 'auto',
+          backgroundColor: 'var(--card-bg)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
               {isEditMode ? 'Edit Theme' : 'Create New Theme'}
             </h2>
             <button
               onClick={onClose}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '1.5rem', color: 'var(--text-secondary)' }}
+              style={{ 
+                background: 'var(--bg-secondary)', 
+                border: '1px solid var(--border-color)',
+                cursor: 'pointer', 
+                padding: '0.5rem', 
+                borderRadius: '8px', 
+                fontSize: '1.2rem', 
+                color: 'var(--text-secondary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '36px',
+                height: '36px',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'var(--error-color)';
+                (e.currentTarget as HTMLButtonElement).style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-secondary)';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)';
+              }}
             >
-              <X size={24} />
+              <X size={20} />
             </button>
           </div>
 
-          <form onSubmit={onSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <form onSubmit={onSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 600 }}>Theme Name *</label>
+              <label className="form-label" style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.5rem' }}>Theme Name *</label>
               <input
                 type="text"
                 className="form-control"
@@ -372,17 +383,21 @@ const ThemeEditorModal: React.FC<ThemeEditorModalProps> = ({
                 onChange={(e) => setThemeName(e.target.value)}
                 placeholder="e.g., Summer Sale 2026"
                 required
+                style={{ fontSize: '1rem' }}
               />
             </div>
 
-            <ColorInputField label="Primary Color" value={primaryColor} onChange={setPrimaryColor} />
-            <ColorInputField label="Secondary Color" value={secondaryColor} onChange={setSecondaryColor} />
-            <ColorInputField label="Accent Color" value={accentColor} onChange={setAccentColor} />
-            <ColorInputField label="Background Color" value={backgroundColor} onChange={setBackgroundColor} />
-            <ColorInputField label="Text Color" value={textColor} onChange={setTextColor} />
+            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Colors</h3>
+              <ColorInputField label="Primary Color" value={primaryColor} onChange={setPrimaryColor} />
+              <ColorInputField label="Secondary Color" value={secondaryColor} onChange={setSecondaryColor} />
+              <ColorInputField label="Accent Color" value={accentColor} onChange={setAccentColor} />
+              <ColorInputField label="Background Color" value={backgroundColor} onChange={setBackgroundColor} />
+              <ColorInputField label="Text Color" value={textColor} onChange={setTextColor} />
+            </div>
 
             <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 600 }}>Font Family</label>
+              <label className="form-label" style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.5rem' }}>Font Family</label>
               <select className="form-control" value={fontFamily} onChange={(e) => setFontFamily(e.target.value)}>
                 <option value="Outfit, sans-serif">Outfit (Modern Display)</option>
                 <option value="Inter, sans-serif">Inter (Clean Sans-Serif)</option>
@@ -394,24 +409,48 @@ const ThemeEditorModal: React.FC<ThemeEditorModalProps> = ({
             <RangeInputField label="Border Radius" value={borderRadius} onChange={setBorderRadius} min={0} max={24} unit="px" />
             <RangeInputField label="Spacing Unit" value={spacingUnit} onChange={setSpacingUnit} min={8} max={32} unit="px" />
 
-            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px' }}>
               <input
                 type="checkbox"
                 id="isPublic"
                 checked={isPublic}
                 onChange={(e) => setIsPublic(e.target.checked)}
+                style={{ cursor: 'pointer', width: '18px', height: '18px' }}
               />
-              <label htmlFor="isPublic" style={{ fontWeight: 600, cursor: 'pointer', margin: 0 }}>
+              <label htmlFor="isPublic" style={{ fontWeight: 600, cursor: 'pointer', margin: 0, fontSize: '0.95rem' }}>
                 Make public for other merchants
               </label>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
-              <button type="submit" className="btn btn-primary" disabled={saving} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                disabled={saving} 
+                style={{ 
+                  flex: 1, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  gap: '0.5rem',
+                  padding: '0.85rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 600
+                }}
+              >
                 {saving ? <Loader2 className="spinner" size={16} /> : <Save size={16} />}
                 {isEditMode ? 'Update & Activate' : 'Create & Activate'}
               </button>
-              <button type="button" className="btn btn-secondary" onClick={onClose}>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={onClose}
+                style={{
+                  padding: '0.85rem 1.5rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 600
+                }}
+              >
                 Cancel
               </button>
             </div>
@@ -419,12 +458,35 @@ const ThemeEditorModal: React.FC<ThemeEditorModalProps> = ({
         </div>
 
         {/* Right: Preview */}
-        <div style={{ padding: '2rem', backgroundColor: 'var(--bg-secondary)', overflowY: 'auto' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Eye size={18} /> Live Preview
+        <div style={{ 
+          padding: '2.5rem', 
+          backgroundColor: 'var(--bg-secondary)', 
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          <h3 style={{ 
+            fontSize: '1.1rem', 
+            fontWeight: 700, 
+            marginBottom: '1.5rem', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            color: 'var(--text-primary)',
+            margin: 0
+          }}>
+            <Eye size={20} style={{ color: 'var(--primary-color)' }} /> Live Preview
           </h3>
 
-          <div style={{ display: 'flex', gap: '0.25rem', border: '1px solid var(--border-color)', padding: '0.2rem', borderRadius: '8px', backgroundColor: 'var(--card-bg)', marginBottom: '1.5rem' }}>
+          <div style={{ 
+            display: 'flex', 
+            gap: '0.4rem', 
+            border: '1px solid var(--border-color)', 
+            padding: '0.4rem', 
+            borderRadius: '10px', 
+            backgroundColor: 'var(--card-bg)', 
+            marginBottom: '1.5rem'
+          }}>
             {['catalog', 'details', 'checkout', 'tracking'].map((tab) => (
               <button
                 key={tab}
@@ -433,8 +495,8 @@ const ThemeEditorModal: React.FC<ThemeEditorModalProps> = ({
                   border: 'none',
                   background: previewTab === tab ? 'var(--primary-color)' : 'transparent',
                   color: previewTab === tab ? '#ffffff' : 'var(--text-secondary)',
-                  padding: '0.35rem 0.65rem',
-                  fontSize: '0.75rem',
+                  padding: '0.5rem 0.8rem',
+                  fontSize: '0.8rem',
                   borderRadius: '6px',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -449,17 +511,19 @@ const ThemeEditorModal: React.FC<ThemeEditorModalProps> = ({
             ))}
           </div>
 
-          <ThemePreview
-            backgroundColor={backgroundColor}
-            textColor={textColor}
-            fontFamily={fontFamily}
-            borderRadius={borderRadius}
-            spacingUnit={spacingUnit}
-            primaryColor={primaryColor}
-            secondaryColor={secondaryColor}
-            accentColor={accentColor}
-            tab={previewTab}
-          />
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            <ThemePreview
+              backgroundColor={backgroundColor}
+              textColor={textColor}
+              fontFamily={fontFamily}
+              borderRadius={borderRadius}
+              spacingUnit={spacingUnit}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
+              accentColor={accentColor}
+              tab={previewTab}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -655,11 +719,11 @@ const Theme: React.FC = () => {
               <p style={{ marginTop: '1rem' }}>Loading themes...</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
               
               {/* LEFT COLUMN: My Themes */}
               <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Palette size={22} /> My Themes ({tenantThemes.length})
                 </h2>
                 
@@ -669,7 +733,30 @@ const Theme: React.FC = () => {
                     <p>No themes yet. Create your first theme to get started.</p>
                   </div>
                 ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                  <div style={{ border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden', backgroundColor: 'var(--card-bg)' }}>
+                    {/* Table Header */}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '80px 1fr 150px 200px',
+                        gap: '1rem',
+                        padding: '1rem',
+                        backgroundColor: 'var(--bg-secondary)',
+                        borderBottom: '2px solid var(--border-color)',
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        color: 'var(--text-secondary)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                    >
+                      <div style={{ textAlign: 'center' }}>Colors</div>
+                      <div>Name</div>
+                      <div style={{ textAlign: 'center' }}>Font</div>
+                      <div style={{ textAlign: 'right' }}>Actions</div>
+                    </div>
+                    
+                    {/* Table Body */}
                     {tenantThemes.map((theme) => (
                       <ThemeGridCard
                         key={theme.id}
@@ -687,7 +774,7 @@ const Theme: React.FC = () => {
 
               {/* RIGHT COLUMN: Public Themes */}
               <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Globe size={22} /> Public Library ({publicThemes.length})
                 </h2>
                 
@@ -697,7 +784,30 @@ const Theme: React.FC = () => {
                     <p>No public themes available. Check back later!</p>
                   </div>
                 ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                  <div style={{ border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden', backgroundColor: 'var(--card-bg)' }}>
+                    {/* Table Header */}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '80px 1fr 150px 200px',
+                        gap: '1rem',
+                        padding: '1rem',
+                        backgroundColor: 'var(--bg-secondary)',
+                        borderBottom: '2px solid var(--border-color)',
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        color: 'var(--text-secondary)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                    >
+                      <div style={{ textAlign: 'center' }}>Colors</div>
+                      <div>Name</div>
+                      <div style={{ textAlign: 'center' }}>Font</div>
+                      <div style={{ textAlign: 'right' }}>Actions</div>
+                    </div>
+                    
+                    {/* Table Body */}
                     {publicThemes.map((theme) => (
                       <ThemeGridCard
                         key={theme.id}

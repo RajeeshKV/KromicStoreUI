@@ -128,7 +128,7 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
       }
 
       try {
-        const res = await apiClient.get('/api/v1/store/bootstrap');
+        const res = await apiClient.get(`/api/v1/store/bootstrap/${tenantId}`);
         if (res.data) {
           setBootstrapData(res.data);
           if (res.data.theme) {
