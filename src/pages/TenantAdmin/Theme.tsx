@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/apiClient';
-import { Palette, Save, Loader2, Eye, Globe, Lock, Trash2, Copy, Plus, Check } from 'lucide-react';
+import { Palette, Save, Loader2, Eye, Globe, Lock, Trash2, Copy, Plus, X, Edit2 } from 'lucide-react';
 import { AdminSidebar } from './Dashboard';
+import { ToastContainer, useToast } from '../../components/Toast';
 
 interface Theme {
   id: string;
@@ -19,94 +20,7 @@ interface Theme {
   createdByTenantId?: string | null;
 }
 
-// Theme Card Component for Grid Display
-const ThemeCard: React.FC<{
-  theme: Theme;
-  isSelected: boolean;
-  isOwned: boolean;
-  onSelect: (t: Theme) => void;
-  onActivate: (id: string) => void;
-  onToggleVisibility: (id: string, isPublic: boolean) => void;
-  onDelete: (id: string) => void;
-}> = ({ theme, isSelected, isOwned, onSelect, onActivate, onToggleVisibility, onDelete }) => {
-  return (
-    <div
-      onClick={() => onSelect(theme)}
-      style={{
-        padding: '1rem',
-        border: isSelected ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
-        borderRadius: '8px',
-        backgroundColor: isSelected ? 'var(--bg-secondary)' : 'var(--card-bg)',
-        cursor: 'pointer',
-        transition: 'all 0.2s',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.75rem'
-      }}
-    >
-      <div style={{ display: 'flex', gap: '4px' }}>
-        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.primaryColor }} />
-        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.secondaryColor }} />
-        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.accentColor }} />
-        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.backgroundColor, border: '1px solid var(--border-color)' }} />
-      </div>
-      <div>
-        <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '0.95rem', fontWeight: 600 }}>{theme.name}</h4>
-        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-          {theme.isActive && <span style={{ fontSize: '0.7rem', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>Active</span>}
-          {theme.isPublic && <span style={{ fontSize: '0.7rem', backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-secondary)', padding: '0.15rem 0.5rem', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '2px' }}><Globe size={10} /> Public</span>}
-        </div>
-      </div>
-      
-      {isOwned && (
-        <div style={{ display: 'flex', gap: '0.35rem', marginTop: 'auto', flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
-          {!theme.isActive && (
-            <button onClick={() => onActivate(theme.id)} className="btn btn-secondary" style={{ fontSize: '0.7rem', padding: '0.3rem 0.6rem', flex: 1 }}>
-              Activate
-            </button>
-          )}
-          <button onClick={() => onToggleVisibility(theme.id, theme.isPublic)} className="btn btn-secondary btn-icon" style={{ padding: '0.3rem' }} title={theme.isPublic ? 'Make Private' : 'Make Public'}>
-            {theme.isPublic ? <Lock size={14} /> : <Globe size={14} />}
-          </button>
-          <button onClick={() => onDelete(theme.id)} className="btn btn-secondary btn-icon" style={{ padding: '0.3rem', color: '#ef4444' }} title="Delete">
-            <Trash2 size={14} />
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Public Theme Card Component
-const PublicThemeCard: React.FC<{ theme: Theme; onClone: (t: Theme) => void }> = ({ theme, onClone }) => {
-  return (
-    <div style={{
-      padding: '1rem',
-      border: '1px solid var(--border-color)',
-      borderRadius: '8px',
-      backgroundColor: 'var(--card-bg)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '0.75rem'
-    }}>
-      <div style={{ display: 'flex', gap: '4px' }}>
-        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.primaryColor }} />
-        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.secondaryColor }} />
-        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.accentColor }} />
-        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.backgroundColor, border: '1px solid var(--border-color)' }} />
-      </div>
-      <div>
-        <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '0.95rem', fontWeight: 600 }}>{theme.name}</h4>
-        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>By {theme.createdByTenantId || 'Unknown'}</span>
-      </div>
-      <button onClick={() => onClone(theme)} className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
-        <Copy size={14} /> Clone Theme
-      </button>
-    </div>
-  );
-};
-
-// Color Input Field Component
+// Color Input Component
 const ColorInputField: React.FC<{ label: string; value: string; onChange: (v: string) => void }> = ({ label, value, onChange }) => (
   <div className="form-group">
     <label className="form-label" style={{ fontWeight: 600 }}>{label}</label>
@@ -214,15 +128,356 @@ const ThemePreview: React.FC<{
   );
 };
 
-// Main Theme Component
+// Theme Grid Card Component
+interface ThemeGridCardProps {
+  theme: Theme;
+  isOwned: boolean;
+  onEdit?: (theme: Theme) => void;
+  onActivate?: (id: string) => void;
+  onToggleVisibility?: (id: string, isPublic: boolean) => void;
+  onDelete?: (id: string) => void;
+  onClone?: (theme: Theme) => void;
+}
+
+const ThemeGridCard: React.FC<ThemeGridCardProps> = ({
+  theme,
+  isOwned,
+  onEdit,
+  onActivate,
+  onToggleVisibility,
+  onDelete,
+  onClone
+}) => {
+  return (
+    <div
+      style={{
+        padding: '1.25rem',
+        border: theme.isActive ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
+        borderRadius: '12px',
+        backgroundColor: theme.isActive ? 'rgba(99, 102, 241, 0.05)' : 'var(--card-bg)',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+      onMouseEnter={(e) => {
+        if (!theme.isActive) {
+          (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
+          (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
+        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+      }}
+    >
+      {/* Active Badge */}
+      {theme.isActive && (
+        <div style={{
+          position: 'absolute',
+          top: '0.75rem',
+          right: '0.75rem',
+          backgroundColor: 'var(--primary-color)',
+          color: '#ffffff',
+          padding: '0.35rem 0.75rem',
+          borderRadius: '20px',
+          fontSize: '0.7rem',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em'
+        }}>
+          Active
+        </div>
+      )}
+
+      {/* Color Palette */}
+      <div style={{ display: 'flex', gap: '6px' }}>
+        <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: theme.primaryColor, border: '1px solid rgba(0,0,0,0.1)' }} />
+        <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: theme.secondaryColor, border: '1px solid rgba(0,0,0,0.1)' }} />
+        <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: theme.accentColor, border: '1px solid rgba(0,0,0,0.1)' }} />
+        <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: theme.backgroundColor, border: '1px solid var(--border-color)' }} />
+      </div>
+
+      {/* Name and Badges */}
+      <div>
+        <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>{theme.name}</h3>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {theme.isPublic && (
+            <span style={{ fontSize: '0.7rem', backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-secondary)', padding: '0.2rem 0.5rem', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <Globe size={10} /> Public
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto', flexWrap: 'wrap' }}>
+        {isOwned ? (
+          <>
+            {!theme.isActive && (
+              <button
+                onClick={() => onActivate?.(theme.id)}
+                className="btn btn-secondary"
+                style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', flex: 1, minWidth: '60px' }}
+                title="Activate"
+              >
+                Activate
+              </button>
+            )}
+            <button
+              onClick={() => onEdit?.(theme)}
+              className="btn btn-secondary btn-icon"
+              style={{ padding: '0.35rem 0.6rem' }}
+              title="Edit"
+            >
+              <Edit2 size={14} />
+            </button>
+            <button
+              onClick={() => onToggleVisibility?.(theme.id, theme.isPublic)}
+              className="btn btn-secondary btn-icon"
+              style={{ padding: '0.35rem 0.6rem' }}
+              title={theme.isPublic ? 'Make Private' : 'Make Public'}
+            >
+              {theme.isPublic ? <Lock size={14} /> : <Globe size={14} />}
+            </button>
+            <button
+              onClick={() => onDelete?.(theme.id)}
+              className="btn btn-secondary btn-icon"
+              style={{ padding: '0.35rem 0.6rem', color: '#ef4444' }}
+              title="Delete"
+            >
+              <Trash2 size={14} />
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => onClone?.(theme)}
+            className="btn btn-primary"
+            style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+          >
+            <Copy size={14} /> Clone
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Theme Editor Modal Component
+interface ThemeEditorModalProps {
+  theme?: Theme;
+  themeName: string;
+  setThemeName: (v: string) => void;
+  primaryColor: string;
+  setPrimaryColor: (v: string) => void;
+  secondaryColor: string;
+  setSecondaryColor: (v: string) => void;
+  accentColor: string;
+  setAccentColor: (v: string) => void;
+  backgroundColor: string;
+  setBackgroundColor: (v: string) => void;
+  textColor: string;
+  setTextColor: (v: string) => void;
+  fontFamily: string;
+  setFontFamily: (v: string) => void;
+  borderRadius: number;
+  setBorderRadius: (v: number) => void;
+  spacingUnit: number;
+  setSpacingUnit: (v: number) => void;
+  isPublic: boolean;
+  setIsPublic: (v: boolean) => void;
+  previewTab: 'catalog' | 'details' | 'checkout' | 'tracking';
+  setPreviewTab: (v: any) => void;
+  saving: boolean;
+  isEditMode: boolean;
+  onSave: (e: React.FormEvent) => void;
+  onClose: () => void;
+}
+
+const ThemeEditorModal: React.FC<ThemeEditorModalProps> = ({
+  themeName,
+  setThemeName,
+  primaryColor,
+  setPrimaryColor,
+  secondaryColor,
+  setSecondaryColor,
+  accentColor,
+  setAccentColor,
+  backgroundColor,
+  setBackgroundColor,
+  textColor,
+  setTextColor,
+  fontFamily,
+  setFontFamily,
+  borderRadius,
+  setBorderRadius,
+  spacingUnit,
+  setSpacingUnit,
+  isPublic,
+  setIsPublic,
+  previewTab,
+  setPreviewTab,
+  saving,
+  isEditMode,
+  onSave,
+  onClose
+}) => {
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '1rem'
+    }}>
+      <div style={{
+        backgroundColor: 'var(--card-bg)',
+        borderRadius: '12px',
+        maxWidth: '1200px',
+        width: '100%',
+        maxHeight: '90vh',
+        overflow: 'auto',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 0
+      }}>
+        
+        {/* Left: Form */}
+        <div style={{ padding: '2rem', borderRight: '1px solid var(--border-color)', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
+              {isEditMode ? 'Edit Theme' : 'Create New Theme'}
+            </h2>
+            <button
+              onClick={onClose}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '1.5rem', color: 'var(--text-secondary)' }}
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          <form onSubmit={onSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div className="form-group">
+              <label className="form-label" style={{ fontWeight: 600 }}>Theme Name *</label>
+              <input
+                type="text"
+                className="form-control"
+                value={themeName}
+                onChange={(e) => setThemeName(e.target.value)}
+                placeholder="e.g., Summer Sale 2026"
+                required
+              />
+            </div>
+
+            <ColorInputField label="Primary Color" value={primaryColor} onChange={setPrimaryColor} />
+            <ColorInputField label="Secondary Color" value={secondaryColor} onChange={setSecondaryColor} />
+            <ColorInputField label="Accent Color" value={accentColor} onChange={setAccentColor} />
+            <ColorInputField label="Background Color" value={backgroundColor} onChange={setBackgroundColor} />
+            <ColorInputField label="Text Color" value={textColor} onChange={setTextColor} />
+
+            <div className="form-group">
+              <label className="form-label" style={{ fontWeight: 600 }}>Font Family</label>
+              <select className="form-control" value={fontFamily} onChange={(e) => setFontFamily(e.target.value)}>
+                <option value="Outfit, sans-serif">Outfit (Modern Display)</option>
+                <option value="Inter, sans-serif">Inter (Clean Sans-Serif)</option>
+                <option value="Roboto, sans-serif">Roboto (Structured)</option>
+                <option value="Playfair Display, serif">Playfair Display (Premium)</option>
+              </select>
+            </div>
+
+            <RangeInputField label="Border Radius" value={borderRadius} onChange={setBorderRadius} min={0} max={24} unit="px" />
+            <RangeInputField label="Spacing Unit" value={spacingUnit} onChange={setSpacingUnit} min={8} max={32} unit="px" />
+
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                type="checkbox"
+                id="isPublic"
+                checked={isPublic}
+                onChange={(e) => setIsPublic(e.target.checked)}
+              />
+              <label htmlFor="isPublic" style={{ fontWeight: 600, cursor: 'pointer', margin: 0 }}>
+                Make public for other merchants
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
+              <button type="submit" className="btn btn-primary" disabled={saving} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                {saving ? <Loader2 className="spinner" size={16} /> : <Save size={16} />}
+                {isEditMode ? 'Update & Activate' : 'Create & Activate'}
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={onClose}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Right: Preview */}
+        <div style={{ padding: '2rem', backgroundColor: 'var(--bg-secondary)', overflowY: 'auto' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Eye size={18} /> Live Preview
+          </h3>
+
+          <div style={{ display: 'flex', gap: '0.25rem', border: '1px solid var(--border-color)', padding: '0.2rem', borderRadius: '8px', backgroundColor: 'var(--card-bg)', marginBottom: '1.5rem' }}>
+            {['catalog', 'details', 'checkout', 'tracking'].map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                style={{
+                  border: 'none',
+                  background: previewTab === tab ? 'var(--primary-color)' : 'transparent',
+                  color: previewTab === tab ? '#ffffff' : 'var(--text-secondary)',
+                  padding: '0.35rem 0.65rem',
+                  fontSize: '0.75rem',
+                  borderRadius: '6px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textTransform: 'capitalize',
+                  flex: 1,
+                  transition: 'all 0.2s ease'
+                }}
+                onClick={() => setPreviewTab(tab as any)}
+              >
+                {tab === 'details' ? 'Product' : tab}
+              </button>
+            ))}
+          </div>
+
+          <ThemePreview
+            backgroundColor={backgroundColor}
+            textColor={textColor}
+            fontFamily={fontFamily}
+            borderRadius={borderRadius}
+            spacingUnit={spacingUnit}
+            primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
+            accentColor={accentColor}
+            tab={previewTab}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Theme: React.FC = () => {
+  const { toasts, removeToast, success, error } = useToast();
   const [tenantThemes, setTenantThemes] = useState<Theme[]>([]);
   const [publicThemes, setPublicThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
+  
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [editingThemeId, setEditingThemeId] = useState<string | null>(null);
+  
+  // Form state
   const [themeName, setThemeName] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#6366f1');
   const [secondaryColor, setSecondaryColor] = useState('#4f46e5');
@@ -242,33 +497,24 @@ const Theme: React.FC = () => {
   const loadThemes = async () => {
     setLoading(true);
     try {
-      // Load private (owned) themes
       const privateRes = await apiClient.get('/api/v1/themes/private');
       const ownThemes = privateRes.data.data || privateRes.data || [];
 
-      // Load public themes
       const publicRes = await apiClient.get('/api/v1/themes/public');
       const publicOnly = publicRes.data.data || publicRes.data || [];
 
       setTenantThemes(ownThemes);
       setPublicThemes(publicOnly);
-
-      if (ownThemes.length > 0) {
-        const active = ownThemes.find((t: Theme) => t.isActive) || ownThemes[0];
-        handleSelectTheme(active);
-      } else {
-        resetThemeForm();
-      }
     } catch (err: any) {
       console.error('Failed to load themes:', err);
-      setErrorMsg('Failed to load themes from server.');
+      error('Failed to load themes from server.');
     } finally {
       setLoading(false);
     }
   };
 
-  const resetThemeForm = () => {
-    setSelectedThemeId(null);
+  const resetForm = () => {
+    setEditingThemeId(null);
     setThemeName('');
     setPrimaryColor('#6366f1');
     setSecondaryColor('#4f46e5');
@@ -279,10 +525,16 @@ const Theme: React.FC = () => {
     setBorderRadius(8);
     setSpacingUnit(16);
     setIsPublic(false);
+    setPreviewTab('catalog');
   };
 
-  const handleSelectTheme = (theme: Theme) => {
-    setSelectedThemeId(theme.id);
+  const openNewThemeModal = () => {
+    resetForm();
+    setShowModal(true);
+  };
+
+  const openEditThemeModal = (theme: Theme) => {
+    setEditingThemeId(theme.id);
     setThemeName(theme.name);
     setPrimaryColor(theme.primaryColor);
     setSecondaryColor(theme.secondaryColor);
@@ -293,13 +545,12 @@ const Theme: React.FC = () => {
     setBorderRadius(theme.borderRadius);
     setSpacingUnit(theme.spacingUnit);
     setIsPublic(theme.isPublic);
+    setShowModal(true);
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    setErrorMsg('');
-    setSuccessMsg('');
 
     const payload = {
       name: themeName,
@@ -315,19 +566,19 @@ const Theme: React.FC = () => {
     };
 
     try {
-      if (selectedThemeId) {
-        await apiClient.put(`/api/v1/themes/${selectedThemeId}`, payload);
-        setSuccessMsg('Theme updated successfully!');
+      if (editingThemeId) {
+        await apiClient.put(`/api/v1/themes/${editingThemeId}`, payload);
+        success('Theme updated successfully!');
       } else {
-        const res = await apiClient.post('/api/v1/themes', payload);
-        const newTheme = res.data.data || res.data;
-        setSelectedThemeId(newTheme.id);
-        setSuccessMsg('Theme created successfully!');
+        await apiClient.post('/api/v1/themes', payload);
+        success('Theme created successfully!');
       }
+      setShowModal(false);
       loadThemes();
     } catch (err: any) {
       console.error('Failed to save theme:', err);
-      setErrorMsg(err.response?.data?.message || 'Failed to save theme.');
+      const errorMsg = err.response?.data?.message || 'Failed to save theme.';
+      error(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -336,11 +587,11 @@ const Theme: React.FC = () => {
   const handleActivate = async (themeId: string) => {
     try {
       await apiClient.post(`/api/v1/themes/${themeId}/activate`);
-      setSuccessMsg('Theme activated!');
+      success('Theme activated!');
       loadThemes();
     } catch (err: any) {
       console.error('Failed to activate theme:', err);
-      setErrorMsg('Failed to activate theme.');
+      error('Failed to activate theme.');
     }
   };
 
@@ -348,11 +599,11 @@ const Theme: React.FC = () => {
     try {
       const endpoint = currentlyPublic ? `/api/v1/themes/${themeId}/make-private` : `/api/v1/themes/${themeId}/make-public`;
       await apiClient.post(endpoint);
-      setSuccessMsg(`Theme is now ${!currentlyPublic ? 'Public' : 'Private'}`);
+      success(`Theme is now ${!currentlyPublic ? 'Public' : 'Private'}`);
       loadThemes();
     } catch (err: any) {
       console.error('Failed to toggle visibility:', err);
-      setErrorMsg('Failed to change theme visibility.');
+      error('Failed to change theme visibility.');
     }
   };
 
@@ -360,14 +611,11 @@ const Theme: React.FC = () => {
     if (!window.confirm('Delete this theme?')) return;
     try {
       await apiClient.delete(`/api/v1/themes/${themeId}`);
-      setSuccessMsg('Theme deleted successfully.');
-      if (selectedThemeId === themeId) {
-        resetThemeForm();
-      }
+      success('Theme deleted successfully.');
       loadThemes();
     } catch (err: any) {
       console.error('Failed to delete theme:', err);
-      setErrorMsg('Failed to delete theme.');
+      error('Failed to delete theme.');
     }
   };
 
@@ -375,12 +623,12 @@ const Theme: React.FC = () => {
     try {
       const res = await apiClient.post(`/api/v1/themes/${theme.id}/clone`);
       const clonedTheme = res.data.data || res.data;
-      setSuccessMsg(`Theme "${clonedTheme.name}" cloned successfully!`);
+      success(`Theme "${clonedTheme.name}" cloned successfully!`);
+      openEditThemeModal(clonedTheme);
       loadThemes();
-      handleSelectTheme(clonedTheme);
     } catch (err: any) {
       console.error('Failed to clone theme:', err);
-      setErrorMsg('Failed to clone theme.');
+      error('Failed to clone theme.');
     }
   };
 
@@ -388,28 +636,18 @@ const Theme: React.FC = () => {
     <div className="dashboard-layout">
       <AdminSidebar active="theme" />
       <main className="dashboard-content">
+        <ToastContainer toasts={toasts} onClose={removeToast} />
         <div className="content-wrapper">
+          {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <div>
               <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem' }}>Theme Management</h1>
               <p style={{ color: 'var(--text-secondary)' }}>Create, customize, and manage themes for your storefront. Share themes publicly for other merchants to clone.</p>
             </div>
-            <button className="btn btn-primary" onClick={resetThemeForm}>
-              <Plus size={16} /> New Theme
+            <button className="btn btn-primary" onClick={openNewThemeModal} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Plus size={18} /> New Theme
             </button>
           </div>
-
-          {successMsg && (
-            <div className="card" style={{ borderLeft: '4px solid var(--accent-color)', padding: '1rem', marginBottom: '1.5rem', color: 'var(--accent-color)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Check size={20} /> {successMsg}
-            </div>
-          )}
-
-          {errorMsg && (
-            <div className="card" style={{ borderLeft: '4px solid #ef4444', padding: '1rem', marginBottom: '1.5rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              ✕ {errorMsg}
-            </div>
-          )}
 
           {loading ? (
             <div className="loading-container">
@@ -417,157 +655,88 @@ const Theme: React.FC = () => {
               <p style={{ marginTop: '1rem' }}>Loading themes...</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '2.5rem', alignItems: 'start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
               
-              {/* LEFT COLUMN */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              {/* My Themes Section */}
+              <div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Palette size={22} /> My Themes ({tenantThemes.length})
+                </h2>
                 
-                {/* MY THEMES */}
-                <div className="card" style={{ padding: '1.5rem' }}>
-                  <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Palette size={20} /> My Themes ({tenantThemes.length})
-                  </h2>
-                  
-                  {tenantThemes.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-secondary)' }}>
-                      <p>No themes yet. Create your first theme to get started.</p>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-                      {tenantThemes.map((theme) => (
-                        <ThemeCard
-                          key={theme.id}
-                          theme={theme}
-                          isSelected={selectedThemeId === theme.id}
-                          isOwned={true}
-                          onSelect={handleSelectTheme}
-                          onActivate={handleActivate}
-                          onToggleVisibility={handleToggleVisibility}
-                          onDelete={handleDelete}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* PUBLIC BROWSE */}
-                {publicThemes.length > 0 && (
-                  <div className="card" style={{ padding: '1.5rem' }}>
-                    <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Globe size={20} /> Public Library ({publicThemes.length})
-                    </h2>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Browse and clone themes from other merchants.</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-                      {publicThemes.map((theme) => (
-                        <PublicThemeCard key={theme.id} theme={theme} onClone={handleCloneTheme} />
-                      ))}
-                    </div>
+                {tenantThemes.length === 0 ? (
+                  <div className="card" style={{ padding: '3rem 2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    <Palette size={40} style={{ opacity: 0.3, marginBottom: '1rem', margin: '0 auto 1rem' }} />
+                    <p>No themes yet. Create your first theme to get started.</p>
                   </div>
-                )}
-
-                {/* FORM */}
-                <div className="card" style={{ padding: '2rem' }}>
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>
-                    {selectedThemeId ? 'Edit Theme' : 'Create New Theme'}
-                  </h2>
-                  <form onSubmit={handleSave}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                      <div className="form-group">
-                        <label className="form-label" style={{ fontWeight: 600 }}>Theme Name *</label>
-                        <input type="text" className="form-control" value={themeName} onChange={(e) => setThemeName(e.target.value)} placeholder="e.g., Summer Sale 2026" required />
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                        <ColorInputField label="Primary Color" value={primaryColor} onChange={setPrimaryColor} />
-                        <ColorInputField label="Secondary Color" value={secondaryColor} onChange={setSecondaryColor} />
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                        <ColorInputField label="Accent Color" value={accentColor} onChange={setAccentColor} />
-                        <ColorInputField label="Background Color" value={backgroundColor} onChange={setBackgroundColor} />
-                      </div>
-
-                      <ColorInputField label="Text Color" value={textColor} onChange={setTextColor} />
-
-                      <div className="form-group">
-                        <label className="form-label" style={{ fontWeight: 600 }}>Font Family</label>
-                        <select className="form-control" value={fontFamily} onChange={(e) => setFontFamily(e.target.value)}>
-                          <option value="Outfit, sans-serif">Outfit (Modern Display)</option>
-                          <option value="Inter, sans-serif">Inter (Clean Sans-Serif)</option>
-                          <option value="Roboto, sans-serif">Roboto (Structured)</option>
-                          <option value="Playfair Display, serif">Playfair Display (Premium)</option>
-                        </select>
-                      </div>
-
-                      <RangeInputField label="Border Radius" value={borderRadius} onChange={setBorderRadius} min={0} max={24} unit="px" />
-                      <RangeInputField label="Spacing Unit" value={spacingUnit} onChange={setSpacingUnit} min={8} max={32} unit="px" />
-
-                      <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <input type="checkbox" id="isPublic" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
-                        <label htmlFor="isPublic" style={{ fontWeight: 600, cursor: 'pointer', margin: 0 }}>Make public for other merchants</label>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
-                        <button type="submit" className="btn btn-primary" disabled={saving} style={{ flex: 1 }}>
-                          {saving ? <Loader2 className="spinner" size={16} /> : <Save size={16} />} 
-                          {selectedThemeId ? 'Update & Activate' : 'Create & Activate'}
-                        </button>
-                        {selectedThemeId && (
-                          <button type="button" className="btn btn-secondary" onClick={resetThemeForm}>Clear</button>
-                        )}
-                      </div>
-                    </div>
-                  </form>
-                </div>
-              </div>
-
-              {/* RIGHT COLUMN: PREVIEW */}
-              <div style={{ position: 'sticky', top: '2rem' }}>
-                <div className="card" style={{ padding: '1.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
-                    <Eye size={18} style={{ color: 'var(--text-secondary)' }} />
-                    <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Live Preview</h2>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '0.25rem', border: '1px solid var(--border-color)', padding: '0.2rem', borderRadius: '8px', backgroundColor: 'var(--bg-secondary)', marginBottom: '1.5rem' }}>
-                    {['catalog', 'details', 'checkout', 'tracking'].map((tab) => (
-                      <button
-                        key={tab}
-                        type="button"
-                        style={{
-                          border: 'none',
-                          background: previewTab === tab ? 'var(--card-bg)' : 'none',
-                          color: previewTab === tab ? 'var(--primary-color)' : 'var(--text-secondary)',
-                          padding: '0.35rem 0.65rem',
-                          fontSize: '0.75rem',
-                          borderRadius: '6px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          textTransform: 'capitalize',
-                          flex: 1
-                        }}
-                        onClick={() => setPreviewTab(tab as any)}
-                      >
-                        {tab === 'details' ? 'Product' : tab}
-                      </button>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
+                    {tenantThemes.map((theme) => (
+                      <ThemeGridCard
+                        key={theme.id}
+                        theme={theme}
+                        isOwned={true}
+                        onEdit={openEditThemeModal}
+                        onActivate={handleActivate}
+                        onToggleVisibility={handleToggleVisibility}
+                        onDelete={handleDelete}
+                      />
                     ))}
                   </div>
-
-                  <ThemePreview
-                    backgroundColor={backgroundColor}
-                    textColor={textColor}
-                    fontFamily={fontFamily}
-                    borderRadius={borderRadius}
-                    spacingUnit={spacingUnit}
-                    primaryColor={primaryColor}
-                    secondaryColor={secondaryColor}
-                    accentColor={accentColor}
-                    tab={previewTab}
-                  />
-                </div>
+                )}
               </div>
 
+              {/* Public Themes Section */}
+              {publicThemes.length > 0 && (
+                <div>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Globe size={22} /> Public Library ({publicThemes.length})
+                  </h2>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
+                    {publicThemes.map((theme) => (
+                      <ThemeGridCard
+                        key={theme.id}
+                        theme={theme}
+                        isOwned={false}
+                        onClone={handleCloneTheme}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+          )}
+
+          {/* Theme Editor Modal */}
+          {showModal && (
+            <ThemeEditorModal
+              theme={editingThemeId ? tenantThemes.find(t => t.id === editingThemeId) : undefined}
+              themeName={themeName}
+              setThemeName={setThemeName}
+              primaryColor={primaryColor}
+              setPrimaryColor={setPrimaryColor}
+              secondaryColor={secondaryColor}
+              setSecondaryColor={setSecondaryColor}
+              accentColor={accentColor}
+              setAccentColor={setAccentColor}
+              backgroundColor={backgroundColor}
+              setBackgroundColor={setBackgroundColor}
+              textColor={textColor}
+              setTextColor={setTextColor}
+              fontFamily={fontFamily}
+              setFontFamily={setFontFamily}
+              borderRadius={borderRadius}
+              setBorderRadius={setBorderRadius}
+              spacingUnit={spacingUnit}
+              setSpacingUnit={setSpacingUnit}
+              isPublic={isPublic}
+              setIsPublic={setIsPublic}
+              previewTab={previewTab}
+              setPreviewTab={setPreviewTab}
+              saving={saving}
+              isEditMode={!!editingThemeId}
+              onSave={handleSave}
+              onClose={() => { setShowModal(false); resetForm(); }}
+            />
           )}
         </div>
       </main>

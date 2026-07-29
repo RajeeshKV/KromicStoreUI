@@ -3,13 +3,13 @@ import apiClient from '../../api/apiClient';
 import ImageUpload from '../../components/ImageUpload';
 import { Settings, Save, Globe, Loader2, Eye, X, Mail, Phone, MessageCircle } from 'lucide-react';
 import { AdminSidebar } from './Dashboard';
+import { ToastContainer, useToast } from '../../components/Toast';
 
 const StorefrontSettings: React.FC = () => {
+  const { toasts, removeToast, success, error } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
   const [storefrontId, setStorefrontId] = useState<string>('');
   const [storefrontExists, setStorefrontExists] = useState(false); // Track if storefront exists
 
@@ -183,9 +183,8 @@ const StorefrontSettings: React.FC = () => {
         console.log('No storefront found (404) - first time setup');
         setStorefrontId('');
         setStorefrontExists(false);
-        setErrorMsg('');
       } else {
-        setErrorMsg('Failed to load storefront settings. ' + (err.response?.data?.message || err.message));
+        error('Failed to load storefront settings. ' + (err.response?.data?.message || err.message));
       }
     } finally {
       setLoading(false);
@@ -202,8 +201,6 @@ const StorefrontSettings: React.FC = () => {
     }
 
     setSaving(true);
-    setErrorMsg('');
-    setSuccessMsg('');
 
     const payload = {
       // Storefront Details
@@ -241,7 +238,7 @@ const StorefrontSettings: React.FC = () => {
         console.log('Storefront exists, updating via PUT...', payload);
         const res = await apiClient.put('/api/v1/storefronts', payload);
         console.log('PUT response:', res);
-        setSuccessMsg('Storefront settings saved to draft successfully!');
+        success('Storefront settings saved to draft successfully!');
       } else {
         // Storefront doesn't exist → POST to create
         console.log('Storefront does not exist, creating via POST...', payload);
@@ -255,7 +252,7 @@ const StorefrontSettings: React.FC = () => {
           setStorefrontId(newId);
           setStorefrontExists(true); // Mark as existing now
         }
-        setSuccessMsg('Storefront created and saved to draft successfully!');
+        success('Storefront created and saved to draft successfully!');
       }
       
       loadStorefrontSettings();
@@ -266,7 +263,7 @@ const StorefrontSettings: React.FC = () => {
         message: errorMessage,
         fullError: err.response?.data
       });
-      setErrorMsg(errorMessage);
+      error(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -274,12 +271,10 @@ const StorefrontSettings: React.FC = () => {
 
   const handlePublish = async () => {
     if (!storefrontId) {
-      setErrorMsg('No storefront found. Please save storefront settings first.');
+      error('No storefront found. Please save storefront settings first.');
       return;
     }
     setPublishing(true);
-    setErrorMsg('');
-    setSuccessMsg('');
     try {
       // 1. Validate storefront configuration
       try {
@@ -290,7 +285,7 @@ const StorefrontSettings: React.FC = () => {
         if (valData && !valData.isValid) {
           const errors = valData.errors || [];
           const errorMessage = Array.isArray(errors) ? errors.join(' • ') : 'Validation failed';
-          setErrorMsg('Cannot publish: ' + errorMessage);
+          error('Cannot publish: ' + errorMessage);
           setPublishing(false);
           return;
         }
@@ -313,13 +308,12 @@ const StorefrontSettings: React.FC = () => {
       console.log('Publishing storefront...', storefrontId);
       const publishRes = await apiClient.post(`/api/v1/storefronts/${storefrontId}/publish`);
       console.log('Publish response:', publishRes);
-      setSuccessMsg('Storefront published successfully to live environment!');
-      setShowPreview(false);
+      success('Storefront published successfully to live environment!');
       loadStorefrontSettings();
     } catch (err: any) {
       console.error('Failed to publish settings', err);
       const errorMessage = extractErrorMessage(err);
-      setErrorMsg('Failed to publish: ' + errorMessage);
+      error('Failed to publish: ' + errorMessage);
     } finally {
       setPublishing(false);
     }
@@ -328,6 +322,7 @@ const StorefrontSettings: React.FC = () => {
   return (
     <div className="dashboard-layout">
       <AdminSidebar active="config" />
+      <ToastContainer toasts={toasts} onClose={removeToast} />
       <main className="dashboard-content">
         <div className="content-wrapper">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.25rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -361,18 +356,6 @@ const StorefrontSettings: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {successMsg && (
-        <div className="card" style={{ borderLeft: '4px solid var(--accent-color)', padding: '1rem', marginBottom: '1.5rem', backgroundColor: 'rgba(79, 70, 229, 0.05)' }}>
-          <p style={{ color: 'var(--accent-color)', fontWeight: 600, margin: 0 }}>{successMsg}</p>
-        </div>
-      )}
-
-      {errorMsg && (
-        <div className="card" style={{ borderLeft: '4px solid var(--error-color)', padding: '1rem', marginBottom: '1.5rem', backgroundColor: 'rgba(239, 68, 68, 0.05)' }}>
-          <p style={{ color: 'var(--error-color)', fontWeight: 600, margin: 0 }}>{errorMsg}</p>
-        </div>
-      )}
 
       {loading ? (
         <div className="loading-container">
