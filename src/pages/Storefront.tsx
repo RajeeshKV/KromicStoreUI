@@ -404,14 +404,29 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
   return (
     <div className="content-wrapper">
       {/* Storefront Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+      <div style={{
+        zIndex: 100,
+        backgroundColor: 'var(--bg-primary)',
+        borderBottom: '2px solid var(--primary-color)',
+        padding: '1rem 2rem',
+        marginLeft: '-2rem',
+        marginRight: '-2rem',
+        marginTop: '-2rem',
+        marginBottom: '2.5rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '1rem',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
           {loading ? (
             <>
-              <div className="skeleton" style={{ width: '60px', height: '60px', borderRadius: '8px' }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <div className="skeleton" style={{ width: '150px', height: '24px', borderRadius: '6px' }} />
-                <div className="skeleton" style={{ width: '200px', height: '16px', borderRadius: '6px' }} />
+              <div className="skeleton" style={{ width: '48px', height: '48px', borderRadius: '6px' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <div className="skeleton" style={{ width: '120px', height: '18px', borderRadius: '4px' }} />
+                <div className="skeleton" style={{ width: '150px', height: '12px', borderRadius: '4px' }} />
               </div>
             </>
           ) : (
@@ -420,20 +435,20 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
                 <img
                   src={bootstrapData.storefront.logoUrl}
                   alt={bootstrapData.storefront.name || 'Store Logo'}
-                  style={{ height: '60px', maxHeight: '60px', maxWidth: '120px', objectFit: 'contain', borderRadius: '8px', padding: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}
+                  style={{ height: '48px', width: 'auto', maxWidth: '100px', objectFit: 'contain', borderRadius: '6px' }}
                 />
               )}
               <div>
-                <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2.25rem', margin: 0 }}>{bootstrapData?.storefront?.name || 'Storefront Catalog'}</h1>
+                <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.5rem', margin: 0, color: 'var(--text-primary)' }}>{bootstrapData?.storefront?.name || 'Storefront Catalog'}</h1>
                 {storeTenantId && (
-                  <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Merchant ID: <code style={{ backgroundColor: 'var(--bg-tertiary)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{storeTenantId}</code></p>
+                  <p style={{ color: 'var(--text-secondary)', margin: '0.25rem 0 0 0', fontSize: '0.75rem' }}>Merchant ID: <code style={{ backgroundColor: 'var(--bg-secondary)', padding: '0.15rem 0.35rem', borderRadius: '3px', fontFamily: 'monospace', fontSize: '0.7rem' }}>{storeTenantId}</code></p>
                 )}
               </div>
             </>
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
           <button className="btn btn-secondary btn-icon" onClick={loadStoreData} title="Refresh storefront" disabled={loading}>
             <RefreshCw size={18} />
           </button>
@@ -623,65 +638,71 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
         borderTop: '1px solid var(--border-color)',
         backgroundColor: 'var(--bg-secondary)'
       }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', maxWidth: '1200px', margin: '0 auto', paddingLeft: '2rem', paddingRight: '2rem' }}>
-          {/* Left: Store Info */}
-          <div>
-            {bootstrapData?.storefront?.logoUrl && (
-              <img
-                src={bootstrapData.storefront.logoUrl}
-                alt={bootstrapData?.storefront?.name || 'Store Logo'}
-                style={{ height: '48px', maxWidth: '180px', objectFit: 'contain', marginBottom: '1rem' }}
-              />
-            )}
-            <h3 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
-              {bootstrapData?.storefront?.name || 'Store'}
-            </h3>
-            {bootstrapData?.storefront?.address && (
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0', lineHeight: '1.5' }}>
-                {bootstrapData.storefront.address}
-              </p>
-            )}
-          </div>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', paddingLeft: '2rem', paddingRight: '2rem' }}>
+          {/* Footer Main Content */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', marginBottom: '2rem' }}>
+            {/* Left: Store Info */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1.5rem' }}>
+                {bootstrapData?.storefront?.logoUrl && (
+                  <img
+                    src={bootstrapData.storefront.logoUrl}
+                    alt={bootstrapData?.storefront?.name || 'Store Logo'}
+                    style={{ height: '40px', width: 'auto', maxWidth: '80px', objectFit: 'contain', flexShrink: 0 }}
+                  />
+                )}
+                <div>
+                  <h3 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.35rem', color: 'var(--text-primary)', margin: 0 }}>
+                    {bootstrapData?.storefront?.name || 'Store'}
+                  </h3>
+                  {bootstrapData?.storefront?.address && (
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
+                      {bootstrapData.storefront.address}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
 
-          {/* Right: Contact + Social Icons */}
-          <div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {/* Contact + Social Icons */}
-              <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                {bootstrapData?.storefront?.contactEmail && (
-                  <a
-                    href={`mailto:${bootstrapData.storefront.contactEmail}`}
-                    title={bootstrapData.storefront.contactEmail}
-                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
-                      (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
-                      (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
-                    }}
-                  >
-                    <Mail size={18} />
-                  </a>
-                )}
-                {bootstrapData?.storefront?.contactPhone && (
-                  <a
-                    href={`tel:${bootstrapData.storefront.contactPhone}`}
-                    title={bootstrapData.storefront.contactPhone}
-                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
-                      (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
-                      (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
-                    }}
-                  >
-                    <Phone size={18} />
-                  </a>
-                )}
+            {/* Right: Contact + Social Icons + Copyright */}
+            <div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'flex-end' }}>
+                {/* Contact + Social Icons */}
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  {bootstrapData?.storefront?.contactEmail && (
+                    <a
+                      href={`mailto:${bootstrapData.storefront.contactEmail}`}
+                      title={bootstrapData.storefront.contactEmail}
+                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                        (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                        (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                      }}
+                    >
+                      <Mail size={18} />
+                    </a>
+                  )}
+                  {bootstrapData?.storefront?.contactPhone && (
+                    <a
+                      href={`tel:${bootstrapData.storefront.contactPhone}`}
+                      title={bootstrapData.storefront.contactPhone}
+                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                        (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                        (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                      }}
+                    >
+                      <Phone size={18} />
+                    </a>
+                  )}
                 {bootstrapData?.storefront?.facebookUrl && (
                   <a
                     href={bootstrapData.storefront.facebookUrl}
@@ -767,24 +788,19 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
                   </a>
                 )}
               </div>
+
+              {/* Copyright */}
+              <p style={{
+                fontSize: '0.8rem',
+                color: 'var(--text-muted)',
+                margin: 0,
+                textAlign: 'right'
+              }}>
+                {bootstrapData?.storefront?.copyright || `© ${new Date().getFullYear()} Store. All rights reserved.`}
+              </p>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Copyright */}
-        <div style={{
-          marginTop: '2.5rem',
-          paddingTop: '2rem',
-          borderTop: '1px solid var(--border-color)',
-          textAlign: 'center'
-        }}>
-          <p style={{
-            fontSize: '0.8rem',
-            color: 'var(--text-muted)',
-            margin: 0
-          }}>
-            {bootstrapData?.storefront?.copyright || `© ${new Date().getFullYear()} Store. All rights reserved.`}
-          </p>
         </div>
       </footer>
     </div>
