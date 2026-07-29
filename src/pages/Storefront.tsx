@@ -403,283 +403,128 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
 
   return (
     <div className="content-wrapper">
-      {/* Storefront Header - Modern E-Commerce */}
-      <div style={{ backgroundColor: 'var(--bg-primary)', marginLeft: '-2rem', marginRight: '-2rem', marginTop: '-2rem' }}>
-        {/* Top Navigation Bar */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '1rem 2rem',
-          borderBottom: '1px solid var(--border-color)',
-          gap: '2rem',
-          flexWrap: 'wrap'
-        }}>
-          {/* Logo + Store Name */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 'none', minWidth: '200px' }}>
-            {loading ? (
-              <>
-                <div className="skeleton" style={{ width: '40px', height: '40px', borderRadius: '6px' }} />
-                <div className="skeleton" style={{ width: '120px', height: '18px', borderRadius: '4px' }} />
-              </>
-            ) : (
-              <>
-                {bootstrapData?.storefront?.logoUrl && (
-                  <img
-                    src={bootstrapData.storefront.logoUrl}
-                    alt={bootstrapData.storefront.name || 'Store Logo'}
-                    style={{ height: '40px', width: 'auto', maxWidth: '60px', objectFit: 'contain', borderRadius: '6px' }}
-                  />
-                )}
-                <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.25rem', margin: 0, color: 'var(--text-primary)' }}>
-                  {bootstrapData?.storefront?.name || 'Store'}
-                </h2>
-              </>
-            )}
-          </div>
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '1.5rem 2rem',
+        borderBottom: '1px solid var(--border-color)',
+        marginLeft: '-2rem',
+        marginRight: '-2rem',
+        marginTop: '-2rem',
+        marginBottom: '2rem',
+        gap: '2rem',
+        flexWrap: 'wrap'
+      }}>
+        {/* Logo + Store Name */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: '240px' }}>
+          {loading ? (
+            <>
+              <div className="skeleton" style={{ width: '120px', height: '120px', borderRadius: '8px' }} />
+              <div className="skeleton" style={{ width: '160px', height: '28px', borderRadius: '6px' }} />
+            </>
+          ) : (
+            <>
+              {bootstrapData?.storefront?.logoUrl && (
+                <img
+                  src={bootstrapData.storefront.logoUrl}
+                  alt={bootstrapData.storefront.name || 'Store Logo'}
+                  style={{ height: '120px', width: 'auto', maxWidth: '140px', objectFit: 'contain', borderRadius: '8px' }}
+                />
+              )}
+              <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.75rem', margin: 0, color: 'var(--text-primary)' }}>
+                {bootstrapData?.storefront?.name || 'Store'}
+              </h1>
+            </>
+          )}
+        </div>
 
-          {/* Search Bar */}
-          <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: '250px', maxWidth: '400px', position: 'relative' }}>
-            <Search size={18} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)' }} />
-            <input
-              type="text"
-              placeholder="Search products, categories, brands..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.6rem 1rem 0.6rem 2.5rem',
-                border: '1px solid var(--border-color)',
-                borderRadius: '6px',
-                fontSize: '0.85rem',
-                backgroundColor: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                outline: 'none',
-                transition: 'all 0.2s ease'
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = 'var(--primary-color)';
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)';
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border-color)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                style={{
-                  position: 'absolute',
-                  right: '12px',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--text-muted)',
-                  padding: '4px'
-                }}
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          {/* Right Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 'none' }}>
+        {/* Search Bar */}
+        <div style={{ flex: 1, minWidth: '280px', maxWidth: '500px', position: 'relative' }}>
+          <Search size={18} style={{ position: 'absolute', left: '14px', top: '12px', color: 'var(--text-muted)' }} />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.65rem 1rem 0.65rem 2.75rem',
+              border: '1px solid var(--border-color)',
+              borderRadius: '6px',
+              fontSize: '0.9rem',
+              backgroundColor: 'var(--bg-secondary)',
+              color: 'var(--text-primary)',
+              outline: 'none'
+            }}
+          />
+          {searchQuery && (
             <button
-              className="btn btn-secondary btn-icon"
-              onClick={loadStoreData}
-              title="Refresh"
-              disabled={loading}
-              style={{ padding: '0.6rem', minWidth: '40px', minHeight: '40px' }}
-            >
-              <RefreshCw size={18} />
-            </button>
-            
-            <Link
-              to={`${linkPrefix}/checkout`}
-              className="btn btn-primary"
+              onClick={() => setSearchQuery('')}
               style={{
+                position: 'absolute',
+                right: '12px',
+                top: '12px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--text-muted)',
+                fontSize: '1rem'
+              }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* Right Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', minWidth: '120px', justifyContent: 'flex-end' }}>
+          <button
+            className="btn btn-secondary btn-icon"
+            onClick={loadStoreData}
+            disabled={loading}
+            title="Refresh"
+            style={{ padding: '0.65rem', minWidth: '44px', minHeight: '44px' }}
+          >
+            <RefreshCw size={20} />
+          </button>
+
+          <Link
+            to={`${linkPrefix}/checkout`}
+            className="btn btn-primary"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              padding: '0.65rem 1.25rem',
+              fontWeight: 600,
+              position: 'relative',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <ShoppingCart size={20} />
+            {cartCount > 0 && (
+              <span style={{
+                position: 'absolute',
+                top: '-8px',
+                right: '-8px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.6rem 1.25rem',
-                fontWeight: 600,
-                fontSize: '0.9rem',
-                position: 'relative'
-              }}
-            >
-              <ShoppingCart size={18} />
-              <span>View Cart</span>
-              {cartCount > 0 && (
-                <span style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: '50%',
-                  backgroundColor: '#ef4444',
-                  color: '#fff',
-                  fontSize: '0.7rem',
-                  fontWeight: 700,
-                  marginLeft: '0.5rem'
-                }}>
-                  {cartCount > 99 ? '99+' : cartCount}
-                </span>
-              )}
-            </Link>
-          </div>
-        </div>
-
-        {/* Store Info Bar */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0.75rem 2rem',
-          backgroundColor: 'var(--bg-secondary)',
-          fontSize: '0.85rem',
-          gap: '2rem',
-          flexWrap: 'wrap'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
-            <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', backgroundColor: 'var(--bg-primary)', padding: '0.3rem 0.6rem', borderRadius: '4px' }}>
-              {storeTenantId ? storeTenantId.substring(0, 12) + '...' : ''}
-            </span>
-          </div>
-          {bootstrapData?.storefront?.address && (
-            <div style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {bootstrapData.storefront.address}
-            </div>
-          )}
-          {bootstrapData?.storefront?.currency && (
-            <div style={{ marginLeft: 'auto', color: 'var(--text-secondary)' }}>
-              Currency: <strong>{bootstrapData.storefront.currency}</strong>
-            </div>
-          )}
-        </div>
-
-        {/* Hero Section */}
-        <div style={{
-          padding: '3rem 2rem',
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%)',
-          marginBottom: '2rem'
-        }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '2rem' }}>
-              {/* Left: Welcome Text */}
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.5rem 0' }}>
-                  Welcome to
-                </p>
-                <h1 style={{
-                  fontFamily: 'var(--font-display)',
-                  fontWeight: 800,
-                  fontSize: '2.5rem',
-                  margin: '0 0 0.75rem 0',
-                  color: 'var(--text-primary)',
-                  letterSpacing: '-0.02em'
-                }}>
-                  {bootstrapData?.storefront?.name || 'Store'}
-                </h1>
-                <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', margin: '0 0 1.5rem 0', lineHeight: 1.6 }}>
-                  Discover amazing products curated just for you.
-                </p>
-
-                {/* Features Row */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                  gap: '1.5rem',
-                  marginTop: '1.5rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                    <div style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--primary-color)',
-                      flexShrink: 0,
-                      fontSize: '1.2rem'
-                    }}>
-                      🔒
-                    </div>
-                    <div>
-                      <p style={{ fontWeight: 600, fontSize: '0.9rem', margin: 0, color: 'var(--text-primary)' }}>Secure Shopping</p>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>100% protected</p>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                    <div style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--primary-color)',
-                      flexShrink: 0,
-                      fontSize: '1.2rem'
-                    }}>
-                      ⭐
-                    </div>
-                    <div>
-                      <p style={{ fontWeight: 600, fontSize: '0.9rem', margin: 0, color: 'var(--text-primary)' }}>Quality Products</p>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>Carefully selected</p>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                    <div style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--primary-color)',
-                      flexShrink: 0,
-                      fontSize: '1.2rem'
-                    }}>
-                      🚚
-                    </div>
-                    <div>
-                      <p style={{ fontWeight: 600, fontSize: '0.9rem', margin: 0, color: 'var(--text-primary)' }}>Fast Delivery</p>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>At your doorstep</p>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                    <div style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--primary-color)',
-                      flexShrink: 0,
-                      fontSize: '1.2rem'
-                    }}>
-                      ↩️
-                    </div>
-                    <div>
-                      <p style={{ fontWeight: 600, fontSize: '0.9rem', margin: 0, color: 'var(--text-primary)' }}>Easy Returns</p>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>Hassle-free</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                justifyContent: 'center',
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                backgroundColor: '#6366f1',
+                color: '#fff',
+                fontSize: '0.75rem',
+                fontWeight: 700
+              }}>
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
 
