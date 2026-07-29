@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/apiClient';
 import { Palette, Save, Loader2, Eye, Globe, Lock, Trash2, Copy, Plus, Check } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
 import { AdminSidebar } from './Dashboard';
 
 interface Theme {
@@ -217,7 +216,6 @@ const ThemePreview: React.FC<{
 
 // Main Theme Component
 const Theme: React.FC = () => {
-  const { tenantId } = useAuth();
   const [tenantThemes, setTenantThemes] = useState<Theme[]>([]);
   const [publicThemes, setPublicThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
@@ -244,12 +242,17 @@ const Theme: React.FC = () => {
   const loadThemes = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get('/api/v1/themes');
-      const allThemes = res.data.data || res.data || [];
-      const ownThemes = allThemes.filter((t: Theme) => t.createdByTenantId === tenantId);
-      const publicOnly = allThemes.filter((t: Theme) => t.isPublic && t.createdByTenantId !== tenantId);
+      // Load private (owned) themes
+      const privateRes = await apiClient.get('/api/v1/themes/private');
+      const ownThemes = privateRes.data.data || privateRes.data || [];
+
+      // Load public themes
+      const publicRes = await apiClient.get('/api/v1/themes/public');
+      const publicOnly = publicRes.data.data || publicRes.data || [];
+
       setTenantThemes(ownThemes);
       setPublicThemes(publicOnly);
+
       if (ownThemes.length > 0) {
         const active = ownThemes.find((t: Theme) => t.isActive) || ownThemes[0];
         handleSelectTheme(active);
