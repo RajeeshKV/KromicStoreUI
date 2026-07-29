@@ -121,18 +121,21 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
           if (t.borderRadius !== undefined) document.documentElement.style.setProperty('--radius-sm', `${t.borderRadius}px`);
           if (t.borderRadius !== undefined) document.documentElement.style.setProperty('--radius-md', `${t.borderRadius * 1.5}px`);
         }
-        if (previewBootstrapData.seo?.siteTitle) {
-          document.title = previewBootstrapData.seo.siteTitle;
-        }
+        setLoading(false);
         return;
       }
 
+      setLoading(true);
       try {
         const res = await apiClient.get(`/api/v1/store/bootstrap/${tenantId}`);
-        if (res.data) {
-          setBootstrapData(res.data);
-          if (res.data.theme) {
-            const t = res.data.theme;
+        const data = res.data.data || res.data;
+        
+        if (data) {
+          setBootstrapData(data);
+          
+          // Apply theme colors
+          if (data.theme) {
+            const t = data.theme;
             if (t.primaryColor) document.documentElement.style.setProperty('--primary-color', t.primaryColor);
             if (t.secondaryColor) document.documentElement.style.setProperty('--secondary-color', t.secondaryColor);
             if (t.accentColor) document.documentElement.style.setProperty('--accent-color', t.accentColor);
@@ -145,18 +148,17 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
             if (t.borderRadius !== undefined) document.documentElement.style.setProperty('--radius-sm', `${t.borderRadius}px`);
             if (t.borderRadius !== undefined) document.documentElement.style.setProperty('--radius-md', `${t.borderRadius * 1.5}px`);
           }
-          if (res.data.seo?.siteTitle) {
-            document.title = res.data.seo.siteTitle;
-          }
         }
       } catch (error: any) {
         console.error('Bootstrap API failed:', error);
         setApiError(error.response?.data?.message || error.message || 'Failed to retrieve storefront configuration details from server.');
+      } finally {
+        setLoading(false);
       }
     };
 
     loadBootstrap();
-  }, [resolvingTenant, resolutionError, previewBootstrapData]);
+  }, [resolvingTenant, resolutionError, previewBootstrapData, tenantId]);
 
   const loadStoreData = async () => {
     setLoading(true);
@@ -404,21 +406,35 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
       {/* Storefront Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          {bootstrapData?.tenant?.logoUrl && (
-            <img
-              src={bootstrapData.tenant.logoUrl}
-              alt={bootstrapData.tenant.name || 'Store Logo'}
-              style={{ height: '60px', maxHeight: '60px', maxWidth: '120px', objectFit: 'contain', borderRadius: '8px', padding: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}
-            />
+          {loading ? (
+            <>
+              <div className="skeleton" style={{ width: '60px', height: '60px', borderRadius: '8px' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div className="skeleton" style={{ width: '150px', height: '24px', borderRadius: '6px' }} />
+                <div className="skeleton" style={{ width: '200px', height: '16px', borderRadius: '6px' }} />
+              </div>
+            </>
+          ) : (
+            <>
+              {bootstrapData?.storefront?.logoUrl && (
+                <img
+                  src={bootstrapData.storefront.logoUrl}
+                  alt={bootstrapData.storefront.name || 'Store Logo'}
+                  style={{ height: '60px', maxHeight: '60px', maxWidth: '120px', objectFit: 'contain', borderRadius: '8px', padding: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}
+                />
+              )}
+              <div>
+                <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2.25rem', margin: 0 }}>{bootstrapData?.storefront?.name || 'Storefront Catalog'}</h1>
+                {storeTenantId && (
+                  <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Merchant ID: <code style={{ backgroundColor: 'var(--bg-tertiary)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{storeTenantId}</code></p>
+                )}
+              </div>
+            </>
           )}
-          <div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2.25rem' }}>{bootstrapData?.tenant?.name || 'Storefront Catalog'}</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>Merchant ID: <code style={{ backgroundColor: 'var(--bg-tertiary)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{storeTenantId || tenantId}</code></p>
-          </div>
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <button className="btn btn-secondary btn-icon" onClick={loadStoreData} title="Refresh storefront">
+          <button className="btn btn-secondary btn-icon" onClick={loadStoreData} title="Refresh storefront" disabled={loading}>
             <RefreshCw size={18} />
           </button>
 

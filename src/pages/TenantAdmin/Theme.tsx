@@ -190,8 +190,8 @@ const ThemeGridCard: React.FC<ThemeGridCardProps> = ({
 
       {/* Font & Config */}
       <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
-        <div>{theme.fontFamily.split(',')[0]}</div>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>R: {theme.borderRadius}px</div>
+        <div>{theme.fontFamily ? theme.fontFamily.split(',')[0] : 'Default'}</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>R: {theme.borderRadius || 0}px</div>
       </div>
 
       {/* Action Buttons */}
