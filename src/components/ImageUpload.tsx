@@ -50,15 +50,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, label = 'Upl
       const publicId = res.data?.publicId || res.data?.data?.publicId || res.data?.PublicId || '';
       if (url) {
         onChange(url, publicId);
+        setError('');
       } else {
         throw new Error('Upload response did not contain an image URL');
       }
     } catch (err: any) {
       console.error('Upload failed:', err);
-      // Fallback to local simulation if upload endpoint fails (useful for local offline testing)
-      console.warn('Falling back to local object URL simulation...');
-      const simulateUrl = URL.createObjectURL(file);
-      onChange(simulateUrl, 'mock-public-id');
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to upload image. Please try again.';
+      setError(errorMessage);
+      // Do NOT call onChange on failure - do not show any image
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } finally {
       setLoading(false);
       setProgress(0);
