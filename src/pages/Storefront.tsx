@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import apiClient from '../api/apiClient';
-import { Search, SlidersHorizontal, ShoppingBag, Eye, Plus, ShoppingCart, RefreshCw } from 'lucide-react';
+import { Search, SlidersHorizontal, ShoppingBag, Eye, Plus, ShoppingCart, RefreshCw, Mail, Phone, MessageCircle } from 'lucide-react';
 import { extractSubdomain } from '../utils/subdomain';
 import { resolveTenantBySubdomain } from '../api/publicApi';
 
@@ -598,6 +598,209 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
           )}
         </main>
       </div>
+
+      {/* Footer */}
+      <footer style={{
+        marginTop: '4rem',
+        paddingTop: '3rem',
+        paddingBottom: '2rem',
+        borderTop: '1px solid var(--border-color)',
+        backgroundColor: 'var(--bg-secondary)'
+      }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', maxWidth: '1200px', margin: '0 auto', paddingLeft: '2rem', paddingRight: '2rem' }}>
+          {/* Left: Store Info */}
+          <div>
+            {bootstrapData?.storefront?.logoUrl && (
+              <img
+                src={bootstrapData.storefront.logoUrl}
+                alt={bootstrapData?.storefront?.name || 'Store Logo'}
+                style={{ height: '48px', maxWidth: '180px', objectFit: 'contain', marginBottom: '1rem' }}
+              />
+            )}
+            <h3 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+              {bootstrapData?.storefront?.name || 'Store'}
+            </h3>
+            {bootstrapData?.storefront?.address && (
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0', lineHeight: '1.5' }}>
+                {bootstrapData.storefront.address}
+              </p>
+            )}
+          </div>
+
+          {/* Right: Contact + Social Icons */}
+          <div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {/* Contact Info Icons */}
+              <div>
+                <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                  Contact Us
+                </p>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {bootstrapData?.storefront?.contactEmail && (
+                    <a
+                      href={`mailto:${bootstrapData.storefront.contactEmail}`}
+                      title={bootstrapData.storefront.contactEmail}
+                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                        (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                        (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                      }}
+                    >
+                      <Mail size={18} />
+                    </a>
+                  )}
+                  {bootstrapData?.storefront?.contactPhone && (
+                    <a
+                      href={`tel:${bootstrapData.storefront.contactPhone}`}
+                      title={bootstrapData.storefront.contactPhone}
+                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                        (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                        (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                      }}
+                    >
+                      <Phone size={18} />
+                    </a>
+                  )}
+                  {bootstrapData?.storefront?.whatsapp && (
+                    <a
+                      href={`https://wa.me/${bootstrapData.storefront.whatsapp.replace(/\D/g, '')}`}
+                      title={bootstrapData.storefront.whatsapp}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                        (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                        (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                      }}
+                    >
+                      <MessageCircle size={18} />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Social Media Icons */}
+              {(bootstrapData?.storefront?.socialLinks?.facebook ||
+                bootstrapData?.storefront?.socialLinks?.twitter ||
+                bootstrapData?.storefront?.socialLinks?.instagram ||
+                bootstrapData?.storefront?.socialLinks?.linkedin) && (
+                <div>
+                  <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                    Follow Us
+                  </p>
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    {bootstrapData?.storefront?.socialLinks?.facebook && (
+                      <a
+                        href={bootstrapData.storefront.socialLinks.facebook}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Facebook"
+                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease', fontSize: '1.2rem', fontWeight: 'bold' }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                          (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                          (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                        }}
+                      >
+                        f
+                      </a>
+                    )}
+                    {bootstrapData?.storefront?.socialLinks?.twitter && (
+                      <a
+                        href={bootstrapData.storefront.socialLinks.twitter}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Twitter / X"
+                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease', fontSize: '1.2rem', fontWeight: 'bold' }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                          (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                          (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                        }}
+                      >
+                        𝕏
+                      </a>
+                    )}
+                    {bootstrapData?.storefront?.socialLinks?.instagram && (
+                      <a
+                        href={bootstrapData.storefront.socialLinks.instagram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Instagram"
+                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease', fontSize: '1.2rem', fontWeight: 'bold' }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                          (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                          (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                        }}
+                      >
+                        📷
+                      </a>
+                    )}
+                    {bootstrapData?.storefront?.socialLinks?.linkedin && (
+                      <a
+                        href={bootstrapData.storefront.socialLinks.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="LinkedIn"
+                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease', fontSize: '1.2rem', fontWeight: 'bold' }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                          (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                          (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                        }}
+                      >
+                        in
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Copyright */}
+        <div style={{
+          marginTop: '2.5rem',
+          paddingTop: '2rem',
+          borderTop: '1px solid var(--border-color)',
+          textAlign: 'center'
+        }}>
+          <p style={{
+            fontSize: '0.8rem',
+            color: 'var(--text-muted)',
+            margin: 0
+          }}>
+            {bootstrapData?.storefront?.copyright || `© ${new Date().getFullYear()} Store. All rights reserved.`}
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };

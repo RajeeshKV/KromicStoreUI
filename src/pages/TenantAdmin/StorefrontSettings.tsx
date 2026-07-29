@@ -519,53 +519,9 @@ const StorefrontSettings: React.FC = () => {
 
             </div>
 
-            {/* Sidebar - Content Sections & Social Links */}
+            {/* Sidebar - Social Links & Contact Icons */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               
-              {/* Content Sections */}
-              <div className="card" style={{ padding: '1.75rem' }}>
-                <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Content Sections</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                  
-                  {/* About Us Toggle */}
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                      <input 
-                        type="checkbox" 
-                        id="showAbout" 
-                        checked={showAboutUs} 
-                        onChange={(e) => setShowAboutUs(e.target.checked)} 
-                      />
-                      <label htmlFor="showAbout" style={{ cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', margin: 0 }}>Enable About Us Section</label>
-                    </div>
-                    {showAboutUs && (
-                      <textarea 
-                        className="form-control" 
-                        rows={4}
-                        value={aboutUsContent} 
-                        onChange={(e) => setAboutUsContent(e.target.value)} 
-                        placeholder="Add your About Us content here. This will be displayed on the dedicated About Us page."
-                        style={{ fontSize: '0.85rem' }}
-                      />
-                    )}
-                  </div>
-
-                  {/* Contact Us Toggle */}
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <input 
-                        type="checkbox" 
-                        id="showContact" 
-                        checked={showContactUs} 
-                        onChange={(e) => setShowContactUs(e.target.checked)} 
-                      />
-                      <label htmlFor="showContact" style={{ cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', margin: 0 }}>Enable Contact Us Section</label>
-                    </div>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.5rem 0 0 0' }}>A contact form will appear before the footer with your contact information.</p>
-                  </div>
-                </div>
-              </div>
-
               {/* Footer - Social Links & Contact Icons */}
               <div className="card" style={{ padding: '1.75rem', backgroundColor: 'var(--bg-secondary)' }}>
                 <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem', color: 'var(--text-primary)' }}>Footer Information</h3>
