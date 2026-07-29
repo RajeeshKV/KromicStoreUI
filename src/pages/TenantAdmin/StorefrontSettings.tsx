@@ -11,6 +11,7 @@ const StorefrontSettings: React.FC = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [storefrontId, setStorefrontId] = useState<string>('');
+  const [storefrontExists, setStorefrontExists] = useState(false); // Track if storefront exists
 
   // Preview and Pending Changes States
   const [showPreview, setShowPreview] = useState(false);
@@ -81,6 +82,7 @@ const StorefrontSettings: React.FC = () => {
       if (!storefront) {
         console.log('❌ No storefront data returned - first time setup');
         setStorefrontId('');
+        setStorefrontExists(false);
         // Leave fields empty for new storefront creation
         return;
       }
@@ -91,6 +93,7 @@ const StorefrontSettings: React.FC = () => {
       
       if (storefrontId) {
         setStorefrontId(storefrontId);
+        setStorefrontExists(true); // Mark that storefront exists
         console.log('✅ StorefrontId set to:', storefrontId);
       }
 
@@ -139,9 +142,11 @@ const StorefrontSettings: React.FC = () => {
         url: err.response?.config?.url
       });
       
-      // If 404 or no storefront exists, that's okay - first time setup
+      // If 404, storefront doesn't exist yet - that's OK for first time setup
       if (err.response?.status === 404) {
-        console.log('No storefront found - first time setup is OK');
+        console.log('No storefront found (404) - first time setup');
+        setStorefrontId('');
+        setStorefrontExists(false);
         setErrorMsg('');
       } else {
         setErrorMsg('Failed to load storefront settings. ' + (err.response?.data?.message || err.message));
@@ -153,7 +158,7 @@ const StorefrontSettings: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('handleSave called', { saving });
+    console.log('handleSave called', { storefrontExists, saving });
     
     if (saving) {
       console.warn('Already saving, ignoring duplicate click');
@@ -195,10 +200,28 @@ const StorefrontSettings: React.FC = () => {
     };
 
     try {
-      console.log('Saving storefront...', payload);
-      const res = await apiClient.put('/api/v1/storefronts', payload);
-      console.log('Save response:', res);
-      setSuccessMsg('Storefront settings saved to draft successfully!');
+      if (storefrontExists) {
+        // Storefront exists → PUT to update
+        console.log('Storefront exists, updating via PUT...', payload);
+        const res = await apiClient.put('/api/v1/storefronts', payload);
+        console.log('PUT response:', res);
+        setSuccessMsg('Storefront settings saved to draft successfully!');
+      } else {
+        // Storefront doesn't exist → POST to create
+        console.log('Storefront does not exist, creating via POST...', payload);
+        const res = await apiClient.post('/api/v1/storefronts', payload);
+        console.log('POST response:', res);
+        
+        // Extract ID from response and set it
+        const newId = res.data?.data?.id || res.data?.id || '';
+        if (newId) {
+          console.log('New storefront ID:', newId);
+          setStorefrontId(newId);
+          setStorefrontExists(true); // Mark as existing now
+        }
+        setSuccessMsg('Storefront created and saved to draft successfully!');
+      }
+      
       loadStorefrontSettings();
     } catch (err: any) {
       console.error('Failed to save settings:', err);
