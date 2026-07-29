@@ -655,9 +655,9 @@ const Theme: React.FC = () => {
               <p style={{ marginTop: '1rem' }}>Loading themes...</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem' }}>
               
-              {/* My Themes Section */}
+              {/* LEFT COLUMN: My Themes */}
               <div>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Palette size={22} /> My Themes ({tenantThemes.length})
@@ -669,7 +669,7 @@ const Theme: React.FC = () => {
                     <p>No themes yet. Create your first theme to get started.</p>
                   </div>
                 ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                     {tenantThemes.map((theme) => (
                       <ThemeGridCard
                         key={theme.id}
@@ -685,13 +685,19 @@ const Theme: React.FC = () => {
                 )}
               </div>
 
-              {/* Public Themes Section */}
-              {publicThemes.length > 0 && (
-                <div>
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Globe size={22} /> Public Library ({publicThemes.length})
-                  </h2>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
+              {/* RIGHT COLUMN: Public Themes */}
+              <div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Globe size={22} /> Public Library ({publicThemes.length})
+                </h2>
+                
+                {publicThemes.length === 0 ? (
+                  <div className="card" style={{ padding: '3rem 2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    <Globe size={40} style={{ opacity: 0.3, marginBottom: '1rem', margin: '0 auto 1rem' }} />
+                    <p>No public themes available. Check back later!</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                     {publicThemes.map((theme) => (
                       <ThemeGridCard
                         key={theme.id}
@@ -701,8 +707,8 @@ const Theme: React.FC = () => {
                       />
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
 
