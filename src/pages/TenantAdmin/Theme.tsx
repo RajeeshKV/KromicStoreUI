@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/apiClient';
-import { Palette, Save, Sparkles, Loader2, Eye, Globe, Lock, Trash2 } from 'lucide-react';
+import { Palette, Save, Loader2, Eye, Globe, Lock, Trash2, Copy, Plus, Check } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminSidebar } from './Dashboard';
 
-interface ThemeConfig {
+interface Theme {
   id: string;
   name: string;
   primaryColor: string;
@@ -20,17 +20,212 @@ interface ThemeConfig {
   createdByTenantId?: string | null;
 }
 
+// Theme Card Component for Grid Display
+const ThemeCard: React.FC<{
+  theme: Theme;
+  isSelected: boolean;
+  isOwned: boolean;
+  onSelect: (t: Theme) => void;
+  onActivate: (id: string) => void;
+  onToggleVisibility: (id: string, isPublic: boolean) => void;
+  onDelete: (id: string) => void;
+}> = ({ theme, isSelected, isOwned, onSelect, onActivate, onToggleVisibility, onDelete }) => {
+  return (
+    <div
+      onClick={() => onSelect(theme)}
+      style={{
+        padding: '1rem',
+        border: isSelected ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
+        borderRadius: '8px',
+        backgroundColor: isSelected ? 'var(--bg-secondary)' : 'var(--card-bg)',
+        cursor: 'pointer',
+        transition: 'all 0.2s',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.75rem'
+      }}
+    >
+      <div style={{ display: 'flex', gap: '4px' }}>
+        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.primaryColor }} />
+        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.secondaryColor }} />
+        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.accentColor }} />
+        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.backgroundColor, border: '1px solid var(--border-color)' }} />
+      </div>
+      <div>
+        <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '0.95rem', fontWeight: 600 }}>{theme.name}</h4>
+        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+          {theme.isActive && <span style={{ fontSize: '0.7rem', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>Active</span>}
+          {theme.isPublic && <span style={{ fontSize: '0.7rem', backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-secondary)', padding: '0.15rem 0.5rem', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '2px' }}><Globe size={10} /> Public</span>}
+        </div>
+      </div>
+      
+      {isOwned && (
+        <div style={{ display: 'flex', gap: '0.35rem', marginTop: 'auto', flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+          {!theme.isActive && (
+            <button onClick={() => onActivate(theme.id)} className="btn btn-secondary" style={{ fontSize: '0.7rem', padding: '0.3rem 0.6rem', flex: 1 }}>
+              Activate
+            </button>
+          )}
+          <button onClick={() => onToggleVisibility(theme.id, theme.isPublic)} className="btn btn-secondary btn-icon" style={{ padding: '0.3rem' }} title={theme.isPublic ? 'Make Private' : 'Make Public'}>
+            {theme.isPublic ? <Lock size={14} /> : <Globe size={14} />}
+          </button>
+          <button onClick={() => onDelete(theme.id)} className="btn btn-secondary btn-icon" style={{ padding: '0.3rem', color: '#ef4444' }} title="Delete">
+            <Trash2 size={14} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Public Theme Card Component
+const PublicThemeCard: React.FC<{ theme: Theme; onClone: (t: Theme) => void }> = ({ theme, onClone }) => {
+  return (
+    <div style={{
+      padding: '1rem',
+      border: '1px solid var(--border-color)',
+      borderRadius: '8px',
+      backgroundColor: 'var(--card-bg)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0.75rem'
+    }}>
+      <div style={{ display: 'flex', gap: '4px' }}>
+        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.primaryColor }} />
+        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.secondaryColor }} />
+        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.accentColor }} />
+        <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: theme.backgroundColor, border: '1px solid var(--border-color)' }} />
+      </div>
+      <div>
+        <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '0.95rem', fontWeight: 600 }}>{theme.name}</h4>
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>By {theme.createdByTenantId || 'Unknown'}</span>
+      </div>
+      <button onClick={() => onClone(theme)} className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
+        <Copy size={14} /> Clone Theme
+      </button>
+    </div>
+  );
+};
+
+// Color Input Field Component
+const ColorInputField: React.FC<{ label: string; value: string; onChange: (v: string) => void }> = ({ label, value, onChange }) => (
+  <div className="form-group">
+    <label className="form-label" style={{ fontWeight: 600 }}>{label}</label>
+    <div style={{ display: 'flex', gap: '0.5rem' }}>
+      <input type="color" value={value} onChange={(e) => onChange(e.target.value)} style={{ width: '40px', height: '38px', padding: 0, border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer' }} />
+      <input type="text" className="form-control" value={value} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  </div>
+);
+
+// Range Input Component
+const RangeInputField: React.FC<{ label: string; value: number; onChange: (v: number) => void; min: number; max: number; unit: string }> = ({ label, value, onChange, min, max, unit }) => (
+  <div className="form-group">
+    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+      <label className="form-label" style={{ fontWeight: 600, margin: 0 }}>{label}</label>
+      <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{value}{unit}</span>
+    </div>
+    <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} className="form-control" />
+  </div>
+);
+
+// Theme Preview Component
+const ThemePreview: React.FC<{
+  backgroundColor: string;
+  textColor: string;
+  fontFamily: string;
+  borderRadius: number;
+  spacingUnit: number;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  tab: string;
+}> = ({ backgroundColor, textColor, fontFamily, borderRadius, spacingUnit, primaryColor, secondaryColor, accentColor, tab }) => {
+  return (
+    <div style={{
+      backgroundColor,
+      color: textColor,
+      fontFamily,
+      padding: `${spacingUnit}px`,
+      borderRadius: `${borderRadius}px`,
+      border: '1px solid rgba(0,0,0,0.08)',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+      minHeight: '320px',
+      display: 'flex',
+      flexDirection: 'column',
+      fontSize: '0.8rem'
+    }}>
+      {tab === 'catalog' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          {[1, 2].map((i) => (
+            <div key={i} style={{ backgroundColor: '#fff', borderRadius: `${borderRadius * 0.75}px`, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)' }}>
+              <div style={{ height: '80px', backgroundColor: 'rgba(0,0,0,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: 'rgba(0,0,0,0.2)' }}>Product {i}</div>
+              <div style={{ padding: '0.5rem' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.75rem', marginBottom: '0.25rem' }}>Item {i}</div>
+                <div style={{ color: primaryColor, fontWeight: 800 }}>$29.99</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {tab === 'details' && (
+        <div>
+          <div style={{ fontSize: '0.7rem', color: secondaryColor, marginBottom: '0.75rem' }}>← Back</div>
+          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div style={{ width: '100px', height: '100px', backgroundColor: 'rgba(0,0,0,0.03)', borderRadius: `${borderRadius * 0.75}px`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: 'rgba(0,0,0,0.2)' }}>Image</div>
+            <div>
+              <div style={{ color: accentColor, fontSize: '0.65rem', fontWeight: 700, marginBottom: '0.25rem' }}>IN STOCK</div>
+              <h3 style={{ margin: '0 0 0.25rem 0', fontWeight: 800 }}>Product Name</h3>
+              <div style={{ color: primaryColor, fontWeight: 800, marginBottom: '0.5rem' }}>$199.99</div>
+              <button style={{ backgroundColor: primaryColor, color: '#fff', border: 'none', padding: '0.4rem 0.8rem', borderRadius: `${borderRadius * 0.5}px`, fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer' }}>Add to Cart</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {tab === 'checkout' && (
+        <div>
+          <h4 style={{ margin: '0 0 0.75rem 0', fontWeight: 700 }}>Checkout</h4>
+          <input placeholder="Name" style={{ width: '100%', padding: '0.4rem', marginBottom: '0.5rem', border: '1px solid rgba(0,0,0,0.1)', borderRadius: `${borderRadius * 0.5}px`, fontSize: '0.75rem' }} disabled />
+          <div style={{ backgroundColor: 'rgba(0,0,0,0.02)', padding: '0.5rem', borderRadius: `${borderRadius * 0.5}px`, marginBottom: '0.75rem', fontSize: '0.7rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+              <span>Subtotal:</span>
+              <span>$99.00</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, color: primaryColor }}>
+              <span>Total:</span>
+              <span>$99.00</span>
+            </div>
+          </div>
+          <button style={{ width: '100%', backgroundColor: primaryColor, color: '#fff', border: 'none', padding: '0.5rem', borderRadius: `${borderRadius * 0.5}px`, fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>Pay Now</button>
+        </div>
+      )}
+      {tab === 'tracking' && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+            <span style={{ fontWeight: 700 }}>Order #ORD-8012</span>
+            <span style={{ backgroundColor: '#dcfce7', color: '#15803d', padding: '0.1rem 0.4rem', borderRadius: '3px', fontSize: '0.65rem' }}>Shipped</span>
+          </div>
+          <div style={{ backgroundColor: 'rgba(0,0,0,0.02)', padding: '0.5rem', borderRadius: `${borderRadius * 0.5}px`, fontSize: '0.7rem' }}>
+            <div><strong>Courier:</strong> Delhivery</div>
+            <div><strong>Tracking:</strong> DEL9018471253</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Main Theme Component
 const Theme: React.FC = () => {
   const { tenantId } = useAuth();
-  const [themes, setThemes] = useState<ThemeConfig[]>([]);
+  const [tenantThemes, setTenantThemes] = useState<Theme[]>([]);
+  const [publicThemes, setPublicThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-
-  // Selected Theme Details
   const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
-  const [themeName, setThemeName] = useState('New Theme');
+  const [themeName, setThemeName] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#6366f1');
   const [secondaryColor, setSecondaryColor] = useState('#4f46e5');
   const [accentColor, setAccentColor] = useState('#06b6d4');
@@ -50,47 +245,51 @@ const Theme: React.FC = () => {
     setLoading(true);
     try {
       const res = await apiClient.get('/api/v1/themes');
-      const data = res.data || [];
-      setThemes(data);
-      if (data.length > 0) {
-        const active = data.find((t: any) => t.isActive) || data[0];
+      const allThemes = res.data.data || res.data || [];
+      const ownThemes = allThemes.filter((t: Theme) => t.createdByTenantId === tenantId);
+      const publicOnly = allThemes.filter((t: Theme) => t.isPublic && t.createdByTenantId !== tenantId);
+      setTenantThemes(ownThemes);
+      setPublicThemes(publicOnly);
+      if (ownThemes.length > 0) {
+        const active = ownThemes.find((t: Theme) => t.isActive) || ownThemes[0];
         handleSelectTheme(active);
+      } else {
+        resetThemeForm();
       }
     } catch (err: any) {
       console.error('Failed to load themes:', err);
-      setThemes([]);
-      setErrorMsg('Failed to load theme templates from server.');
+      setErrorMsg('Failed to load themes from server.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSelectTheme = (t: ThemeConfig) => {
-    setSelectedThemeId(t.id);
-    setThemeName(t.name);
-    setPrimaryColor(t.primaryColor);
-    setSecondaryColor(t.secondaryColor);
-    setAccentColor(t.accentColor);
-    setBackgroundColor(t.backgroundColor);
-    setTextColor(t.textColor);
-    setFontFamily(t.fontFamily);
-    setBorderRadius(t.borderRadius);
-    setSpacingUnit(t.spacingUnit);
-    setIsPublic(t.isPublic);
-  };
-
-  const handleCreateNewTheme = () => {
+  const resetThemeForm = () => {
     setSelectedThemeId(null);
-    setThemeName('Custom Theme');
-    setPrimaryColor('#3b82f6');
-    setSecondaryColor('#1d4ed8');
-    setAccentColor('#10b981');
-    setBackgroundColor('#ffffff');
-    setTextColor('#1e293b');
-    setFontFamily('Inter, sans-serif');
+    setThemeName('');
+    setPrimaryColor('#6366f1');
+    setSecondaryColor('#4f46e5');
+    setAccentColor('#06b6d4');
+    setBackgroundColor('#f8fafc');
+    setTextColor('#0f172a');
+    setFontFamily('Outfit, sans-serif');
     setBorderRadius(8);
     setSpacingUnit(16);
     setIsPublic(false);
+  };
+
+  const handleSelectTheme = (theme: Theme) => {
+    setSelectedThemeId(theme.id);
+    setThemeName(theme.name);
+    setPrimaryColor(theme.primaryColor);
+    setSecondaryColor(theme.secondaryColor);
+    setAccentColor(theme.accentColor);
+    setBackgroundColor(theme.backgroundColor);
+    setTextColor(theme.textColor);
+    setFontFamily(theme.fontFamily);
+    setBorderRadius(theme.borderRadius);
+    setSpacingUnit(theme.spacingUnit);
+    setIsPublic(theme.isPublic);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -109,91 +308,76 @@ const Theme: React.FC = () => {
       fontFamily,
       borderRadius,
       spacingUnit,
-      isActive: true,
       isPublic
     };
 
     try {
-      if (selectedThemeId && !selectedThemeId.startsWith('theme-mock-')) {
-        // Update
+      if (selectedThemeId) {
         await apiClient.put(`/api/v1/themes/${selectedThemeId}`, payload);
+        setSuccessMsg('Theme updated successfully!');
       } else {
-        // Create
-        await apiClient.post('/api/v1/themes', payload);
+        const res = await apiClient.post('/api/v1/themes', payload);
+        const newTheme = res.data.data || res.data;
+        setSelectedThemeId(newTheme.id);
+        setSuccessMsg('Theme created successfully!');
       }
-      setSuccessMsg('Theme settings saved and activated!');
       loadThemes();
     } catch (err: any) {
       console.error('Failed to save theme:', err);
-      // Simulate locally
-      if (selectedThemeId) {
-        setThemes(prev => prev.map(t => t.id === selectedThemeId ? { ...t, ...payload } : { ...t, isActive: false }));
-      } else {
-        const mockNew: ThemeConfig = {
-          id: `theme-mock-${Date.now()}`,
-          createdByTenantId: tenantId,
-          ...payload
-        };
-        setThemes(prev => prev.map(t => ({ ...t, isActive: false })).concat(mockNew));
-        setSelectedThemeId(mockNew.id);
-      }
-      setSuccessMsg('Theme updated locally (simulation fallback)');
+      setErrorMsg(err.response?.data?.message || 'Failed to save theme.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleToggleVisibility = async (theme: ThemeConfig) => {
+  const handleActivate = async (themeId: string) => {
     try {
-      const nextPublic = !theme.isPublic;
-      if (theme.id.startsWith('theme-mock-')) {
-        setThemes(prev => prev.map(t => t.id === theme.id ? { ...t, isPublic: nextPublic } : t));
-      } else {
-        const endpoint = nextPublic ? `/api/v1/themes/${theme.id}/make-public` : `/api/v1/themes/${theme.id}/make-private`;
-        await apiClient.post(endpoint);
-      }
-      setThemes(prev => prev.map(t => t.id === theme.id ? { ...t, isPublic: nextPublic } : t));
-      if (selectedThemeId === theme.id) {
-        setIsPublic(nextPublic);
-      }
-      setSuccessMsg(`Theme visibility changed to ${nextPublic ? 'Public' : 'Private'}`);
-    } catch (err) {
-      console.error('Failed to toggle visibility', err);
-      setThemes(prev => prev.map(t => t.id === theme.id ? { ...t, isPublic: !theme.isPublic } : t));
-      if (selectedThemeId === theme.id) setIsPublic(!theme.isPublic);
+      await apiClient.post(`/api/v1/themes/${themeId}/activate`);
+      setSuccessMsg('Theme activated!');
+      loadThemes();
+    } catch (err: any) {
+      console.error('Failed to activate theme:', err);
+      setErrorMsg('Failed to activate theme.');
     }
   };
 
-  const handleActivate = async (theme: ThemeConfig) => {
+  const handleToggleVisibility = async (themeId: string, currentlyPublic: boolean) => {
     try {
-      if (theme.id.startsWith('theme-mock-')) {
-        setThemes(prev => prev.map(t => t.id === theme.id ? { ...t, isActive: true } : { ...t, isActive: false }));
-      } else {
-        await apiClient.post(`/api/v1/themes/${theme.id}/activate`);
-      }
-      setThemes(prev => prev.map(t => t.id === theme.id ? { ...t, isActive: true } : { ...t, isActive: false }));
-      setSuccessMsg(`Activated theme "${theme.name}"!`);
-      handleSelectTheme(theme);
-    } catch (err) {
-      console.error('Failed to activate theme', err);
-      setThemes(prev => prev.map(t => t.id === theme.id ? { ...t, isActive: true } : { ...t, isActive: false }));
+      const endpoint = currentlyPublic ? `/api/v1/themes/${themeId}/make-private` : `/api/v1/themes/${themeId}/make-public`;
+      await apiClient.post(endpoint);
+      setSuccessMsg(`Theme is now ${!currentlyPublic ? 'Public' : 'Private'}`);
+      loadThemes();
+    } catch (err: any) {
+      console.error('Failed to toggle visibility:', err);
+      setErrorMsg('Failed to change theme visibility.');
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (themeId: string) => {
     if (!window.confirm('Delete this theme?')) return;
     try {
-      if (id.startsWith('theme-mock-')) {
-        setThemes(prev => prev.filter(t => t.id !== id));
-      } else {
-        await apiClient.delete(`/api/v1/themes/${id}`);
+      await apiClient.delete(`/api/v1/themes/${themeId}`);
+      setSuccessMsg('Theme deleted successfully.');
+      if (selectedThemeId === themeId) {
+        resetThemeForm();
       }
-      setThemes(prev => prev.filter(t => t.id !== id));
-      setSuccessMsg('Theme deleted.');
-      if (selectedThemeId === id) handleCreateNewTheme();
-    } catch (err) {
-      console.error('Delete failed', err);
-      setThemes(prev => prev.filter(t => t.id !== id));
+      loadThemes();
+    } catch (err: any) {
+      console.error('Failed to delete theme:', err);
+      setErrorMsg('Failed to delete theme.');
+    }
+  };
+
+  const handleCloneTheme = async (theme: Theme) => {
+    try {
+      const res = await apiClient.post(`/api/v1/themes/${theme.id}/clone`);
+      const clonedTheme = res.data.data || res.data;
+      setSuccessMsg(`Theme "${clonedTheme.name}" cloned successfully!`);
+      loadThemes();
+      handleSelectTheme(clonedTheme);
+    } catch (err: any) {
+      console.error('Failed to clone theme:', err);
+      setErrorMsg('Failed to clone theme.');
     }
   };
 
@@ -202,494 +386,186 @@ const Theme: React.FC = () => {
       <AdminSidebar active="theme" />
       <main className="dashboard-content">
         <div className="content-wrapper">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem' }}>Theme Customizer</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Style your public storefront catalog design systems with real-time UI previews.</p>
-        </div>
-        <button className="btn btn-secondary" onClick={handleCreateNewTheme}>
-          <Palette size={16} /> Create Custom Theme
-        </button>
-      </div>
-
-      {successMsg && (
-        <div className="card" style={{ borderLeft: '4px solid var(--accent-color)', padding: '1rem', marginBottom: '1.5rem', color: 'var(--accent-color)' }}>
-          {successMsg}
-        </div>
-      )}
-
-      {errorMsg && (
-        <div className="card" style={{ borderLeft: '4px solid var(--error-color)', padding: '1rem', marginBottom: '1.5rem', color: 'var(--error-color)' }}>
-          {errorMsg}
-        </div>
-      )}
-
-      {loading ? (
-        <div className="loading-container">
-          <Loader2 className="spinner" size={32} />
-          <p style={{ marginTop: '1rem' }}>Loading active templates library...</p>
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '2.5rem', alignItems: 'start' }}>
-          
-          {/* Themes Lists & Form Details */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            
-            {/* Library list */}
-            <div className="card" style={{ padding: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem' }}>Templates Library</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {themes.map((t) => (
-                  <div 
-                    key={t.id} 
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'space-between', 
-                      padding: '0.85rem 1rem', 
-                      borderRadius: '8px', 
-                      border: selectedThemeId === t.id ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
-                      backgroundColor: selectedThemeId === t.id ? 'var(--bg-secondary)' : 'var(--card-bg)',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
-                    onClick={() => handleSelectTheme(t)}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ display: 'flex', gap: '3px' }}>
-                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: t.primaryColor }} />
-                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: t.secondaryColor }} />
-                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: t.backgroundColor }} />
-                      </div>
-                      <div>
-                        <span style={{ fontWeight: 600, fontSize: '0.9rem', display: 'block' }}>{t.name}</span>
-                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.15rem' }}>
-                          {t.isActive && <span className="badge" style={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontSize: '0.7rem' }}>Active</span>}
-                          {t.isPublic ? (
-                            <span className="badge" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '2px' }}><Globe size={10} /> Public</span>
-                          ) : (
-                            <span className="badge" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-muted)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '2px' }}><Lock size={10} /> Private</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '0.35rem' }} onClick={e => e.stopPropagation()}>
-                      {!t.isActive && (
-                        <button className="btn btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }} onClick={() => handleActivate(t)}>
-                          Activate
-                        </button>
-                      )}
-                      {t.createdByTenantId && (
-                        <button className="btn btn-secondary btn-icon" onClick={() => handleToggleVisibility(t)} title={t.isPublic ? 'Make Private' : 'Make Public'}>
-                          {t.isPublic ? <Lock size={12} /> : <Globe size={12} />}
-                        </button>
-                      )}
-                      {(!t.isPublic || t.createdByTenantId) && (
-                        <button className="btn btn-secondary btn-icon" style={{ color: 'var(--error-color)' }} onClick={() => handleDelete(t.id)} title="Delete Theme">
-                          <Trash2 size={12} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '2rem' }}>Theme Management</h1>
+              <p style={{ color: 'var(--text-secondary)' }}>Create, customize, and manage themes for your storefront. Share themes publicly for other merchants to clone.</p>
             </div>
+            <button className="btn btn-primary" onClick={resetThemeForm}>
+              <Plus size={16} /> New Theme
+            </button>
+          </div>
 
-            {/* Customizer settings */}
-            <div className="card" style={{ padding: '2rem' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Design Configurations</h2>
-              <form onSubmit={handleSave}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {successMsg && (
+            <div className="card" style={{ borderLeft: '4px solid var(--accent-color)', padding: '1rem', marginBottom: '1.5rem', color: 'var(--accent-color)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Check size={20} /> {successMsg}
+            </div>
+          )}
+
+          {errorMsg && (
+            <div className="card" style={{ borderLeft: '4px solid #ef4444', padding: '1rem', marginBottom: '1.5rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              ✕ {errorMsg}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="loading-container">
+              <Loader2 className="spinner" size={32} />
+              <p style={{ marginTop: '1rem' }}>Loading themes...</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '2.5rem', alignItems: 'start' }}>
+              
+              {/* LEFT COLUMN */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                
+                {/* MY THEMES */}
+                <div className="card" style={{ padding: '1.5rem' }}>
+                  <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Palette size={20} /> My Themes ({tenantThemes.length})
+                  </h2>
                   
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontWeight: 600 }}>Theme Name</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      value={themeName} 
-                      onChange={(e) => setThemeName(e.target.value)} 
-                      required
-                    />
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                    <div className="form-group">
-                      <label className="form-label" style={{ fontWeight: 600 }}>Primary Brand Color</label>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <input 
-                          type="color" 
-                          value={primaryColor} 
-                          onChange={(e) => setPrimaryColor(e.target.value)} 
-                          style={{ width: '40px', height: '38px', padding: 0, border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer' }}
-                        />
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          value={primaryColor} 
-                          onChange={(e) => setPrimaryColor(e.target.value)} 
-                          placeholder="#000000"
-                        />
-                      </div>
+                  {tenantThemes.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-secondary)' }}>
+                      <p>No themes yet. Create your first theme to get started.</p>
                     </div>
-
-                    <div className="form-group">
-                      <label className="form-label" style={{ fontWeight: 600 }}>Secondary Color</label>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <input 
-                          type="color" 
-                          value={secondaryColor} 
-                          onChange={(e) => setSecondaryColor(e.target.value)} 
-                          style={{ width: '40px', height: '38px', padding: 0, border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer' }}
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                      {tenantThemes.map((theme) => (
+                        <ThemeCard
+                          key={theme.id}
+                          theme={theme}
+                          isSelected={selectedThemeId === theme.id}
+                          isOwned={true}
+                          onSelect={handleSelectTheme}
+                          onActivate={handleActivate}
+                          onToggleVisibility={handleToggleVisibility}
+                          onDelete={handleDelete}
                         />
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          value={secondaryColor} 
-                          onChange={(e) => setSecondaryColor(e.target.value)} 
-                        />
-                      </div>
+                      ))}
                     </div>
-
-                    <div className="form-group">
-                      <label className="form-label" style={{ fontWeight: 600 }}>Accent Highlight Color</label>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <input 
-                          type="color" 
-                          value={accentColor} 
-                          onChange={(e) => setAccentColor(e.target.value)} 
-                          style={{ width: '40px', height: '38px', padding: 0, border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer' }}
-                        />
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          value={accentColor} 
-                          onChange={(e) => setAccentColor(e.target.value)} 
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label" style={{ fontWeight: 600 }}>Background Base</label>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <input 
-                          type="color" 
-                          value={backgroundColor} 
-                          onChange={(e) => setBackgroundColor(e.target.value)} 
-                          style={{ width: '40px', height: '38px', padding: 0, border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer' }}
-                        />
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          value={backgroundColor} 
-                          onChange={(e) => setBackgroundColor(e.target.value)} 
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontWeight: 600 }}>Text Base Color</label>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <input 
-                        type="color" 
-                        value={textColor} 
-                        onChange={(e) => setTextColor(e.target.value)} 
-                        style={{ width: '40px', height: '38px', padding: 0, border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer' }}
-                      />
-                      <input 
-                        type="text" 
-                        className="form-control" 
-                        value={textColor} 
-                        onChange={(e) => setTextColor(e.target.value)} 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontWeight: 600 }}>Font Family</label>
-                    <select 
-                      className="form-control" 
-                      value={fontFamily} 
-                      onChange={(e) => setFontFamily(e.target.value)}
-                    >
-                      <option value="Outfit, sans-serif">Outfit (Modern Display)</option>
-                      <option value="Inter, sans-serif">Inter (Clean Sans-Serif)</option>
-                      <option value="Roboto, sans-serif">Roboto (Structured System)</option>
-                      <option value="Playfair Display, serif">Playfair Display (Premium Serif)</option>
-                      <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans (Sleek Geometric)</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <label className="form-label" style={{ fontWeight: 600, margin: 0 }}>Border Radius</label>
-                      <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{borderRadius}px</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="0" 
-                      max="24" 
-                      className="form-control" 
-                      value={borderRadius} 
-                      onChange={(e) => setBorderRadius(Number(e.target.value))} 
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <label className="form-label" style={{ fontWeight: 600, margin: 0 }}>Spacing Unit</label>
-                      <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{spacingUnit}px</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="8" 
-                      max="32" 
-                      className="form-control" 
-                      value={spacingUnit} 
-                      onChange={(e) => setSpacingUnit(Number(e.target.value))} 
-                    />
-                  </div>
-
-                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <input 
-                      type="checkbox" 
-                      id="isPublic"
-                      checked={isPublic} 
-                      onChange={(e) => setIsPublic(e.target.checked)} 
-                    />
-                    <label htmlFor="isPublic" style={{ fontWeight: 600, cursor: 'pointer', margin: 0 }}>Make template public to other merchants</label>
-                  </div>
-
-                  <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }} disabled={saving}>
-                    {saving ? <Loader2 className="spinner" size={16} /> : <Save size={16} />} Save & Activate Theme
-                  </button>
-
-                </div>
-              </form>
-            </div>
-          </div>
-
-          {/* Interactive Live Preview Card */}
-          <div style={{ position: 'sticky', top: '2rem' }}>
-            <div className="card" style={{ padding: '1.75rem', border: '1px solid var(--border-color)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Eye size={18} style={{ color: 'var(--text-secondary)' }} />
-                  <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Real-Time Live Storefront Preview</h2>
-                </div>
-              </div>
-
-              {/* Navigation Tabs for Preview Flow */}
-              <div style={{ display: 'flex', gap: '0.25rem', border: '1px solid var(--border-color)', padding: '0.2rem', borderRadius: '8px', backgroundColor: 'var(--bg-secondary)', marginBottom: '1.5rem', overflowX: 'auto' }}>
-                {['catalog', 'details', 'checkout', 'tracking'].map((tab) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    className={`tab-btn ${previewTab === tab ? 'active' : ''}`}
-                    style={{
-                      border: 'none',
-                      background: previewTab === tab ? 'var(--card-bg)' : 'none',
-                      color: previewTab === tab ? 'var(--primary-color)' : 'var(--text-secondary)',
-                      padding: '0.35rem 0.65rem',
-                      fontSize: '0.75rem',
-                      borderRadius: '6px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      textTransform: 'capitalize',
-                      whiteSpace: 'nowrap',
-                      flexGrow: 1
-                    }}
-                    onClick={() => setPreviewTab(tab as any)}
-                  >
-                    {tab === 'details' ? 'Product Detail' : tab}
-                  </button>
-                ))}
-              </div>
-
-              {/* Styled Mock Sandbox Container */}
-              <div 
-                style={{
-                  backgroundColor,
-                  color: textColor,
-                  fontFamily,
-                  padding: `${spacingUnit}px`,
-                  borderRadius: `${borderRadius}px`,
-                  border: '1px solid rgba(0,0,0,0.08)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
-                  transition: 'all 0.2s ease',
-                  overflow: 'hidden',
-                  minHeight: '380px',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
-              >
-                {/* Mock Header Navigation bar */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '0.75rem', marginBottom: `${spacingUnit}px` }}>
-                  <span style={{ fontWeight: 800, fontSize: '1rem', color: primaryColor }}>MOCK STORE</span>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: secondaryColor }}>Cart (0)</span>
+                  )}
                 </div>
 
-                {/* --- TAB CONTENT: CATALOG --- */}
-                {previewTab === 'catalog' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: `${spacingUnit}px`, flexGrow: 1 }}>
-                    <div style={{ backgroundColor: 'rgba(0,0,0,0.02)', padding: '0.75rem', borderRadius: `${borderRadius * 0.75}px`, textAlign: 'center' }}>
-                      <h4 style={{ fontSize: '0.85rem', fontWeight: 700, margin: '0 0 0.25rem 0' }}>Seasonal Summer Sale</h4>
-                      <p style={{ fontSize: '0.65rem', color: 'rgba(0,0,0,0.5)', margin: 0 }}>Save up to 40% on essentials</p>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                      {[1, 2].map((i) => (
-                        <div key={i} style={{ backgroundColor: '#ffffff', borderRadius: `${borderRadius * 0.75}px`, border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-                          <div style={{ height: '90px', backgroundColor: 'rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                            <span style={{ color: 'rgba(0,0,0,0.15)', fontSize: '0.6rem', fontWeight: 600 }}>PRODUCT {i}</span>
-                          </div>
-                          <div style={{ padding: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                            <h4 style={{ fontSize: '0.75rem', fontWeight: 700, margin: 0 }}>Item {i} Name</h4>
-                            <span style={{ fontWeight: 800, fontSize: '0.8rem', color: primaryColor }}>$29.00</span>
-                          </div>
-                        </div>
+                {/* PUBLIC BROWSE */}
+                {publicThemes.length > 0 && (
+                  <div className="card" style={{ padding: '1.5rem' }}>
+                    <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Globe size={20} /> Public Library ({publicThemes.length})
+                    </h2>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Browse and clone themes from other merchants.</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                      {publicThemes.map((theme) => (
+                        <PublicThemeCard key={theme.id} theme={theme} onClone={handleCloneTheme} />
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* --- TAB CONTENT: DETAILS --- */}
-                {previewTab === 'details' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flexGrow: 1 }}>
-                    <span style={{ fontSize: '0.65rem', color: secondaryColor, cursor: 'pointer', fontWeight: 600 }}>← Back to Catalog</span>
-                    
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.75rem', alignItems: 'start' }}>
-                      <div style={{ height: '120px', backgroundColor: 'rgba(0,0,0,0.03)', borderRadius: `${borderRadius * 0.75}px`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ color: 'rgba(0,0,0,0.15)', fontSize: '0.65rem' }}>PRODUCT IMAGE</span>
+                {/* FORM */}
+                <div className="card" style={{ padding: '2rem' }}>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>
+                    {selectedThemeId ? 'Edit Theme' : 'Create New Theme'}
+                  </h2>
+                  <form onSubmit={handleSave}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                      <div className="form-group">
+                        <label className="form-label" style={{ fontWeight: 600 }}>Theme Name *</label>
+                        <input type="text" className="form-control" value={themeName} onChange={(e) => setThemeName(e.target.value)} placeholder="e.g., Summer Sale 2026" required />
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                        <span style={{ fontSize: '0.6rem', fontWeight: 700, color: accentColor, textTransform: 'uppercase' }}>In Stock</span>
-                        <h4 style={{ fontSize: '0.85rem', fontWeight: 800, margin: 0 }}>Vortex Headphones</h4>
-                        <span style={{ fontWeight: 800, fontSize: '0.95rem', color: primaryColor }}>$199.99</span>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                        <ColorInputField label="Primary Color" value={primaryColor} onChange={setPrimaryColor} />
+                        <ColorInputField label="Secondary Color" value={secondaryColor} onChange={setSecondaryColor} />
                       </div>
-                    </div>
 
-                    <p style={{ fontSize: '0.7rem', color: 'rgba(0,0,0,0.5)', margin: 0, lineHeight: 1.4 }}>
-                      Premium wireless headphones with active noise cancellation and up to 40 hours of battery life.
-                    </p>
-
-                    <button 
-                      type="button"
-                      style={{
-                        backgroundColor: primaryColor,
-                        color: '#ffffff',
-                        border: 'none',
-                        padding: '0.5rem',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        borderRadius: `${borderRadius * 0.5}px`,
-                        cursor: 'pointer',
-                        marginTop: 'auto'
-                      }}
-                    >
-                      Add to Shopping Cart
-                    </button>
-                  </div>
-                )}
-
-                {/* --- TAB CONTENT: CHECKOUT --- */}
-                {previewTab === 'checkout' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flexGrow: 1 }}>
-                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, margin: 0, borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '0.25rem' }}>Billing & Shipping Details</h4>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <input type="text" placeholder="Full Name" style={{ width: '100%', fontSize: '0.7rem', padding: '0.35rem', border: '1px solid rgba(0,0,0,0.1)', borderRadius: `${borderRadius * 0.5}px` }} disabled />
-                      <input type="text" placeholder="Shipping Address" style={{ width: '100%', fontSize: '0.7rem', padding: '0.35rem', border: '1px solid rgba(0,0,0,0.1)', borderRadius: `${borderRadius * 0.5}px` }} disabled />
-                    </div>
-
-                    <div style={{ backgroundColor: 'rgba(0,0,0,0.02)', padding: '0.5rem', borderRadius: `${borderRadius * 0.5}px`, fontSize: '0.7rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                        <span>Subtotal:</span>
-                        <span>$39.00</span>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                        <ColorInputField label="Accent Color" value={accentColor} onChange={setAccentColor} />
+                        <ColorInputField label="Background Color" value={backgroundColor} onChange={setBackgroundColor} />
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
-                        <span>Total Pay:</span>
-                        <span style={{ color: primaryColor }}>$39.00</span>
+
+                      <ColorInputField label="Text Color" value={textColor} onChange={setTextColor} />
+
+                      <div className="form-group">
+                        <label className="form-label" style={{ fontWeight: 600 }}>Font Family</label>
+                        <select className="form-control" value={fontFamily} onChange={(e) => setFontFamily(e.target.value)}>
+                          <option value="Outfit, sans-serif">Outfit (Modern Display)</option>
+                          <option value="Inter, sans-serif">Inter (Clean Sans-Serif)</option>
+                          <option value="Roboto, sans-serif">Roboto (Structured)</option>
+                          <option value="Playfair Display, serif">Playfair Display (Premium)</option>
+                        </select>
+                      </div>
+
+                      <RangeInputField label="Border Radius" value={borderRadius} onChange={setBorderRadius} min={0} max={24} unit="px" />
+                      <RangeInputField label="Spacing Unit" value={spacingUnit} onChange={setSpacingUnit} min={8} max={32} unit="px" />
+
+                      <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <input type="checkbox" id="isPublic" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
+                        <label htmlFor="isPublic" style={{ fontWeight: 600, cursor: 'pointer', margin: 0 }}>Make public for other merchants</label>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+                        <button type="submit" className="btn btn-primary" disabled={saving} style={{ flex: 1 }}>
+                          {saving ? <Loader2 className="spinner" size={16} /> : <Save size={16} />} 
+                          {selectedThemeId ? 'Update & Activate' : 'Create & Activate'}
+                        </button>
+                        {selectedThemeId && (
+                          <button type="button" className="btn btn-secondary" onClick={resetThemeForm}>Clear</button>
+                        )}
                       </div>
                     </div>
-
-                    <button 
-                      type="button"
-                      style={{
-                        backgroundColor: primaryColor,
-                        color: '#ffffff',
-                        border: 'none',
-                        padding: '0.5rem',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        borderRadius: `${borderRadius * 0.5}px`,
-                        cursor: 'pointer',
-                        marginTop: 'auto'
-                      }}
-                    >
-                      Pay Securely with Razorpay
-                    </button>
-                  </div>
-                )}
-
-                {/* --- TAB CONTENT: TRACKING --- */}
-                {previewTab === 'tracking' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flexGrow: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 700 }}>Order ID: ORD-8012</span>
-                      <span className="badge" style={{ backgroundColor: '#dcfce7', color: '#15803d', fontSize: '0.65rem' }}>Shipped</span>
-                    </div>
-
-                    {/* Step Wizard Progress tracker */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0', position: 'relative' }}>
-                      <div style={{ position: 'absolute', top: '50%', left: '10%', right: '10%', height: '2px', backgroundColor: primaryColor, zIndex: 1 }} />
-                      {[1, 2, 3].map((step) => (
-                        <div 
-                          key={step} 
-                          style={{ 
-                            width: '16px', 
-                            height: '16px', 
-                            borderRadius: '50%', 
-                            backgroundColor: step <= 2 ? primaryColor : '#cbd5e1', 
-                            color: '#ffffff', 
-                            fontSize: '0.55rem', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            zIndex: 2 
-                          }}
-                        >
-                          ✓
-                        </div>
-                      ))}
-                    </div>
-
-                    <div style={{ backgroundColor: 'rgba(0,0,0,0.02)', padding: '0.5rem', borderRadius: `${borderRadius * 0.5}px`, fontSize: '0.7rem' }}>
-                      <div><strong>Courier:</strong> Delhivery</div>
-                      <div><strong>Tracking ID:</strong> <code>DEL9018471253</code></div>
-                    </div>
-
-                    <p style={{ fontSize: '0.65rem', color: 'rgba(0,0,0,0.4)', marginTop: 'auto', textAlign: 'center' }}>
-                      Parcel is in transit. Next update in 24 hours.
-                    </p>
-                  </div>
-                )}
-
-                {/* Styled footer info */}
-                <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: '0.75rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.65rem' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: secondaryColor }}><Sparkles size={10} /> Brand Theme styling details applied</span>
-                    <span style={{ color: 'rgba(0,0,0,0.4)' }}>Border Radius: {borderRadius}px</span>
-                  </div>
+                  </form>
                 </div>
-
               </div>
-            </div>
-          </div>
 
-        </div>
-      )}
+              {/* RIGHT COLUMN: PREVIEW */}
+              <div style={{ position: 'sticky', top: '2rem' }}>
+                <div className="card" style={{ padding: '1.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                    <Eye size={18} style={{ color: 'var(--text-secondary)' }} />
+                    <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Live Preview</h2>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.25rem', border: '1px solid var(--border-color)', padding: '0.2rem', borderRadius: '8px', backgroundColor: 'var(--bg-secondary)', marginBottom: '1.5rem' }}>
+                    {['catalog', 'details', 'checkout', 'tracking'].map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        style={{
+                          border: 'none',
+                          background: previewTab === tab ? 'var(--card-bg)' : 'none',
+                          color: previewTab === tab ? 'var(--primary-color)' : 'var(--text-secondary)',
+                          padding: '0.35rem 0.65rem',
+                          fontSize: '0.75rem',
+                          borderRadius: '6px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          textTransform: 'capitalize',
+                          flex: 1
+                        }}
+                        onClick={() => setPreviewTab(tab as any)}
+                      >
+                        {tab === 'details' ? 'Product' : tab}
+                      </button>
+                    ))}
+                  </div>
+
+                  <ThemePreview
+                    backgroundColor={backgroundColor}
+                    textColor={textColor}
+                    fontFamily={fontFamily}
+                    borderRadius={borderRadius}
+                    spacingUnit={spacingUnit}
+                    primaryColor={primaryColor}
+                    secondaryColor={secondaryColor}
+                    accentColor={accentColor}
+                    tab={previewTab}
+                  />
+                </div>
+              </div>
+
+            </div>
+          )}
         </div>
       </main>
     </div>
