@@ -70,8 +70,10 @@ const StorefrontSettings: React.FC = () => {
   const loadStorefrontSettings = async () => {
     setLoading(true);
     try {
+      console.log('Loading storefront settings...');
       const res = await apiClient.get('/api/v1/storefronts');
       const storefronts = res.data.data || res.data;
+      console.log('Storefronts response:', storefronts);
       if (!storefronts || storefronts.length === 0) {
         setErrorMsg('No storefront found. Please create one first.');
         setStorefrontId('');
@@ -95,6 +97,7 @@ const StorefrontSettings: React.FC = () => {
       }
       const data = storefronts[0];
       const activeId = data.id || data._id || '';
+      console.log('Setting storefront ID:', activeId);
       setStorefrontId(activeId);
       
       // Storefront Details
@@ -128,7 +131,7 @@ const StorefrontSettings: React.FC = () => {
       await loadPendingChanges(activeId);
     } catch (err: any) {
       console.error('Failed to load storefront settings', err);
-      setErrorMsg('Failed to load storefront settings.');
+      setErrorMsg('Failed to load storefront settings. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -136,7 +139,18 @@ const StorefrontSettings: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!storefrontId) return;
+    console.log('handleSave called', { storefrontId, saving });
+    
+    if (!storefrontId) {
+      console.error('No storefrontId found!');
+      setErrorMsg('No storefront ID found. Please reload the page.');
+      return;
+    }
+
+    if (saving) {
+      console.warn('Already saving, ignoring duplicate click');
+      return;
+    }
 
     setSaving(true);
     setErrorMsg('');
@@ -173,27 +187,35 @@ const StorefrontSettings: React.FC = () => {
     };
 
     try {
-      await apiClient.put(`/api/v1/storefronts/${storefrontId}`, payload);
-      setSuccessMsg('Storefront settings saved to draft!');
+      console.log('Saving storefront settings...', { storefrontId, payload });
+      const res = await apiClient.put(`/api/v1/storefronts/${storefrontId}`, payload);
+      console.log('Save response:', res);
+      setSuccessMsg('Storefront settings saved to draft successfully!');
       loadStorefrontSettings();
     } catch (err: any) {
       console.error('Failed to save settings:', err);
-      setErrorMsg('Failed to save settings.');
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to save settings. Please try again.';
+      setErrorMsg(errorMessage);
     } finally {
       setSaving(false);
     }
   };
 
   const handlePublish = async () => {
-    if (!storefrontId) return;
+    if (!storefrontId) {
+      setErrorMsg('No storefront ID found. Please reload the page.');
+      return;
+    }
     setPublishing(true);
     setErrorMsg('');
     setSuccessMsg('');
     try {
       // 1. Validate storefront configuration
       try {
+        console.log('Validating storefront...', storefrontId);
         const valRes = await apiClient.get(`/api/v1/storefronts/${storefrontId}/validate`);
         const valData = valRes.data.data || valRes.data;
+        console.log('Validation response:', valData);
         if (valData && !valData.isValid) {
           setErrorMsg('Cannot publish: ' + (valData.errors?.join(', ') || 'Validation failed.'));
           setPublishing(false);
@@ -213,13 +235,16 @@ const StorefrontSettings: React.FC = () => {
       }
 
       // 2. Publish
-      await apiClient.post(`/api/v1/storefronts/${storefrontId}/publish`);
+      console.log('Publishing storefront...', storefrontId);
+      const publishRes = await apiClient.post(`/api/v1/storefronts/${storefrontId}/publish`);
+      console.log('Publish response:', publishRes);
       setSuccessMsg('Storefront published successfully to live environment!');
       setShowPreview(false);
       loadStorefrontSettings();
     } catch (err: any) {
       console.error('Failed to publish settings', err);
-      setErrorMsg('Failed to publish: ' + (err.response?.data?.message || err.message));
+      const errorMessage = 'Failed to publish: ' + (err.response?.data?.message || err.message || 'Unknown error');
+      setErrorMsg(errorMessage);
     } finally {
       setPublishing(false);
     }
@@ -404,7 +429,12 @@ const StorefrontSettings: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                <button type="submit" className="btn btn-primary" disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, padding: '0.75rem 1.5rem' }}>
+                <button type="submit" className="btn btn-primary" disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, padding: '0.75rem 1.5rem' }} onClick={(e) => {
+                  console.log('Button clicked!', e);
+                  console.log('saving state:', saving);
+                  console.log('storefrontId:', storefrontId);
+                  console.log('Form element:', e.currentTarget.form);
+                }}>
                   {saving ? <Loader2 className="spinner" size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={16} />} {saving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
