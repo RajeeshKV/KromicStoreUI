@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import apiClient from '../api/apiClient';
-import { Search, SlidersHorizontal, ShoppingBag, Eye, Plus, ShoppingCart, RefreshCw, Mail, Phone, MessageCircle } from 'lucide-react';
+import { Search, SlidersHorizontal, ShoppingBag, Eye, Plus, ShoppingCart, RefreshCw, Mail, Phone } from 'lucide-react';
 import { extractSubdomain } from '../utils/subdomain';
 import { resolveTenantBySubdomain } from '../api/publicApi';
 
@@ -646,157 +646,127 @@ const Storefront: React.FC<StorefrontProps> = ({ previewBootstrapData }) => {
           {/* Right: Contact + Social Icons */}
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {/* Contact Info Icons */}
-              <div>
-                <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
-                  Contact Us
-                </p>
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                  {bootstrapData?.storefront?.contactEmail && (
-                    <a
-                      href={`mailto:${bootstrapData.storefront.contactEmail}`}
-                      title={bootstrapData.storefront.contactEmail}
-                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
-                        (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
-                        (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
-                      }}
-                    >
-                      <Mail size={18} />
-                    </a>
-                  )}
-                  {bootstrapData?.storefront?.contactPhone && (
-                    <a
-                      href={`tel:${bootstrapData.storefront.contactPhone}`}
-                      title={bootstrapData.storefront.contactPhone}
-                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
-                        (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
-                        (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
-                      }}
-                    >
-                      <Phone size={18} />
-                    </a>
-                  )}
-                  {bootstrapData?.storefront?.whatsapp && (
-                    <a
-                      href={`https://wa.me/${bootstrapData.storefront.whatsapp.replace(/\D/g, '')}`}
-                      title={bootstrapData.storefront.whatsapp}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
-                        (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
-                        (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
-                      }}
-                    >
-                      <MessageCircle size={18} />
-                    </a>
-                  )}
-                </div>
+              {/* Contact + Social Icons */}
+              <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                {bootstrapData?.storefront?.contactEmail && (
+                  <a
+                    href={`mailto:${bootstrapData.storefront.contactEmail}`}
+                    title={bootstrapData.storefront.contactEmail}
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                    }}
+                  >
+                    <Mail size={18} />
+                  </a>
+                )}
+                {bootstrapData?.storefront?.contactPhone && (
+                  <a
+                    href={`tel:${bootstrapData.storefront.contactPhone}`}
+                    title={bootstrapData.storefront.contactPhone}
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                    }}
+                  >
+                    <Phone size={18} />
+                  </a>
+                )}
+                {bootstrapData?.storefront?.facebookUrl && (
+                  <a
+                    href={bootstrapData.storefront.facebookUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Facebook"
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                  </a>
+                )}
+                {bootstrapData?.storefront?.twitterUrl && (
+                  <a
+                    href={bootstrapData.storefront.twitterUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Twitter / X"
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.514l-5.106-6.694-5.854 6.694h-3.308l7.73-8.835L.424 2.25h6.679l4.882 6.479 5.259-6.479zM17.002 20.331h1.834L6.822 4.169H4.881l12.121 16.162z"/>
+                    </svg>
+                  </a>
+                )}
+                {bootstrapData?.storefront?.instagramUrl && (
+                  <a
+                    href={bootstrapData.storefront.instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Instagram"
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm4.441 7.313c.05.799.05 2.541.05 3.688 0 3.783-2.881 6.664-6.663 6.664-1.325 0-2.557-.357-3.611-1.029l-.734.734h-1.582V7.627h1.582l.734.734c1.054-.672 2.286-1.029 3.611-1.029 3.782 0 6.663 2.881 6.663 6.663v.318zm-1.908-2.068c-.984 0-1.867.373-2.53 1.036l1.511 1.511c.413-.154.863-.242 1.325-.242 1.908 0 3.48 1.572 3.48 3.48s-1.572 3.48-3.48 3.48c-1.908 0-3.48-1.572-3.48-3.48 0-.462.088-.912.242-1.325l-1.511-1.511c-.663.663-1.036 1.546-1.036 2.53 0 3.197 2.588 5.786 5.786 5.786s5.786-2.588 5.786-5.786-2.588-5.785-5.786-5.785z"/>
+                    </svg>
+                  </a>
+                )}
+                {bootstrapData?.storefront?.linkedInUrl && (
+                  <a
+                    href={bootstrapData.storefront.linkedInUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="LinkedIn"
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.475-2.236-1.986-2.236-1.081 0-1.722.731-2.004 1.438-.103.25-.129.599-.129.948v5.419h-3.554s.05-8.746 0-9.637h3.554v1.364c.429-.658 1.196-1.594 2.905-1.594 2.12 0 3.708 1.388 3.708 4.368v5.499zM5.337 9.432c-1.144 0-1.915-.759-1.915-1.71 0-.956.771-1.71 1.954-1.71 1.18 0 1.913.754 1.937 1.71 0 .951-.757 1.71-1.976 1.71zm1.581 11.02H3.715V9.815h3.203v10.637zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                  </a>
+                )}
               </div>
-
-              {/* Social Media Icons */}
-              {(bootstrapData?.storefront?.socialLinks?.facebook ||
-                bootstrapData?.storefront?.socialLinks?.twitter ||
-                bootstrapData?.storefront?.socialLinks?.instagram ||
-                bootstrapData?.storefront?.socialLinks?.linkedin) && (
-                <div>
-                  <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
-                    Follow Us
-                  </p>
-                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    {bootstrapData?.storefront?.socialLinks?.facebook && (
-                      <a
-                        href={bootstrapData.storefront.socialLinks.facebook}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Facebook"
-                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease', fontSize: '1.2rem', fontWeight: 'bold' }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
-                          (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
-                          (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
-                        }}
-                      >
-                        f
-                      </a>
-                    )}
-                    {bootstrapData?.storefront?.socialLinks?.twitter && (
-                      <a
-                        href={bootstrapData.storefront.socialLinks.twitter}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Twitter / X"
-                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease', fontSize: '1.2rem', fontWeight: 'bold' }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
-                          (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
-                          (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
-                        }}
-                      >
-                        𝕏
-                      </a>
-                    )}
-                    {bootstrapData?.storefront?.socialLinks?.instagram && (
-                      <a
-                        href={bootstrapData.storefront.socialLinks.instagram}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Instagram"
-                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease', fontSize: '1.2rem', fontWeight: 'bold' }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
-                          (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
-                          (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
-                        }}
-                      >
-                        📷
-                      </a>
-                    )}
-                    {bootstrapData?.storefront?.socialLinks?.linkedin && (
-                      <a
-                        href={bootstrapData.storefront.socialLinks.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="LinkedIn"
-                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--primary-color)', textDecoration: 'none', transition: 'all 0.2s ease', fontSize: '1.2rem', fontWeight: 'bold' }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--primary-color)';
-                          (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--bg-primary)';
-                          (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary-color)';
-                        }}
-                      >
-                        in
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
