@@ -72,66 +72,80 @@ const StorefrontSettings: React.FC = () => {
     try {
       console.log('Loading storefront settings...');
       const res = await apiClient.get('/api/v1/storefronts');
-      const storefronts = res.data.data || res.data;
-      console.log('Storefronts response:', storefronts);
-      if (!storefronts || storefronts.length === 0) {
-        setErrorMsg('No storefront found. Please create one first.');
+      console.log('Storefronts API response:', res);
+      
+      // Now returns single object instead of array
+      const storefront = res.data.data || res.data;
+      console.log('Storefront data:', storefront);
+      
+      if (!storefront) {
+        console.log('❌ No storefront data returned - first time setup');
         setStorefrontId('');
-        setName('');
-        setLogoUrl('');
-        setContactEmail('');
-        setContactPhone('');
-        setWhatsapp('');
-        setAddress('');
-        setCurrency('INR');
-        setCountry('India');
-        setCopyright('');
-        setShowAboutUs(false);
-        setAboutUsContent('');
-        setShowContactUs(false);
-        setFacebook('');
-        setTwitter('');
-        setInstagram('');
-        setLinkedin('');
+        // Leave fields empty for new storefront creation
         return;
       }
-      const data = storefronts[0];
-      const activeId = data.id || data._id || '';
-      console.log('Setting storefront ID:', activeId);
-      setStorefrontId(activeId);
-      
-      // Storefront Details
-      setName(data.name || '');
-      setLogoUrl(data.logoUrl || '');
-      
-      // Contact Information
-      setContactEmail(data.contactEmail || '');
-      setContactPhone(data.contactPhone || '');
-      setWhatsapp(data.whatsapp || '');
-      setAddress(data.address || '');
-      
-      // Store Configuration
-      setCurrency(data.currency || 'INR');
-      setCountry(data.country || 'India');
-      setCopyright(data.copyright || '');
-      
-      // Content Sections
-      setShowAboutUs(data.showAboutUs === true);
-      setAboutUsContent(data.aboutUsContent || '');
-      setShowContactUs(data.showContactUs === true);
 
-      // Social Links
-      if (data.socialLinks) {
-        setFacebook(data.socialLinks.facebook || '');
-        setTwitter(data.socialLinks.twitter || '');
-        setInstagram(data.socialLinks.instagram || '');
-        setLinkedin(data.socialLinks.linkedin || '');
+      // Extract storefront ID
+      const storefrontId = storefront.id || storefront._id || '';
+      console.log('Storefront ID:', storefrontId);
+      
+      if (storefrontId) {
+        setStorefrontId(storefrontId);
+        console.log('✅ StorefrontId set to:', storefrontId);
       }
 
-      await loadPendingChanges(activeId);
+      // Prefill all fields from storefront data
+      console.log('✅ Prefilling form with storefront data');
+      
+      // Storefront Details
+      setName(storefront.name || '');
+      setLogoUrl(storefront.logoUrl || '');
+      
+      // Contact Information
+      setContactEmail(storefront.contactEmail || '');
+      setContactPhone(storefront.contactPhone || '');
+      setWhatsapp(storefront.whatsapp || '');
+      setAddress(storefront.address || '');
+      
+      // Store Configuration
+      setCurrency(storefront.currency || 'INR');
+      setCountry(storefront.country || 'India');
+      setCopyright(storefront.copyright || '');
+      
+      // Content Sections
+      setShowAboutUs(storefront.showAboutUs === true);
+      setAboutUsContent(storefront.aboutUsContent || '');
+      setShowContactUs(storefront.showContactUs === true);
+
+      // Social Links
+      if (storefront.socialLinks) {
+        setFacebook(storefront.socialLinks.facebook || '');
+        setTwitter(storefront.socialLinks.twitter || '');
+        setInstagram(storefront.socialLinks.instagram || '');
+        setLinkedin(storefront.socialLinks.linkedin || '');
+      }
+
+      // Load pending changes if storefront exists
+      if (storefrontId) {
+        await loadPendingChanges(storefrontId);
+      }
     } catch (err: any) {
-      console.error('Failed to load storefront settings', err);
-      setErrorMsg('Failed to load storefront settings. Please check your connection and try again.');
+      console.error('Failed to load storefront settings:', err);
+      console.error('Error details:', {
+        message: err.message,
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        url: err.response?.config?.url
+      });
+      
+      // If 404 or no storefront exists, that's okay - first time setup
+      if (err.response?.status === 404) {
+        console.log('No storefront found - first time setup is OK');
+        setErrorMsg('');
+      } else {
+        setErrorMsg('Failed to load storefront settings. ' + (err.response?.data?.message || err.message));
+      }
     } finally {
       setLoading(false);
     }
@@ -139,14 +153,8 @@ const StorefrontSettings: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('handleSave called', { storefrontId, saving });
+    console.log('handleSave called', { saving });
     
-    if (!storefrontId) {
-      console.error('No storefrontId found!');
-      setErrorMsg('No storefront ID found. Please reload the page.');
-      return;
-    }
-
     if (saving) {
       console.warn('Already saving, ignoring duplicate click');
       return;
@@ -187,8 +195,8 @@ const StorefrontSettings: React.FC = () => {
     };
 
     try {
-      console.log('Saving storefront settings...', { storefrontId, payload });
-      const res = await apiClient.put(`/api/v1/storefronts/${storefrontId}`, payload);
+      console.log('Saving storefront...', payload);
+      const res = await apiClient.put('/api/v1/storefronts', payload);
       console.log('Save response:', res);
       setSuccessMsg('Storefront settings saved to draft successfully!');
       loadStorefrontSettings();
@@ -203,7 +211,7 @@ const StorefrontSettings: React.FC = () => {
 
   const handlePublish = async () => {
     if (!storefrontId) {
-      setErrorMsg('No storefront ID found. Please reload the page.');
+      setErrorMsg('No storefront found. Please save storefront settings first.');
       return;
     }
     setPublishing(true);
@@ -275,6 +283,9 @@ const StorefrontSettings: React.FC = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button className="btn btn-secondary" onClick={loadStorefrontSettings} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.25rem', fontWeight: 600 }}>
+            <Loader2 size={18} /> Reload Data
+          </button>
           <button className="btn btn-secondary" onClick={() => setShowPreview(true)} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.25rem', fontWeight: 600 }}>
             <Eye size={18} /> Preview
           </button>
