@@ -55,6 +55,42 @@ const StorefrontSettings: React.FC = () => {
     loadStorefrontSettings();
   }, []);
 
+  // Centralized error message extraction
+  const extractErrorMessage = (err: any): string => {
+    // Try to extract from validation errors object
+    if (err.response?.data?.errors) {
+      const errors = err.response.data.errors;
+      const errorList = [];
+      for (const [, messages] of Object.entries(errors)) {
+        if (Array.isArray(messages)) {
+          errorList.push(...messages);
+        } else if (typeof messages === 'string') {
+          errorList.push(messages);
+        }
+      }
+      if (errorList.length > 0) {
+        return errorList.join(' • ');
+      }
+    }
+    
+    // Try message field
+    if (err.response?.data?.message) {
+      return err.response.data.message;
+    }
+    
+    // Try title field (Problem Details format)
+    if (err.response?.data?.title) {
+      return err.response.data.title;
+    }
+    
+    // Fallback to error message
+    if (err.message) {
+      return err.message;
+    }
+    
+    return 'An error occurred. Please try again.';
+  };
+
   const loadPendingChanges = async (id?: string) => {
     const targetId = id || storefrontId;
     if (!targetId) return;
@@ -225,7 +261,11 @@ const StorefrontSettings: React.FC = () => {
       loadStorefrontSettings();
     } catch (err: any) {
       console.error('Failed to save settings:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Failed to save settings. Please try again.';
+      const errorMessage = extractErrorMessage(err);
+      console.error('Error details:', {
+        message: errorMessage,
+        fullError: err.response?.data
+      });
       setErrorMsg(errorMessage);
     } finally {
       setSaving(false);
@@ -248,13 +288,17 @@ const StorefrontSettings: React.FC = () => {
         const valData = valRes.data.data || valRes.data;
         console.log('Validation response:', valData);
         if (valData && !valData.isValid) {
-          setErrorMsg('Cannot publish: ' + (valData.errors?.join(', ') || 'Validation failed.'));
+          const errors = valData.errors || [];
+          const errorMessage = Array.isArray(errors) ? errors.join(' • ') : 'Validation failed';
+          setErrorMsg('Cannot publish: ' + errorMessage);
           setPublishing(false);
           return;
         }
-      } catch (valErr) {
+      } catch (valErr: any) {
         console.warn('Validation endpoint returned error:', valErr);
-        if (!window.confirm('Validation check failed. Do you want to continue publishing anyway?')) {
+        const errorMessage = extractErrorMessage(valErr);
+        
+        if (!window.confirm(`Validation failed: ${errorMessage}. Do you want to continue publishing anyway?`)) {
           setPublishing(false);
           return;
         }
@@ -274,8 +318,8 @@ const StorefrontSettings: React.FC = () => {
       loadStorefrontSettings();
     } catch (err: any) {
       console.error('Failed to publish settings', err);
-      const errorMessage = 'Failed to publish: ' + (err.response?.data?.message || err.message || 'Unknown error');
-      setErrorMsg(errorMessage);
+      const errorMessage = extractErrorMessage(err);
+      setErrorMsg('Failed to publish: ' + errorMessage);
     } finally {
       setPublishing(false);
     }
